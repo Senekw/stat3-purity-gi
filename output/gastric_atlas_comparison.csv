@@ -1,0 +1,9 @@
+criterion,scidata,kumar
+Accession,figshare collection 10.6084/m9.figshare.c.7843481 (integrated RDS + UMAP); constituent GEO series listed in Methods,"GSE183904 (GEO, 40 GSM samples)"
+Scale,"574,532 stomach cells / 229 samples; 479,629 colorectal cells / 220 samples","31 primary gastric tumours, 34 lineage states (~40 samples incl. normals/peritoneal)"
+Covers CRC too,Yes — stomach AND colorectum in one resource,No — gastric only
+Level-1 labels,"Epithelial, Fibroblast, Endothelial, T/NK, B/Plasma, Myeloid, Mast, Enteric Glial (7 gastric / 8 CRC)",Author lineage states incl. explicit malignant/epithelial subsets
+Malignant vs normal epithelium,NOT annotated. No inferCNV/CopyKAT in methods; 'Epithelial' is one undivided label,Yes — malignant cells identified; tumour/normal pairs available
+Harmonised across tissues,"Partly. Same marker vocabulary, but 7 vs 8 level-1 types and separate 70-type level-2 re-integrations per organ",N/A (single tissue)
+Format / effort,"Pre-integrated RDS, ready to load; large download",Raw 10x per-sample CSVs (GSE183904_RAW.tar); needs assembly + label join
+Fits the paper's estimand,Weak on its own — estimand is MALIGNANT epithelial fraction,Yes — directly supplies malignant-cell labels

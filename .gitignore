@@ -1,0 +1,19 @@
+# Data is large and re-downloadable; provenance is committed instead.
+data/raw/
+data/tcga/
+data/geo/
+data/manual/
+data/cache/
+!data/cache/provenance.txt
+
+# renv library is machine-specific; renv.lock IS committed.
+renv/library/
+renv/local/
+renv/staging/
+renv/python/
+renv/sandbox/
+
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store

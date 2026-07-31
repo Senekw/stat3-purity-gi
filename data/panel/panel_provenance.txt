@@ -1,0 +1,33 @@
+locked: 2026-07-31
+R: R version 4.5.3 (2026-03-11)
+msigdbr: 26.1.0
+criterion B rule: panel_definition.md Amendment 1 (2026-07-31) -
+  >=1 human ChIP-seq source (ChEA3, default thresholds) AND TRRUST v2 curation
+criterion A n = 87
+criterion B n = 75
+panel n = 152
+  route both   = 10
+  route A_only = 77
+  route B_only = 65
+original-six dropped: BCL2,MMP9,HGF
+
+ChEA3 GMT libraries queried: 2026-07-31
+  source: https://maayanlab.cloud/chea3/assets/tflibs/ (API is enrich-only;
+  ChEA3 does not version its GMTs - file sizes recorded as fingerprint)
+   ENCODE_ChIP-seq.gmt bytes    = 5593822
+   ReMap_ChIP-seq.gmt bytes     = 2960359
+   Literature_ChIP-seq.gmt bytes= 2453171
+   ENCODE genes    = 5480
+   ReMap genes     = 1453
+   Literature human genes = 2923 (terms: STAT3_23295773_CHIPSEQ_U87_HUMAN )
+   Literature mouse genes = 3995 (recorded, not counted)
+  collapsed: STAT3_1855785_CHIPSEQ_MESC_MOUSE dropped as truncated-PMID
+    duplicate of STAT3_18555785_CHIPSEQ_MESC_MOUSE
+  excluded libraries (not direct-binding evidence):
+    ARCHS4_Coexpression - coexpression, not binding
+    GTEx_Coexpression - coexpression, not binding
+    Enrichr_Queries - user query lists, not primary
+
+TRRUST v2 human queried: 2026-07-31
+  source: https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv
+   bytes = 297659 | total edges = 9396 | STAT3 targets = 142

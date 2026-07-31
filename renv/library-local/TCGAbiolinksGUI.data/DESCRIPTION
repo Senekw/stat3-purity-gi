@@ -1,0 +1,25 @@
+Package: TCGAbiolinksGUI.data
+Title: Data for the TCGAbiolinksGUI package
+Version: 1.32.0
+Author: Tiago Chedraoui Silva
+Maintainer: Tiago Chedraoui Silva <tiagochst@gmail.com>
+Description: 
+    Supporting data for the TCGAbiolinksGUI package. 
+License: GPL-3
+LazyData: false
+Depends: R (>= 3.5.0)
+Suggests: BiocStyle, knitr, rmarkdown, readr, DT
+biocViews: AssayDomainData, TechnologyData, OrganismData
+URL: https://github.com/BioinformaticsFMRP/TCGAbiolinksGUI.data
+BugReports: https://github.com/BioinformaticsFMRP/TCGAbiolinksGUI.data/issues
+VignetteBuilder: knitr
+RoxygenNote: 7.1.2
+git_url: https://git.bioconductor.org/packages/TCGAbiolinksGUI.data
+git_branch: RELEASE_3_23
+git_last_commit: 81a8d9c
+git_last_commit_date: 2026-04-28
+Repository: Bioconductor 3.23
+Date/Publication: 2026-05-05
+NeedsCompilation: no
+Packaged: 2026-05-05 15:45:47 UTC; biocbuild
+Built: R 4.5.3; ; 2026-07-31 15:48:28 UTC; unix

@@ -1,0 +1,55 @@
+# Criterion B provenance
+query_date: 2026-07-31
+
+## Resources
+ChEA3 GMT libraries, downloaded from https://maayanlab.cloud/chea3/assets/tflibs/
+  ENCODE_ChIP-seq.gmt        5,593,822 bytes   STAT3 terms: 3 (HELAS3, GM12878, MCF10A; hg19)
+  ReMap_ChIP-seq.gmt         2,960,359 bytes   STAT3 terms: 1
+  Literature_ChIP-seq.gmt    2,453,171 bytes   STAT3 terms: 7 raw -> 6 after duplicate collapse
+  ARCHS4_Coexpression.gmt    3,237,629 bytes   EXCLUDED from criterion B (coexpression)
+  GTEx_Coexpression.gmt      3,186,651 bytes   EXCLUDED from criterion B (coexpression)
+  Enrichr_Queries.gmt        2,529,276 bytes   EXCLUDED from criterion B (user query lists)
+  NOTE: ChEA3's public API is enrich-only (no per-TF target endpoint), so the
+  underlying GMT libraries were pulled directly. ChEA3 does not version its GMTs;
+  file sizes recorded above serve as the fingerprint.
+
+TRRUST v2 human: https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv
+  297,659 bytes; 9,396 total edges; 185 STAT3 edges -> 142 unique STAT3 targets
+  (Activation 83, Repression 27, Unknown 75)
+
+## Independence collapse (panel_definition.md §2B)
+Groups counted as independent:
+  1. ENCODE_ChIP-seq              n=5,480 genes
+  2. ReMap_ChIP-seq               n=1,453
+  3. Literature_ChIP-seq (human)  n=2,923   [1 experiment: PMID 23295773, U87]
+  4. TRRUST_v2 curated            n=  142
+Reported separately, NOT counted toward the human-only rule:
+  5. Literature_ChIP-seq (mouse)  n=3,995   [5 experiments]
+
+Collapses applied:
+  - STAT3_1855785_CHIPSEQ_MESC_MOUSE removed as a truncated-PMID duplicate of
+    STAT3_18555785_CHIPSEQ_MESC_MOUSE (493 and 1,627 genes, 146 shared).
+  - Coexpression and Enrichr-query libraries dropped: criterion B requires direct
+    binding/curated evidence, and correlation is not binding.
+
+Pairwise Jaccard between retained groups (evidence they are non-redundant):
+  ENCODE-ReMap 0.085 | ENCODE-Literature 0.191 | ENCODE-TRRUST 0.010
+  ReMap-Literature 0.046 | ReMap-TRRUST 0.016 | Literature-TRRUST 0.012
+
+## Counts
+criterion B, human-only, >=2 independent sources: 1,387 genes
+criterion B, including mouse ChIP-seq:            2,974 genes
+criterion A (HALLMARK_IL6_JAK_STAT3_SIGNALING, msigdbr 26.1.0): 87 genes
+union A + B(human-only): 1,448 genes
+
+## Original six
+SOCS3  A + B (ENCODE, ReMap, TRRUST; 3 human sources)      QUALIFIES
+MYC        B (ENCODE, ReMap, TRRUST; 3 human sources)      QUALIFIES
+IL6    A + B (ENCODE, Literature-human, TRRUST; 3)         QUALIFIES
+BCL2       TRRUST only (1 human source)                    FAILS
+MMP9       TRRUST only (1 human source)                    FAILS
+HGF        TRRUST only (1 human source)                    FAILS
+(MMP9 and HGF each additionally appear in mouse ChIP-seq, so under an
+ include-mouse counting rule those two would pass with 2 sources. BCL2 has NO
+ ChIP-seq evidence in any group, human or mouse: it is supported by TRRUST
+ curation alone and fails the >=2 rule under either counting scheme.)
