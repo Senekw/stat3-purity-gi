@@ -57,6 +57,37 @@ GSE62254 as the commonly cited alternative. Not investigated — out of scope fo
 this session, and the gastric-atlas question in step 3 concerns single-cell
 data, not this bulk cohort.
 
+## 9. Tumour-vs-normal designation: three hazards for Amendment 4
+
+Full audit in `output/atlas_tumour_designation_audit.csv`. All five atlases can
+support the tumour-only restriction, but three carry traps that would corrupt the
+epithelial fraction silently rather than loudly:
+
+1. **GSE155698 contains 21 PBMC samples out of 41.** The series is 17
+   `PDAC_TISSUE`, 3 `AdjNorm_TISSUE`, 17 `PDAC_PBMC`, 4 `Healthy_PBMC`. Blood has
+   essentially no epithelium. If the tumour filter keys on "PDAC" rather than on
+   tissue-vs-blood, the PBMC samples pass and drive the epithelial fraction toward
+   zero — manufacturing the paper's own conclusion. Filter must keep
+   `PDAC_TISSUE*` only.
+2. **GSE183904 label strings are not clean.** One GSM reads
+   `Peritonium tissue  (Tumor)` with a double space. Exact-match filtering
+   mis-sorts it. Normalise whitespace before comparing. Amendment 4 excludes
+   peritoneal and normal, leaving the 26 `Primary Gastric Tissue (Tumor)` samples.
+3. **Peng is in GSA, not GEO or Zenodo.** The brief calls it "the Peng Zenodo
+   release", but the paper's data-availability statement gives
+   **GSA: CRA001160**, project **PRJCA001063** (Genome Sequence Archive). 24
+   primary PDAC tumours and 11 control pancreases. If a Zenodo mirror is the
+   intended source, its provenance and processing should be recorded, because it
+   is not the primary deposit.
+
+Also worth noting: GSE125449 has no tumour/normal field in its per-cell table at
+all, but this is moot — all 19 samples are tumours (10 iCCA, 9 HCC), so the
+restriction is a no-op there.
+
+For GSE178341, `specimen_type` is T (129 GSMs) / N (52 GSMs) at GSM level. Whether
+the published per-cell metatable carries that column per cell still needs
+confirming when the file is opened.
+
 ## 8. `renv/library-local/` is tracked in git (23 MB of package binaries)
 
 `.gitignore` excludes `renv/library/` but the local library I created to work

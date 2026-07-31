@@ -155,3 +155,45 @@ Amended rule, where k = panel genes that are epithelial-dominant
   k < 5%                               -> decomposition DESCRIPTIVE only
 
 Made blind: no compartment fraction for the 152-gene panel had been computed.
+
+### Amendment 4 — 2026-07-31
+
+The compartment estimand is changed from malignant-epithelial fraction to
+EPITHELIAL fraction computed on tumour-channel samples only.
+
+Primary definition: abundance-weighted contribution to pseudobulk from the
+lineage-level EPITHELIAL compartment, computed using only samples designated by
+the source atlas as tumour (excluding adjacent-normal, peritoneal and
+normal-donor samples). Non-epithelial compartments are grouped as
+fibroblast/stromal, myeloid, lymphoid, endothelial and other, per each atlas's
+own level-1 labels.
+
+Sensitivity analysis: where the source atlas supplies CNV-based per-cell
+malignancy calls (GSE125449, GSE183904), the fraction is recomputed restricted
+to malignant cells. Peng (PDAC) is reported separately because its malignancy
+call is a cluster-level ductal-subtype proxy rather than a per-cell threshold.
+Agreement between primary and sensitivity definitions is reported.
+
+Reason: the five compartment atlases infer malignancy by three incompatible
+methods (inferCNV per-cell thresholds in Ma; inferCNV with unstated cutoff in
+Kumar; a trained classifier in Pelka, where ~11% of malignant-called cells show
+no substantial CNV difference; a cluster-level ductal proxy in Peng; and no
+malignancy inference at all in Steele — see
+output/atlas_malignant_annotation_audit.csv). A cross-tissue comparison whose
+numerator is defined differently in each tissue would not measure the same
+quantity. Lineage-level epithelial labels are available and comparably defined
+in all five. Re-deriving malignancy uniformly was rejected because it would make
+every malignancy call this project's own construction on data of differing
+platform and depth.
+
+This supersedes the phrase "abundance-weighted malignant-epithelial fraction" in
+Amendment 3; k is now defined on the primary estimand above.
+
+Direction of bias: residual normal epithelium in tumour samples inflates the
+epithelial fraction, biasing AGAINST the paper's thesis that the score is
+substantially non-epithelial. The change is therefore conservative.
+
+Consequence: GSE155698 (Steele) becomes usable at lineage level, giving PDAC two
+tissue-matched atlases as Amendment 3 requires.
+
+Made blind: no compartment fraction for the 152-gene panel had been computed.
