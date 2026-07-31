@@ -1,7 +1,9 @@
 # Analysis plan — compartment decomposition of STAT3 activity scores in GI cancers
 
-**Version:** 1.1 (2026-07-31 — applies Amendments 5 and 6; fills B.i from CDR
-Table 3; introduces the final gene list; §0.1, §0.2 and §3.2 resolved)
+**Version:** 1.2 (2026-07-31 — applies Amendment 7: B.i re-derived from Table 3
+under a single deterministic rule, COAD changes PFI→OS; adds `k_eval4` to A.g)
+**Prior versions:** 1.1 (Amendments 5–6; final gene list; §0.1/§0.2/§3.2 resolved);
+1.0 (initial)
 **Written:** 2026-07-31
 **Author:** Sean GP Lee
 **Panel:** locked 2026-07-31 at commit `ac9c5e0`; 152 genes; see `panel_definition.md`
@@ -467,21 +469,49 @@ Three tables accompany *k* and are reported whatever branch obtains:
    *k*: it cannot be inflated by two agreeing atlases and is the number to quote
    when the claim is that a gene is epithelial regardless of tissue context.
 
+4. **`k_eval4`: *k* restricted to well-evaluated genes.** *k* recomputed over only
+   those panel genes **evaluable in at least four of the five atlases** — that is,
+   with a non-`NA` dominance call in ≥ 4 atlases. Reported as an additional
+   sensitivity alongside *k*, `k_50` and `k_all5`.
+
+   This addresses a specific weakness of *k*: because absence encodes as `NA`
+   rather than `FALSE`, a gene evaluable in only two atlases can reach *k* on those
+   two alone, satisfying the replication requirement on the thinnest possible
+   evidence. `k_eval4` asks what *k* would be if only genes with broad evaluability
+   could contribute. Note it is not simply a subset relation on the count — a gene
+   can be in *k* but not `k_eval4` (dominant in 2 of 2 evaluable) and the reverse
+   cannot happen, so `k_eval4 ≤ k` always, and the gap between them measures how
+   much of *k* rests on sparsely evaluated genes.
+
 ```r
 # dominance: genes x atlases logical matrix, NA-aware
-k          <- sum(rowSums(dominance, na.rm = TRUE) >= 2)
-k_all5     <- sum(rowSums(dominance, na.rm = TRUE) == 5 &
-                  rowSums(is.na(dominance)) == 0)
-k_50       <- sum(rowSums(dominance_50, na.rm = TRUE) >= 2)   # Amendment 6
+n_dom  <- rowSums(dominance, na.rm = TRUE)      # atlases calling dominance
+n_eval <- rowSums(!is.na(dominance))            # atlases where the gene is evaluable
+
+k          <- sum(n_dom >= 2)                              # primary (Amendment 5)
+k_all5     <- sum(n_dom == 5 & n_eval == 5)                # strict
+k_eval4    <- sum(n_dom >= 2 & n_eval >= 4)                # evaluability sensitivity
+k_50       <- sum(rowSums(dominance_50, na.rm = TRUE) >= 2) # Amendment 6
 per_tissue <- tapply(seq_len(ncol(dominance)), atlas_tissue,
                      function(j) sum(rowSums(dominance[, j, drop = FALSE],
                                              na.rm = TRUE) >= 1))
+
+stopifnot(k_eval4 <= k, k_all5 <= k_eval4)     # ordering must hold by construction
 ```
+
+The evaluability distribution itself is reported: a table of how many panel genes
+are evaluable in 5, 4, 3, 2, 1 and 0 atlases. If most genes are evaluable in all
+five, `k_eval4` ≈ *k* and the sensitivity is uninformative — which is itself worth
+stating.
+
+**The branch decision uses primary *k*** (A.g table). `k_50`, `k_all5` and
+`k_eval4` are reported alongside with bootstrap intervals and do not override it.
 
 A gene absent from an atlas contributes `NA`, not `FALSE`: absence is missing
 evidence, not evidence against dominance. Consequently a gene present in only two
 atlases can reach *k* on those two, and the dominance matrix's `NA` pattern is
-reported so this is visible rather than hidden inside the count.
+reported so this is visible rather than hidden inside the count — with `k_eval4`
+quantifying the consequence.
 
 Panel size is locked at 152, so Amendment 3's proportional thresholds are fixed
 arithmetic:
@@ -648,47 +678,91 @@ opened, merged, or scored.
 Table 3 legend: ✓ = recommended for use; × = not recommended; \* = caution, see
 the explanation column; app. = approximate; acc. = accurate.
 
-Table 3 as it applies to the seven cohorts (event counts are the CDR's, at its
-2018 snapshot):
+### The designation rule (Amendment 7)
 
-| Cohort | N | OS | PFI | DSS | CDR caution |
-|---|---|---|---|---|---|
-| COAD | 459 | ✓ (102 ev.) | ✓ (123 ev.) | ✓ app. | none |
-| READ | 170 | ✓**\*** (26 ev.) | ✓ (39 ev.) | ✓ app.\* | longer follow-up needed for OS, DSS, DFI; DFI events too few |
-| STAD | 443 | ✓ (172 ev.) | ✓ (143 ev.) | ✓ app. | none |
-| ESCA | 185 | ✓ (77 ev.) | ✓ (87 ev.) | ✓ app. | none |
-| PAAD | 185 | ✓ (100 ev.) | ✓ (110 ev.) | ✓ acc. | none |
-| LIHC | 377 | ✓ (132 ev.) | ✓ (185 ev.) | ✓ app.\* | longer follow-up needed for DSS |
-| CHOL | 45 | ✓ (22 ev.) | ✓ (23 ev.) | ✓ app.\* | **sample size too small for OS, DSS, DFI and PFI** |
+> Primary endpoint = **OS wherever Table 3 marks OS usable without caution**.
+> Where OS carries a caution mark, the primary endpoint is the CDR-preferred
+> alternative for that cancer type. The non-primary endpoint is reported as a
+> prespecified sensitivity analysis in every cohort.
 
-Designated primary endpoints:
+This is the *only* input to the designation. Event counts do not enter it. No
+assignment from v1.0 or v1.1 is carried forward; the table below is derived from
+Table 3's marks alone.
 
-| Cohort | Primary endpoint | Basis in Table 3 |
-|---|---|---|
-| TCGA-COAD | **PFI** | Both ✓ without caution. PFI chosen per the CDR's global preference for PFI over OS given short follow-up, and because PFI has more events (123 vs 102). |
-| TCGA-READ | **PFI** | OS carries a caution (✓\*, only 26 events, longer follow-up needed); PFI is ✓ unqualified. PFI is the only defensible primary here. |
-| TCGA-STAD | **OS** | ✓ unqualified, 172 events — the largest event count of any endpoint in this cohort. |
-| TCGA-ESCA | **OS** | ✓ unqualified, 77 events. |
-| TCGA-PAAD | **OS** | ✓ unqualified, 100 events; high event rate and short survival make OS well estimated. |
-| TCGA-LIHC | **OS** | ✓ unqualified, 132 events. (PFI has more events, 185, and is reported as the prespecified sensitivity analysis.) |
-| TCGA-CHOL | **OS, descriptive only** | Table 3 marks CHOL ✓ for OS and PFI but states plainly that the sample size is too small for OS, DSS, DFI *and* PFI. CHOL is therefore reported descriptively and does not enter the meta-analysis as a weighted stratum. |
+### Table 3 marks, verbatim, and the endpoint the rule yields
 
-**Correction to an earlier provisional assignment.** A previous draft of this plan
-assigned COAD to PFI on the basis that "the CDR notes OS is underpowered in
-colon", carried forward from `feasibility_assessment.md` §5. Table 3 does **not**
-support that: COAD's OS is ✓ with no caution and 102 events. The COAD primary
-remains PFI, but on the CDR's stated global preference for PFI under short
-follow-up and on event count — not on an OS caution that does not exist. The
-cohort with an actual OS caution is READ.
+OS marks read directly from Table 3's cells for these seven rows. `✓` = usable;
+`✓ *` = usable with caution, see the explanation column.
+
+| Cohort | Table 3 OS mark, verbatim | Table 3 PFI mark | OS cautioned? | **Rule yields** |
+|---|---|---|---|---|
+| TCGA-COAD | `✓` | `✓` | no | **OS** |
+| TCGA-READ | `✓ *` | `✓` | **yes** — "need a longer follow-up for OS, DSS, and DFI; number of events for DFI is too small" | **PFI** (CDR-preferred alternative; `✓` unqualified) |
+| TCGA-STAD | `✓` | `✓` | no | **OS** |
+| TCGA-ESCA | `✓` | `✓` | no | **OS** |
+| TCGA-PAAD | `✓` | `✓` | no | **OS** |
+| TCGA-LIHC | `✓` | `✓` | no | **OS** |
+| TCGA-CHOL | `✓` | `✓` | no | **OS**, but **descriptive only** — see below |
+
+READ is the only cohort of the seven whose OS mark carries an asterisk. Verified
+against the raw table markup, not only the parsed cells: the `✓ *` appears on
+READ's OS cell, while COAD, LIHC and CHOL carry a bare `✓` on OS. (LIHC's and
+CHOL's asterisks are on **DSS**, not OS, and DSS is not a candidate endpoint here.)
+
+**CHOL.** The rule yields OS, and CHOL's OS mark is indeed uncautioned. But Table
+3's explanation column for CHOL reads "sample size is too small for OS, DSS, DFI,
+and PFI" — a caution against the *cohort*, not against a particular endpoint, and
+one that no choice of endpoint can remedy. CHOL therefore keeps OS as its endpoint
+under the rule and remains **descriptive only**, outside the meta-analysis as a
+weighted stratum, per B.l. This is a decision about cohort inclusion, not endpoint
+designation, and the rule is applied to CHOL unchanged.
+
+### Change from v1.1
+
+**COAD changes from PFI to OS.** In v1.1 COAD was assigned PFI, first (in v1.0) on
+a nonexistent OS caution and then on the CDR's global preference plus event count.
+Under Amendment 7 that reasoning is discarded entirely: COAD's OS is marked usable
+without caution, so the rule yields OS. The row is changed, not silently replaced.
+
+No other cohort's designation changes. READ remains PFI — now because its OS mark
+is cautioned, which is the rule's own criterion, rather than because PFI had more
+events. STAD, ESCA, PAAD, LIHC and CHOL remain OS.
+
+The v1.1 justifications for STAD ("largest event count"), PAAD ("high event rate")
+and LIHC ("PFI has more events, reported as sensitivity") are withdrawn as
+justifications even where the endpoint is unchanged: they were event-count
+reasoning, which Amendment 7 excludes. The endpoints now rest solely on Table 3's
+marks.
+
+### Event counts — descriptive context only
+
+The counts below are the CDR's 2018 snapshot. They are reported for the reader's
+orientation and played **no part** in the designation above.
+
+| Cohort | N | OS events | PFI events |
+|---|---|---|---|
+| COAD | 459 | 102 | 123 |
+| READ | 170 | 26 | 39 |
+| STAD | 443 | 172 | 143 |
+| ESCA | 185 | 77 | 87 |
+| PAAD | 185 | 100 | 110 |
+| LIHC | 377 | 132 | 185 |
+| CHOL | 45 | 22 | 23 |
+
+Note that in six of the seven cohorts (COAD, READ, ESCA, PAAD, LIHC, CHOL) PFI has
+more events than OS; STAD is the sole exception. Under the v1.1 approach that fact
+was doing work, and an event-count tiebreak applied consistently would have pushed
+almost every cohort to PFI. Under Amendment 7 it does none, which is the point — an
+event-count tiebreak is a choice the analyst makes after looking, and looking is
+what the rule removes.
+
+Realised event counts in the merged analysis set will differ from the above (the
+expression cohorts are not identical to the CDR's clinical cohorts) and are
+reported per cohort per §3.3.
 
 One endpoint per cohort is designated primary in advance. The alternative endpoint
-is reported as a prespecified sensitivity analysis, never substituted for the
-primary if the primary is null.
-
-Note on event counts: the counts above are the CDR's 2018 snapshot and are used
-here only to justify endpoint choice. The realised event counts in the merged
-analysis set will differ (the expression cohorts are not identical to the CDR's
-clinical cohorts) and are reported per cohort per §3.3.
+is reported as a prespecified sensitivity analysis in every cohort, never
+substituted for the primary if the primary is null.
 
 Follow-up is administratively censored at 10 years for OS and 5 years for PFI, per
 common CDR practice, and the censoring rule is applied identically across cohorts.
@@ -897,11 +971,16 @@ designated primary endpoint and its basis for all seven cohorts.
 Only the endpoint-usability recommendation table was consulted. No patient-level
 data was merged with expression, no score was computed, nothing was fitted.
 
-One earlier assignment was corrected in the process: the provisional table justified
-COAD→PFI by "the CDR notes OS underpowered in colon", which Table 3 does not
-support (COAD OS is ✓ unqualified, 102 events). COAD remains PFI on the CDR's stated
-global preference for PFI under short follow-up and on event count. READ is the
-cohort with a genuine OS caution (✓\*, 26 events).
+Two rounds of correction followed, both recorded in B.i rather than absorbed:
+
+1. The v1.0 provisional table justified COAD→PFI by "the CDR notes OS underpowered
+   in colon". Table 3 does not support that — COAD's OS is `✓` unqualified.
+2. v1.1 corrected the fact but kept PFI on a substituted justification (global
+   preference plus event count), while assigning LIHC to OS despite PFI having more
+   events there — two contradictory tiebreaks. **Amendment 7** discards that
+   approach and restates designation as one deterministic rule keyed only on Table
+   3's caution marks. **COAD is now OS.** READ is the only cohort of the seven whose
+   OS mark is cautioned, and so the only one taking the alternative endpoint.
 
 ## 3.3 Event counts, and whether any cohort is too small to model (B.i, B.l)
 

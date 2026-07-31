@@ -250,3 +250,30 @@ branch decision uses primary k. If primary k and k_50 fall in different branches
 that fact is stated in the paper.
 
 Made blind: no compartment fraction for the 152-gene panel had been computed.
+
+### Amendment 7 — 2026-07-31
+
+Endpoint designation is restated as a single deterministic rule, applied
+identically to all seven cohorts:
+
+  Primary endpoint = overall survival (OS) wherever the TCGA-CDR (Liu et al.
+  2018, Table 3) marks OS usable without caution. Where OS carries a caution
+  mark, the primary endpoint is the CDR-preferred alternative for that cancer
+  type. The non-primary endpoint is reported as a prespecified sensitivity
+  analysis in every cohort.
+
+Reason: the v1.0 provisional table assigned COAD to PFI on the higher event
+count while assigning LIHC to OS despite PFI having more events — two
+contradictory tiebreaks, i.e. discretion rather than a rule. The v1.0 COAD
+justification ("CDR notes OS underpowered in colon") was also factually wrong;
+Table 3 marks COAD OS as usable without caution. Correcting the fact while
+retaining the conclusion under a substituted justification is not defensible,
+so the rule is restated and re-derived from scratch.
+
+Rationale for defaulting to OS: it is objective mortality, not subject to
+assessment or ascertainment variation, and departing from it only where the CDR
+itself flags a problem removes all analyst discretion from the choice.
+
+Made blind: no score has been computed, no model fitted, and no patient-level
+outcome data merged with expression. Only the Table 3 recommendation matrix was
+consulted.
