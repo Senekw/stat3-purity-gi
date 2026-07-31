@@ -119,3 +119,39 @@ render the §5 thresholds vacuous.
 Made BLIND to all compartment and survival results. No compartment fraction, no
 purity sweep, and no outcome data had been examined at the time of this
 amendment. Panel size at amendment: not yet computed.
+
+### Amendment 2 — 2026-07-31
+
+Criterion B(i) is clarified to require ChIP-seq evidence from a HUMAN
+experiment. Mouse ChIP-seq does not satisfy B(i).
+
+Reason: cross-species conservation of promoter occupancy is unreliable, and the
+study's cohorts are human. Applied at implementation of Amendment 1; recorded
+here as a formal amendment because it was not in the adopted text.
+
+Disclosure: this decision was NOT blind. Pilot compartment results in
+feasibility_assessment.md were already known, and MMP9 and HGF — the two genes
+excluded by this clarification — were the two most stroma/myeloid-dominant genes
+in that pilot. The restriction removes the clearest illustrations of the paper's
+own thesis and is therefore conservative with respect to it. No compartment
+fraction or survival result for the amended 152-gene panel had been computed at
+the time of this amendment.
+
+MMP9, HGF and BCL2 are reported as a labelled non-qualifying subset per §4.
+
+### Amendment 3 — 2026-07-31
+
+Section 5's thresholds are restated as proportions of the final panel. They were
+written anticipating a 30–50 gene panel; the panel is 152, which would make
+k >= 8 a 5% bar rather than the ~20% intended.
+
+Amended rule, where k = panel genes that are epithelial-dominant
+(abundance-weighted malignant-epithelial fraction > 0.50) across the full
+30–70% purity band in at least two tissue-matched atlases:
+
+  k >= 20% of final panel AND k >= 8   -> epithelial subscore built; subscore
+                                          survival models run as SECONDARY
+  5% <= k < 20%                        -> subscore reported as EXPLORATORY only
+  k < 5%                               -> decomposition DESCRIPTIVE only
+
+Made blind: no compartment fraction for the 152-gene panel had been computed.

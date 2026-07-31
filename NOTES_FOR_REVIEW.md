@@ -57,6 +57,37 @@ GSE62254 as the commonly cited alternative. Not investigated — out of scope fo
 this session, and the gastric-atlas question in step 3 concerns single-cell
 data, not this bulk cohort.
 
+## 7. Malignancy is inferred by three different methods across the five atlases
+
+Full audit in `output/atlas_malignant_annotation_audit.csv`. The compartment
+estimand is the *malignant* epithelial fraction, so how each atlas decides which
+epithelial cells are malignant is not a detail — it is the definition of the
+numerator, and it is not consistent:
+
+| Atlas | Labelled? | Method |
+|---|---|---|
+| GSE125449 (liver) | yes | inferCNV, per-cell threshold (score >80th pct AND corr >0.40) |
+| GSE183904 (gastric) | yes | inferCNV (per-cell cutoff not stated in main text) |
+| GSE178341 (CRC) | yes | **trained classifier** (>0.75 tumour / <0.25 normal); inferCNV only as cross-check |
+| Peng (PDAC) | partial | inferCNV at cluster level, then carried by a **ductal type-2 proxy** |
+| GSE155698 (PDAC) | **no** | none — no CNV analysis of any kind in the paper |
+
+Two consequences worth deciding on before the sweep:
+
+1. **GSE178341 is method-discordant.** Its primary malignancy call is not
+   CNV-based, and the paper reports that ~11% of its likely-malignant cells show
+   no substantial copy-number difference from normal (8% MMRp, 15% MMRd). Those
+   cells would probably fail GSE125449's inferCNV cutoffs. A malignant-epithelial
+   fraction computed in CRC is therefore not measuring quite the same quantity as
+   one computed in liver.
+2. **GSE155698 cannot serve this estimand as published.** Deriving malignancy
+   labels ourselves would make PDAC the only cohort where the numerator is our
+   own construction — a reviewer-visible asymmetry. The Peng release is the better
+   PDAC option despite its cluster-level proxy.
+
+Amendment 3's "at least two tissue-matched atlases" requirement interacts with
+this: for PDAC there may not be two atlases with comparable malignancy calls.
+
 ## 6. Sci Data 2026 atlas has no malignant-cell annotation
 
 Relevant to step 3 and detailed in the chat recommendation. Its level-1 labels
