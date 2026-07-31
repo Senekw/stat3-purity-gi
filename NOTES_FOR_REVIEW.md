@@ -57,6 +57,26 @@ GSE62254 as the commonly cited alternative. Not investigated — out of scope fo
 this session, and the gastric-atlas question in step 3 concerns single-cell
 data, not this bulk cohort.
 
+## 8. `renv/library-local/` is tracked in git (23 MB of package binaries)
+
+`.gitignore` excludes `renv/library/` but the local library I created to work
+around the broken bioconda `TCGAbiolinksGUI.data` is at `renv/library-local/`,
+which that pattern does not match. 37 files, 23 MB, entered in the starting
+commit `361d287`. Also tracked from that commit: `MANIFEST.txt` (a GDC download
+byproduct), `df.rds`, `results.rds`.
+
+Not acted on — removing them means rewriting your commit. To fix:
+
+```
+cd ~/Documents/stat3-gi
+printf 'renv/library-local/\nMANIFEST.txt\n*.rds\n!data/**/*.rds\n' >> .gitignore
+git rm -r --cached renv/library-local MANIFEST.txt df.rds results.rds
+git commit -m "Untrack installed R library and download byproducts"
+```
+
+The blobs stay in history unless you rewrite it, which is probably not worth it
+at this size.
+
 ## 7. Malignancy is inferred by three different methods across the five atlases
 
 Full audit in `output/atlas_malignant_annotation_audit.csv`. The compartment
