@@ -197,3 +197,56 @@ Consequence: GSE155698 (Steele) becomes usable at lineage level, giving PDAC two
 tissue-matched atlases as Amendment 3 requires.
 
 Made blind: no compartment fraction for the 152-gene panel had been computed.
+
+### Amendment 5 — 2026-07-31
+
+Amendment 3's replication requirement, "in at least two tissue-matched atlases",
+is amended to: "in at least two of the five compartment atlases, of any GI
+tissue."
+
+Reason: only pancreatic has two atlases (GSE155698, Peng). Liver, colorectal and
+gastric have one each and oesophageal none, so under a tissue-matched reading k
+could only ever be driven by pancreatic data. The requirement's purpose is
+robustness against a single dataset's dissociation protocol or annotation scheme
+determining the call — a threat that is atlas-specific, not tissue-specific. The
+subscore, if built, is applied across seven TCGA cohorts, so cross-tissue
+consistency is the relevant property.
+
+Reported alongside k: the per-atlas dominance matrix, a per-tissue breakdown, and
+a strict count of genes dominant in ALL five atlases.
+
+Rejected alternative: adding the Sci Data 2026 integrated atlas to supply second
+atlases for gastric and colorectal. It is an integration of constituent GEO
+series, and if GSE183904 or GSE178341 are among them the two atlases would share
+cells, making the replication requirement appear satisfied while providing no
+independent evidence.
+
+Direction of bias: this is looser than the tissue-matched reading, yielding a
+larger k and making the epithelial-subscore branch more reachable — i.e. biasing
+AGAINST the paper's thesis that the score is substantially non-epithelial.
+Conservative.
+
+Made blind: no compartment fraction for the 152-gene panel had been computed.
+
+### Amendment 6 — 2026-07-31
+
+Disclosure and sensitivity analysis for the "epithelial-dominant across the full
+30–70% band" criterion. The primary rule is UNCHANGED.
+
+Because f(pi) = pi*A / (pi*A + (1-pi)*B), where A is epithelial intensity per
+cell and B the abundance-weighted non-epithelial intensity, dominance at pi is
+equivalent to A/B > (1-pi)/pi. Dominance across the full band is therefore
+evaluated entirely at the lower boundary and requires A/B > 2.33, whereas
+dominance at typical tumour purity (pi = 0.50) requires only A/B > 1.
+
+The full-band bar is thus substantially stricter, yields a smaller k, and makes
+the descriptive-only branch more likely — the branch most consistent with the
+paper's thesis. This is the one criterion in the design that leans toward the
+hypothesis, and it is disclosed as such.
+
+Additional prespecified reporting: k_50, defined identically but evaluated at
+pi = 0.50 only, reported alongside primary k with its bootstrap interval. The
+branch decision uses primary k. If primary k and k_50 fall in different branches,
+that fact is stated in the paper.
+
+Made blind: no compartment fraction for the 152-gene panel had been computed.

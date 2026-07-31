@@ -1,6 +1,7 @@
 # Analysis plan — compartment decomposition of STAT3 activity scores in GI cancers
 
-**Version:** 1.0
+**Version:** 1.1 (2026-07-31 — applies Amendments 5 and 6; fills B.i from CDR
+Table 3; introduces the final gene list; §0.1, §0.2 and §3.2 resolved)
 **Written:** 2026-07-31
 **Author:** Sean GP Lee
 **Panel:** locked 2026-07-31 at commit `ac9c5e0`; 152 genes; see `panel_definition.md`
@@ -15,10 +16,28 @@ Companion documents, all binding:
 - `output/atlas_tumour_designation_audit.csv` — tumour-vs-normal designation routes.
 - `NOTES_FOR_REVIEW.md` — open items not acted on.
 
-## 0. Two specification gaps requiring a decision before Part A runs
+## 0. Two specification gaps — BOTH RESOLVED 2026-07-31
 
-These are recorded here rather than resolved, because resolving either one is an
-amendment, not an implementation choice.
+Both gaps below were open when this plan was first written. Both are now closed;
+the original statements are retained for the record, each with its resolution.
+
+### 0.1 — RESOLVED by Amendment 5
+
+Amendment 3's "at least two tissue-matched atlases" is amended to "at least two of
+the five compartment atlases, of any GI tissue". This is option (a) of the three
+set out below. Option (b) — adding the Sci Data 2026 integrated atlas — was
+considered and **rejected**: it is an integration of constituent GEO series, and if
+GSE183904 or GSE178341 are among them, the two atlases would share cells, making
+the replication requirement appear satisfied while supplying no independent
+evidence. That is a sharper objection than the one raised in the original text
+below, which noted only that Amendment 4 had made the atlas eligible.
+
+Compensating reporting is required by Amendment 5 and specified in A.g: the
+per-atlas dominance matrix, the per-tissue breakdown, and `k_all5`. The per-tissue
+breakdown is what preserves the information the tissue-matched reading was trying
+to protect.
+
+Original statement, retained:
 
 ### 0.1 Amendment 3's "at least two tissue-matched atlases" is unsatisfiable for
 ### three of four tissues
@@ -54,6 +73,19 @@ Three ways out, all requiring an amendment:
 
 **Nothing in Part A depends on this choice except step (g).** Steps (a)–(f) can
 run as specified; *k* cannot be computed until this is settled.
+*(Now settled — see the resolution above. A.g no longer carries a pending marker.)*
+
+### 0.2 — RESOLVED
+
+The plan now asserts **both** counts for GSE178341: 129 GSM channels and 62 unique
+patients, with a halt on either mismatch (A.a). The bootstrap unit remains
+**patient** (A.f). The unit mismatch that prompted this note is therefore explicit
+in the script rather than latent: the two assertions state plainly that they count
+different things, and A.a records why channels outnumber patients roughly two to
+one. A.a additionally halts if no patient identifier is present in the per-cell
+metatable, since without it the specified bootstrap cannot be run at all.
+
+Original statement, retained:
 
 ### 0.2 GSE178341's expected count of 129 is GSMs, not patients
 
@@ -124,21 +156,40 @@ series changed).
 
 ### GSE178341 — colorectal (Pelka)
 
-Expected: **129 GSMs** with `specimen_type == "T"` (52 are `N`).
+Expected: **129 GSM channels** with `specimen_type == "T"` (52 are `N`), resolving
+to **62 unique patients** (28 MMRp + 34 MMRd, per Pelka et al. 2021). Both counts
+are asserted; a mismatch in either halts the script.
 
 ```r
 keep_gsm <- specimen_type == "T"
+
 # Per-cell propagation must be verified on open, not assumed:
 if (!any(c("specimen_type","channel","sample_type") %in% colnames(cell_meta))) {
   stop("HALT [GSE178341]: no tumour/normal column in per-cell metatable. ",
        "Join via GSM before filtering; do not proceed.")
 }
+if (!any(c("patient","patient_id","PatientTypeID","donor") %in% colnames(cell_meta))) {
+  stop("HALT [GSE178341]: no patient identifier in per-cell metatable. ",
+       "The A.f bootstrap unit is patient; do not proceed without it.")
+}
+
+assert_n(n_distinct(gsm_id[keep_gsm]),     129, "GSE178341", "specimen_type == T (GSM channels)")
+assert_n(n_distinct(patient_id[keep_cell]), 62, "GSE178341", "specimen_type == T (unique patients)")
 ```
+
+Asserting both counts is the point: 129 and 62 are counts of *different things*,
+and only the second is the independent unit. The same specimen appears under
+multiple `processing_type` values (`unosrted` [sic], `LiveMACS`), so channels
+outnumber patients roughly two to one. If a future release of the series changes
+either number, the script must stop rather than silently switch the effective
+sample size or the bootstrap's independence assumption.
 
 The published per-cell file is `GSE178341_crc10x_full_c295v4_submit_metatables.csv.gz`.
 If it carries no specimen column, the GSM-level designation must be joined onto
 cells through the sample identifier before filtering — and the script halts rather
-than guessing. See §0.2 on the GSM-vs-patient distinction.
+than guessing.
+
+**Bootstrap unit remains patient** (A.f), not GSM and not cell.
 
 ### GSE125449 — liver, iCCA + HCC (Ma)
 
@@ -325,6 +376,40 @@ monotonicity is asserted numerically rather than assumed:
 if (any(diff(f_grid) < -1e-9)) stop("HALT: f(pi) not monotone; check weights.")
 ```
 
+### Strictness of the full-band rule, and `k_50` (Amendment 6)
+
+Writing `A` for epithelial intensity per cell and `B` for the abundance-weighted
+non-epithelial intensity, `f(π) = πA / (πA + (1−π)B)`, so dominance at π is
+exactly `A/B > (1−π)/π`. The full-band requirement therefore binds entirely at the
+lower boundary:
+
+| π | Required `A/B` |
+|---|---|
+| 0.30 (band floor, binding) | **> 2.333** |
+| 0.50 (typical purity) | > 1.000 |
+| 0.70 (band ceiling) | > 0.429 |
+
+The full-band bar is thus substantially stricter than dominance at typical purity:
+it demands an epithelial cell carry more than twice the transcript mass of the
+average non-epithelial cell. Per Amendment 6 this is the one criterion in the
+design that leans toward the paper's thesis — a stricter bar yields a smaller *k*
+and makes the descriptive-only branch more likely — and it is disclosed as such
+rather than presented as neutral.
+
+**`k_50` is therefore computed and reported alongside primary *k***, defined
+identically (same panel, same two-atlas replication rule per Amendment 5, same
+bootstrap) but evaluated at π = 0.50 only:
+
+```r
+dominance_50 <- f_at(0.50) > 0.50      # per gene per atlas
+```
+
+Both *k* and `k_50` are reported with 95% bootstrap intervals (A.f). **The branch
+decision uses primary *k*.** If *k* and `k_50` fall in different branches of the
+A.g table, that fact is stated explicitly in the paper — it is the cleanest single
+indicator of how much the branch depends on the strictness of the band rule rather
+than on the data.
+
 The reported sweep figure is `f[g](π)` against π with the 0.50 line and the
 30–70% band marked, one panel per atlas.
 
@@ -361,8 +446,42 @@ interval spans a branch boundary that fact is stated in the paper.
 
 ## A.g Computing k, per Amendment 3
 
-*k* = number of panel genes that are epithelial-dominant (A.e) in at least two
-tissue-matched atlases (**pending §0.1**).
+*k* = number of panel genes that are epithelial-dominant (A.e) in **at least two
+of the five compartment atlases, of any GI tissue** (Amendment 5).
+
+### Required outputs (Amendment 5)
+
+Three tables accompany *k* and are reported whatever branch obtains:
+
+1. **Per-atlas dominance matrix.** Panel genes × five atlases, each cell holding
+   the dominance indicator and `f[g](0.30)` (the binding value, per Amendment 6),
+   with `NA` where the gene is absent from that atlas's annotation or falls below
+   the 20-count evidence threshold. This is the primary evidence table for *k* and
+   makes every gene's contribution auditable.
+2. **Per-tissue breakdown.** Dominance counts by tissue — pancreatic (2 atlases),
+   liver/biliary (1), colorectal (1), gastric (1) — so a reader can see whether *k*
+   is carried disproportionately by any one tissue, which the pre-Amendment-5
+   tissue-matched reading would have forced.
+3. **Strict all-five count.** Number of panel genes epithelial-dominant in **all
+   five** atlases, reported as `k_all5`. This is the conservative counterpart to
+   *k*: it cannot be inflated by two agreeing atlases and is the number to quote
+   when the claim is that a gene is epithelial regardless of tissue context.
+
+```r
+# dominance: genes x atlases logical matrix, NA-aware
+k          <- sum(rowSums(dominance, na.rm = TRUE) >= 2)
+k_all5     <- sum(rowSums(dominance, na.rm = TRUE) == 5 &
+                  rowSums(is.na(dominance)) == 0)
+k_50       <- sum(rowSums(dominance_50, na.rm = TRUE) >= 2)   # Amendment 6
+per_tissue <- tapply(seq_len(ncol(dominance)), atlas_tissue,
+                     function(j) sum(rowSums(dominance[, j, drop = FALSE],
+                                             na.rm = TRUE) >= 1))
+```
+
+A gene absent from an atlas contributes `NA`, not `FALSE`: absence is missing
+evidence, not evidence against dominance. Consequently a gene present in only two
+atlases can reach *k* on those two, and the dominance matrix's `NA` pattern is
+reported so this is visible rather than hidden inside the count.
 
 Panel size is locked at 152, so Amendment 3's proportional thresholds are fixed
 arithmetic:
@@ -394,25 +513,94 @@ atlas (ESCA, and CHOL for practical purposes) contribute fully here.
 
 ## B.h Score construction
 
+### The FINAL GENE LIST, and when it is fixed
+
+The score is computed on a single **final gene list** used **identically in every
+cohort**. It is not "the panel genes present in that cohort": a gene set that
+varies by cohort makes the per-cohort hazard ratios estimates of different
+quantities, and pooling them in B.l would be pooling non-comparable estimands.
+
+**Sequencing, stated explicitly:**
+
+1. The locked panel is 152 genes (`panel_definition.md`, locked at `ac9c5e0`).
+2. The final list is the locked 152 **minus** the prespecification's exclusion
+   criteria §3.1–§3.3:
+   - **§3.1** — not present in the gene annotation of *every* TCGA cohort in the
+     study. Evaluated from the seven `SummarizedExperiment` objects already on
+     disk; requires no outcome data.
+   - **§3.2** — not detected in the single-cell atlases at ≥ 1% of cells in at
+     least one annotated compartment. **Evaluated from Part A output**, since Part
+     A is what opens the atlases. Genes excluded here are *reported*, not silently
+     dropped (prespecification §3).
+   - **§3.3** — sex-chromosome genes.
+3. The list is **locked and written to disk at the end of Part A**, to
+   `data/panel/final_gene_list.csv`, with one row per locked-panel gene recording
+   its exclusion status and the criterion that excluded it, plus a provenance
+   header giving the Part A commit hash.
+4. **No survival model is fitted before that file exists.** `08_survival.R` reads
+   it and halts if it is absent:
+
+```r
+final <- readr::read_csv("data/panel/final_gene_list.csv", show_col_types = FALSE)
+if (!nrow(final)) stop("HALT: final_gene_list.csv missing or empty. ",
+                       "Part A must complete and lock the list before survival models.")
+FINAL_GENES <- final$gene[is.na(final$excluded_reason)]
+```
+
+Because §3.2 depends on Part A, the final list is **not knowable now** — only its
+derivation is. That is the intended order: the list is fixed by prespecified
+criteria evaluated on compartment and annotation data, never on outcome data.
+
+### Zero-variance genes: handled GLOBALLY, not per cohort
+
+A gene with zero variance within one cohort but not others is **dropped from the
+final list entirely, for all cohorts**, and recorded in
+`final_gene_list.csv` with `excluded_reason = "zero_variance_in_<cohort>"`.
+
+The alternative — dropping it only where it is flat — would reintroduce exactly the
+cohort-varying gene set this section exists to prevent. Global removal keeps one
+estimand across cohorts at the cost of a slightly smaller panel, which is the right
+trade: a gene that is invariant in a cohort contributes nothing to that cohort's
+score anyway (its z-score is undefined), so retaining it elsewhere buys
+comparability-breaking heterogeneity for no signal. The rule is applied uniformly
+and the count of genes lost this way is reported.
+
+Zero variance is evaluated on log2 TPM across each cohort's primary-tumour samples,
+using the tolerance `sd > 1e-8` rather than exact equality.
+
+### Computation
+
 ```r
 # se : SummarizedExperiment for one cohort, STAR-Counts
+# FINAL_GENES : the single final gene list, identical for every cohort (above)
 # 1. primary tumour samples only, one aliquot per patient
 #    (sample_type == "Primary Tumor"; TCGA-CHOL and others carry normals)
 # 2. expression matrix: tpm_unstrand, log2(x + 1)
-# 3. drop genes with zero variance in this cohort
+# 3. subset to FINAL_GENES; halt if any is missing (the list was built to be present)
 # 4. z-score EACH GENE WITHIN COHORT (mean 0, sd 1 across that cohort's patients)
-# 5. score = rowMeans over the 152 panel genes present in the cohort
+# 5. score = mean across the final gene list
 # 6. scale the resulting score to unit SD within cohort
 
-score_cohort <- function(se, panel_genes) {
-  x   <- log2(SummarizedExperiment::assay(se, "tpm_unstrand") + 1)
-  x   <- x[rownames(x) %in% panel_genes, , drop = FALSE]
-  x   <- x[matrixStats::rowSds(x) > 0, , drop = FALSE]
-  z   <- t(scale(t(x)))                       # per-gene z within cohort
-  s   <- colMeans(z, na.rm = TRUE)            # mean across panel
-  as.numeric(scale(s))                        # per-SD scaling
+score_cohort <- function(se, final_genes) {
+  x <- log2(SummarizedExperiment::assay(se, "tpm_unstrand") + 1)
+  missing <- setdiff(final_genes, rownames(x))
+  if (length(missing)) {
+    stop("HALT: final-list genes absent from this cohort: ",
+         paste(missing, collapse = ", "),
+         ". The final list is built to be present in every cohort; ",
+         "do not proceed with a cohort-specific subset.")
+  }
+  x <- x[final_genes, , drop = FALSE]          # same genes, same order, every cohort
+  z <- t(scale(t(x)))                          # per-gene z within cohort
+  s <- colMeans(z)                             # mean across the final list
+  as.numeric(scale(s))                         # per-SD scaling
 }
 ```
+
+Note the halt replaces the earlier `rownames(x) %in% panel_genes` intersection.
+After the final list is locked, a missing gene is a defect in list construction, not
+a condition to be silently absorbed — and `na.rm = TRUE` has been removed from the
+mean for the same reason: with a properly built list there is nothing to drop.
 
 Three points fixed here deliberately, all of which the ESMO score got differently
 and which the discussion will address:
@@ -426,9 +614,12 @@ and which the discussion will address:
   No dichotomisation, no tertiles, no optimised cutpoint — the ESMO abstract's
   unstated cutoff derivation is a known weakness this plan removes rather than
   repeats.
-- **Genes missing from a cohort** are dropped for that cohort with the count
-  reported; the score is the mean over genes present. Cohorts retaining fewer than
-  140 of 152 genes are flagged in the results table.
+- **Gene set identical across cohorts.** Superseding an earlier draft of this
+  bullet, genes are *not* dropped per cohort. The final gene list is fixed once
+  (above) and used unchanged everywhere; annotation absence and zero variance are
+  handled globally at list construction, and a gene missing at score time is a halt,
+  not a silent drop. The size of the final list and every exclusion is reported in
+  `final_gene_list.csv`.
 
 The **stromal subscore** used as a covariate in B.j model 4 is constructed
 identically from panel genes that are *not* epithelial-dominant. If Part A returns
@@ -444,25 +635,60 @@ Endpoints follow the per-cancer-type recommendations of the TCGA Clinical Data
 Resource (Liu et al., *Cell* 2018), which is the point of using the CDR rather
 than raw TCGA clinical files.
 
-**The per-cohort table below is provisional and must be filled from Table 1 /
-Table S1 of the CDR file before registration** — `TCGA-CDR.xlsx` is a manual
-download and is not yet on disk (see §3.2). The general rule the CDR encodes: OS
-is usable where event counts suffice; PFI is preferred for cancer types with long
-survival and few deaths within follow-up; DSS and DFI are secondary.
+**Source, read 2026-07-31:** Liu et al. 2018, **Table 3** ("Recommended Use of
+Survival Endpoints for Each Cancer Type"), obtained from the article
+(PMC6066282; doi 10.1016/j.cell.2018.02.052). The `TCGA-CDR.xlsx` workbook's
+`TCGA-CDR_Notes` sheet gives only the global recommendation — "we recommend the
+use of PFI … and OS … Given the relatively short follow-up time, PFI is preferred
+over OS" — and defers per-type detail to Table 3 of the paper, which is not
+reproduced in the workbook. Table 3 was therefore read from the article. Only the
+endpoint-usability recommendation table was consulted; no patient-level data was
+opened, merged, or scored.
 
-| Cohort | Primary endpoint (provisional) | Basis |
+Table 3 legend: ✓ = recommended for use; × = not recommended; \* = caution, see
+the explanation column; app. = approximate; acc. = accurate.
+
+Table 3 as it applies to the seven cohorts (event counts are the CDR's, at its
+2018 snapshot):
+
+| Cohort | N | OS | PFI | DSS | CDR caution |
+|---|---|---|---|---|---|
+| COAD | 459 | ✓ (102 ev.) | ✓ (123 ev.) | ✓ app. | none |
+| READ | 170 | ✓**\*** (26 ev.) | ✓ (39 ev.) | ✓ app.\* | longer follow-up needed for OS, DSS, DFI; DFI events too few |
+| STAD | 443 | ✓ (172 ev.) | ✓ (143 ev.) | ✓ app. | none |
+| ESCA | 185 | ✓ (77 ev.) | ✓ (87 ev.) | ✓ app. | none |
+| PAAD | 185 | ✓ (100 ev.) | ✓ (110 ev.) | ✓ acc. | none |
+| LIHC | 377 | ✓ (132 ev.) | ✓ (185 ev.) | ✓ app.\* | longer follow-up needed for DSS |
+| CHOL | 45 | ✓ (22 ev.) | ✓ (23 ev.) | ✓ app.\* | **sample size too small for OS, DSS, DFI and PFI** |
+
+Designated primary endpoints:
+
+| Cohort | Primary endpoint | Basis in Table 3 |
 |---|---|---|
-| TCGA-COAD | PFI | CDR notes OS underpowered in colon; recorded in `feasibility_assessment.md` §5 |
-| TCGA-READ | PFI | as COAD; rectal event counts lower still |
-| TCGA-STAD | OS | event count adequate |
-| TCGA-ESCA | OS | event count adequate |
-| TCGA-PAAD | OS | high event rate, short survival |
-| TCGA-LIHC | OS | CDR flags PFI as also usable; OS primary, PFI sensitivity |
-| TCGA-CHOL | OS, **descriptive only** | n = 44 samples; not entered into the meta-analysis as a weighted stratum, reported separately |
+| TCGA-COAD | **PFI** | Both ✓ without caution. PFI chosen per the CDR's global preference for PFI over OS given short follow-up, and because PFI has more events (123 vs 102). |
+| TCGA-READ | **PFI** | OS carries a caution (✓\*, only 26 events, longer follow-up needed); PFI is ✓ unqualified. PFI is the only defensible primary here. |
+| TCGA-STAD | **OS** | ✓ unqualified, 172 events — the largest event count of any endpoint in this cohort. |
+| TCGA-ESCA | **OS** | ✓ unqualified, 77 events. |
+| TCGA-PAAD | **OS** | ✓ unqualified, 100 events; high event rate and short survival make OS well estimated. |
+| TCGA-LIHC | **OS** | ✓ unqualified, 132 events. (PFI has more events, 185, and is reported as the prespecified sensitivity analysis.) |
+| TCGA-CHOL | **OS, descriptive only** | Table 3 marks CHOL ✓ for OS and PFI but states plainly that the sample size is too small for OS, DSS, DFI *and* PFI. CHOL is therefore reported descriptively and does not enter the meta-analysis as a weighted stratum. |
+
+**Correction to an earlier provisional assignment.** A previous draft of this plan
+assigned COAD to PFI on the basis that "the CDR notes OS is underpowered in
+colon", carried forward from `feasibility_assessment.md` §5. Table 3 does **not**
+support that: COAD's OS is ✓ with no caution and 102 events. The COAD primary
+remains PFI, but on the CDR's stated global preference for PFI under short
+follow-up and on event count — not on an OS caution that does not exist. The
+cohort with an actual OS caution is READ.
 
 One endpoint per cohort is designated primary in advance. The alternative endpoint
 is reported as a prespecified sensitivity analysis, never substituted for the
 primary if the primary is null.
+
+Note on event counts: the counts above are the CDR's 2018 snapshot and are used
+here only to justify endpoint choice. The realised event counts in the merged
+analysis set will differ (the expression cohorts are not identical to the CDR's
+clinical cohorts) and are reported per cohort per §3.3.
 
 Follow-up is administratively censored at 10 years for OS and 5 years for PFI, per
 common CDR practice, and the censoring rule is applied identically across cohorts.
@@ -630,6 +856,24 @@ relabelled (Guinney et al. 2015; `prior_art_matrix.csv`).
 Listed because each is a real gap in this plan, not a formality. Nothing below was
 guessed at in the text above; each is marked provisional where it appears.
 
+**Status as of 2026-07-31.** Registration-blocking items: **none remaining.** §3.2
+is resolved (endpoints filled from CDR Table 3) and §3.9 is resolved (Amendments 5
+and 6, plus the dual-count assertion). Every other item is resolvable during Part A
+and is guarded by a halt so that an unresolved one stops the pipeline rather than
+biasing it.
+
+| Item | Status | Blocks registration? | Resolved when |
+|---|---|---|---|
+| 3.1 atlas label strings | open | no | Part A, on atlas open; halt-on-unmapped |
+| 3.2 endpoint recommendations | **RESOLVED** | — | done, CDR Table 3 |
+| 3.3 event counts / EPV | open | no | Part B merge; reporting rule prespecified |
+| 3.4 purity coverage | open | no | Part B merge; ≥80% switch rule prespecified |
+| 3.5 GSE178341 per-cell propagation | open | no | Part A, on file open; two halts |
+| 3.6 GSE183904 malignancy cutoff | open | no | Part A; may require an amendment |
+| 3.7 Peng field names | open | no | Part A, on GSA deposit open |
+| 3.8 whether *k*'s CI spans a branch | open by construction | no | after the sweep; disclosure prespecified |
+| 3.9 §0.1 / §0.2 | **RESOLVED** | — | done, Amendments 5–6 and A.a |
+
 ## 3.1 Exact level-1 label strings for four of five atlases (A.c)
 
 GSE125449's labels are exact — the per-cell table is on disk. GSE183904,
@@ -641,14 +885,23 @@ main text. Mitigation: the halt-on-unmapped-label check in A.c makes an incomple
 map a loud failure rather than a silent miscount. Requires downloading the atlases,
 which this session was instructed not to do.
 
-## 3.2 Per-cohort endpoint recommendations (B.i)
+## 3.2 Per-cohort endpoint recommendations (B.i) — RESOLVED 2026-07-31
 
-`TCGA-CDR.xlsx` is a manual download and is not on disk. The table in B.i is
-provisional: the COAD/READ→PFI assignment carries forward from
-`feasibility_assessment.md`, and the others follow the CDR's general rule, but the
-authoritative per-type recommendation must be read from the file. **This must be
-resolved before registration**, since designating the primary endpoint after seeing
-outcome data would void the preregistration.
+`TCGA-CDR.xlsx` downloaded (GDC PanCanAtlas, 2,945,129 bytes). Its
+`TCGA-CDR_Notes` sheet carries only the global recommendation and defers per-type
+detail to **Table 3** of Liu et al. 2018, which is not reproduced in the workbook;
+Table 3 was read from the article (PMC6066282). B.i is now filled with the actual
+per-cohort recommendation, its event counts, and the CDR's caution flags, with the
+designated primary endpoint and its basis for all seven cohorts.
+
+Only the endpoint-usability recommendation table was consulted. No patient-level
+data was merged with expression, no score was computed, nothing was fitted.
+
+One earlier assignment was corrected in the process: the provisional table justified
+COAD→PFI by "the CDR notes OS underpowered in colon", which Table 3 does not
+support (COAD OS is ✓ unqualified, 102 events). COAD remains PFI on the CDR's stated
+global preference for PFI under short follow-up and on event count. READ is the
+cohort with a genuine OS caution (✓\*, 26 events).
 
 ## 3.3 Event counts, and whether any cohort is too small to model (B.i, B.l)
 
@@ -700,11 +953,17 @@ By construction unknowable before the sweep. The plan commits in advance to
 reporting the fact if it happens, and to using the point estimate for the branch
 decision, so that the disclosure is prespecified rather than discretionary.
 
-## 3.9 Not a computation gap, but unresolved: §0.1 and §0.2
+## 3.9 §0.1 and §0.2 — RESOLVED 2026-07-31
 
-The Amendment 3 tissue-matching ambiguity (§0.1) blocks step A.g and needs a
-decision, not a computation. The GSM-vs-patient distinction (§0.2) is resolved
-within this plan (bootstrap on patients) but the expected-count assertion is
-written on GSMs, and that mismatch of units should be read and confirmed rather
-than discovered later.
+Neither was a computation gap. §0.1 (Amendment 3's tissue-matching requirement) is
+resolved by **Amendment 5**, which redefines replication as two of the five atlases
+of any GI tissue and requires the per-atlas dominance matrix, per-tissue breakdown
+and `k_all5` as compensating reporting. §0.2 (GSM channels vs patients) is resolved
+by asserting both counts — 129 channels and 62 patients — with the bootstrap unit
+fixed at patient and a halt if no patient identifier is present.
+
+**Amendment 6** additionally closed a gap this section had not raised: the full-band
+dominance rule is algebraically equivalent to `A/B > 2.33`, materially stricter than
+dominance at typical purity (`A/B > 1`), and it leans toward the paper's thesis.
+That is now disclosed, and `k_50` is reported alongside primary *k*.
 
