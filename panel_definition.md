@@ -1,8 +1,8 @@
 # STAT3 target panel — prespecification
 
-**Status:** DRAFT — lock before running any compartment analysis.
-**Locked on:** ____________  **By:** ____________
-**Commit hash at lock:** ____________
+**Status:** LOCKED.
+**Locked on:** 2026-07-31  **By:** Sean GP Lee
+**Commit hash at lock:** ac9c5e0 (commit adding Amendments 1–4)
 
 Once locked, this file is not edited. Changes go in an amendments section at the
 bottom, dated, with a reason. That record is what makes the panel defensible.
