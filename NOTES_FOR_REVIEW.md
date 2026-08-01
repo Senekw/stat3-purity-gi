@@ -2,6 +2,79 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 12. BLOCKER — Peng's `raw/X` is log1p-CP10K, not raw counts
+
+**Part A halts at A.a/Peng. This is a data finding, not a code defect, and the
+decision is not mine to make.**
+
+The B4 guard added this session fired on the real file:
+
+```
+HALT [A.a/Peng]: matrix 'raw/X' is not integer-valued and is therefore NOT raw
+counts (139415620 of 139415620 non-zero entries fractional; e.g. 0.6134,
+1.2641, 1.2641)
+```
+
+**Every one** of the 139,415,620 non-zero entries is fractional. Diagnosis:
+
+- `sum(expm1(raw/X))` = **exactly 10000** for the cells checked → the layer is
+  **log1p of CP10K-normalised** expression.
+- The `.h5ad` contains **no other count layer**: `X` is 2,033 × 57,423 (HVG
+  subset, also normalised), there is no `/layers` group, and the only other
+  sparse matrices are the neighbour graph (`obsp/connectivities`, `distances`).
+- `obs/n_counts` and `obs/n_genes` are integer-valued and survive, so per-cell
+  library size is known even though the count matrix is not deposited.
+
+This directly contradicts the A.d premise recorded in analysis_plan.md v1.5 and
+HANDOFF §8: pseudobulk requires summing **raw UMI counts**, and A.d explicitly
+forbids any library-size correction before the `rowSums`. Normalising first
+reweights every compartment to equal RNA content — the error the feasibility
+addendum attributes to the HPA pilot. The Besca release cannot satisfy A.d as
+written.
+
+### Counts are *approximately* recoverable, but this is a reconstruction
+
+`expm1(raw/X) * n_counts / 1e4` returns near-integers and the per-cell sum
+reproduces `n_counts` exactly. Over 400 randomly sampled cells:
+
+| Check | Result |
+|---|---|
+| Max deviation from integer | **2.9e-3** |
+| Cells exceeding 1e-4 tolerance | **63 / 400** |
+| Recovered per-cell sum vs `n_counts` | matches |
+| Minimum recovered count | 1 |
+
+The residual is consistent with float32 storage of the normalised values. So the
+counts are recoverable to rounding, but the result is **inferred, not
+deposited**, and rounding to integer is an analyst decision that changes the
+values A.d sums.
+
+### The options, none of which I should pick unilaterally
+
+1. **Amend A.d to accept a reconstructed count matrix for Peng**, specifying
+   `round(expm1(X) * n_counts / 1e4)`, disclosing that Peng's counts are
+   reconstructed rather than deposited, and stating the direction of bias.
+2. **Obtain genuine counts** from GSA CRA001160 (PRJCA001063) and re-derive the
+   annotation, or find another Besca release carrying a count layer. Note
+   HANDOFF §8 records that raw GSA was rejected *because it carries no
+   annotation* — so this means re-annotating, which is a much larger change and
+   a post-registration researcher degree of freedom.
+3. **Drop Peng**, leaving two atlases. This breaks Amendment 5's "two of three"
+   replication requirement and would collapse `k`, `k_all3` and `k_evalall`
+   into near-identical quantities. Amendments 9 and 10 already removed two
+   atlases; a third removal is a substantial change to the registered design.
+
+**Recommendation: option 1**, because it is the only one that neither
+re-annotates data nor removes an atlas, and the reconstruction error is far
+below the granularity that could change a dominance call. But it is an amendment
+to the estimand's input and must be recorded as such, with the 2.9e-3 figure and
+the 63/400 disclosed.
+
+**Note this guard is doing exactly its job.** Without B4, `read_h5ad_counts`
+would have silently pseudobulked log1p-CP10K values for one of three atlases,
+and no downstream assertion — monotonicity, dominance, the k ordering — could
+have detected it.
+
 ## 11. BLOCKER — GSE125449 Set1 and Set2 have different gene universes
 
 **Part A cannot run until this is decided. It is a prespecification gap, not a
@@ -26,8 +99,13 @@ reconcile their gene universes. The three options are not equivalent:
 | Option | Panel coverage | Note |
 |---|---|---|
 | Intersection (18,367 genes) | **143 / 152** panel, 146 / 155 reporting | Loses 6 panel genes measured in one set |
-| Union with 0-fill | 149 / 155 | **Violates A.d**: absent genes must be `NA`, never 0 |
-| Union with NA-fill | 149 / 155 | Per-gene denominators differ between sets; changes what f(π) means |
+| Union with 0-fill | 149 / 152 panel, 152 / 155 reporting | **Violates A.d**: absent genes must be `NA`, never 0 |
+| Union with NA-fill | 149 / 152 panel, 152 / 155 reporting | Per-gene denominators differ between sets; changes what f(π) means |
+
+(Union counts are genes present in Set1 **or** Set2: 146 + 146 − 143 = 149 of the
+152-gene panel, and 149 + 149 − 146 = 152 of the 155-gene reporting set. An
+earlier revision of this table quoted 149/155 for both union rows, which mixed
+the panel-union count with the reporting denominator.)
 
 The 6 panel genes present in one set but lost to intersection: **CCL7, CRLF2,
 CSF2, IL9R, ITGB3, LEP**. None is an origin-six gene, so SOCS3, MYC and IL6 are

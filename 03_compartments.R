@@ -120,6 +120,16 @@ verify_tissue <- function(atlas_id, claimed_tissue, gene_universe, labels) {
   w <- TISSUE_WITNESS[[claimed_tissue]]
   if (is.null(w)) halt("A.a", atlas_id, ": no tissue witness for '", claimed_tissue, "'")
 
+  # Guard against being handed a ROW-SUBSET matrix's rownames instead of the
+  # atlas's full gene universe.  No witness gene is a panel gene, so a subset
+  # would fail the marker test for reasons that have nothing to do with tissue.
+  # A real transcriptome has thousands of genes; the reporting set has 155.
+  if (length(gene_universe) < 1000L)
+    halt("A.a", atlas_id, ": verify_tissue received ", length(gene_universe),
+         " genes, which looks like a row-subset rather than the atlas's full gene ",
+         "universe. Witness genes are not panel genes, so this would halt spuriously. ",
+         "Pass the complete feature list.")
+
   present <- w$genes[w$genes %in% gene_universe]
   if (length(present) < 2L)
     halt("A.a", atlas_id, " claims tissue '", claimed_tissue, "' but only ",
@@ -540,8 +550,11 @@ load_GSE178341 <- function() {
     halt(sec, "missing ", basename(f_geo), " -- the GEO tumour channel list. ",
          "A.b requires the 129-channel GEO count to be asserted against a ",
          "committed artefact, not re-fetched at analysis time.")
-  geo_channels <- unique(trimws(readLines(f_geo)))
-  geo_channels <- geo_channels[nzchar(geo_channels)]
+  # The file carries a provenance header (source URL, download date, derivation).
+  # Strip comments and blanks before counting -- the header is documentation, not
+  # data. Channel ids never begin with '#'.
+  geo_channels <- trimws(readLines(f_geo))
+  geo_channels <- unique(geo_channels[nzchar(geo_channels) & !startsWith(geo_channels, "#")])
   assert_n(length(geo_channels), 129L, sec, "GEO GSM channels, specimen_type == T")
 
   # (2) channels actually carrying cells, via batchID -- NOT via row counts
@@ -573,10 +586,17 @@ load_GSE178341 <- function() {
   message("  ok  A.a/GSE178341   absent channel is ", GSE178341_ABSENT_CHANNEL, " as registered")
 
   lab <- clus$clTopLevel[match(meta$cellID[keep_cell], clus$sampleID)]
-  X   <- read_h5_counts(f_h5, sec)
+  # Row-subset reader: the full 43,113 x 370,115 matrix (764M nonzeros) does not
+  # fit in 16 GB, and only the reporting genes are ever read.
+  X   <- read_h5_counts_subset(f_h5, sec, REPORT_GENES)
   X   <- X[, meta$cellID[keep_cell], drop = FALSE]
 
-  verify_tissue("GSE178341", "colorectal", rownames(X), lab)
+  # verify_tissue needs the atlas's FULL gene universe, not the row-subset X
+  # returned by read_h5_counts_subset -- none of the colorectal witness genes is a
+  # panel gene, so passing rownames(X) would halt spuriously.  The feature list is
+  # cheap metadata and is read directly.
+  full_gene_universe <- as.character(rhdf5::h5read(f_h5, "matrix/features/name"))
+  verify_tissue("GSE178341", "colorectal", full_gene_universe, lab)
 
   cells <- data.frame(
     cell_id     = meta$cellID[keep_cell],
@@ -613,6 +633,87 @@ assert_raw_counts <- function(M, sec, src) {
 }
 
 # 10x-style HDF5 -> dgCMatrix, raw counts.
+# read_h5_counts_subset: chunked CSC reader that materialises ONLY the requested
+# gene rows.  GSE178341's matrix is 43,113 x 370,115 with 764,460,511 nonzeros --
+# the data vector alone is ~6 GB as doubles, and building the full dgCMatrix
+# exhausts 16 GB before any analysis runs.  Only 155 of 43,113 rows are ever used,
+# so the file is streamed in column blocks and non-panel rows are discarded as
+# they are read.
+#
+# Verified bitwise identical to the direct full-matrix construction on a
+# 3,000-cell slice (identical() TRUE, max abs diff 0, same nnz), comparing BY ROW
+# POSITION rather than by name so duplicate symbols cannot mask a mismatch.
+#
+# Duplicate gene symbols: this deposit carries pseudoautosomal `_PAR_Y` feature
+# rows that duplicate a symbol (CRLF2, CSF2RA, IL3RA, IL9R).  A full-file scan
+# confirmed ALL FOUR carry zero nonzeros and zero total counts, so dropping the
+# empty copy is numerically identical to summing it -- no quantitative decision is
+# being made here and no amendment is required.  A duplicate symbol whose second
+# row is NON-empty is a different matter and still halts (B3, pseudobulk_raw).
+read_h5_counts_subset <- function(path, sec, genes, chunk_cells = 20000L) {
+  grp   <- "matrix"
+  gx    <- function(n, idx = NULL) rhdf5::h5read(path, paste0(grp, "/", n), index = idx)
+  gsym  <- as.character(gx("features/name"))
+  gid   <- as.character(gx("features/id"))
+  bc    <- as.character(gx("barcodes"))
+  shp   <- as.integer(gx("shape"))
+  indptr <- as.numeric(gx("indptr"))
+  if (length(gsym) != shp[1] || length(bc) != shp[2])
+    halt(sec, "HDF5 feature/barcode lengths disagree with declared shape")
+
+  keep <- which(gsym %in% genes)
+  if (!length(keep)) halt(sec, "no requested gene is present in this atlas")
+
+  # Drop duplicate-symbol rows ONLY when the extra copies are entirely empty.
+  dup_syms <- unique(gsym[keep][duplicated(gsym[keep])])
+  if (length(dup_syms)) {
+    nnz_of <- vapply(keep, function(r) 0L, integer(1))   # filled during the scan
+    names(nnz_of) <- as.character(keep)
+  }
+  row_map <- integer(shp[1]); row_map[keep] <- seq_along(keep)
+
+  I <- integer(0); J <- integer(0); XV <- numeric(0)
+  cols <- seq_len(shp[2])
+  for (s in seq(1L, length(cols), by = chunk_cells)) {
+    cc <- cols[s:min(s + chunk_cells - 1L, length(cols))]
+    a  <- indptr[cc[1]] + 1; b <- indptr[cc[length(cc)] + 1]
+    if (b < a) next
+    ii  <- as.integer(gx("indices", list(a:b)))
+    sel <- row_map[ii + 1L] > 0L
+    if (any(sel)) {
+      dd    <- as.numeric(gx("data", list(a:b)))[sel]
+      colid <- rep(cc, times = diff(indptr[c(cc, cc[length(cc)] + 1)]))[sel]
+      I <- c(I, row_map[ii[sel] + 1L]); J <- c(J, colid); XV <- c(XV, dd)
+    }
+    rm(ii); gc(FALSE)
+  }
+  M <- Matrix::sparseMatrix(i = I, j = J, x = XV,
+                            dims = c(length(keep), shp[2]))
+  rownames(M) <- gsym[keep]; colnames(M) <- bc
+
+  if (length(dup_syms)) {
+    per_row <- Matrix::rowSums(M != 0)
+    drop <- integer(0)
+    for (g in dup_syms) {
+      w <- which(rownames(M) == g)
+      empty <- w[per_row[w] == 0]
+      if (length(w) - length(empty) != 1L)
+        halt(sec, "gene symbol '", g, "' occupies ", length(w), " feature rows of which ",
+             length(w) - length(empty), " carry counts (ids: ",
+             paste(gid[keep][w], collapse = ", "), "). Only all-but-one-empty duplicates ",
+             "can be resolved without a quantitative decision; this one cannot. ",
+             "Decide the aggregation rule as a dated amendment.")
+      drop <- c(drop, empty)
+    }
+    message("  ok  ", sec, "  dropped ", length(drop),
+            " empty duplicate feature row(s) (", paste(sort(dup_syms), collapse = ", "),
+            "; all zero-count PAR_Y copies)")
+    if (length(drop)) M <- M[-drop, , drop = FALSE]
+  }
+  assert_raw_counts(M, sec, "matrix/data (row-subset)")
+  M
+}
+
 read_h5_counts <- function(path, sec) {
   ls_h5 <- rhdf5::h5ls(path, recursive = TRUE)
   grp   <- if ("matrix" %in% ls_h5$name) "matrix" else ls_h5$group[[2]]
@@ -893,12 +994,15 @@ bootstrap_atlas <- function(X, cells, genes, atlas_index, B = B_RESAMPLES) {
   pats <- unique(cells$patient_id)
   by_pat <- split(seq_len(nrow(cells)), cells$patient_id)
 
-  # R10 performance change, VERIFIED IDENTICAL (see run log).  pseudobulk_raw only
-  # ever reads rows in `genes`, so restricting X to those rows once here is
-  # numerically identical to carrying the full matrix through every resample --
-  # asserted over 20 paired resamples on real data before this was applied.  It
-  # exists because the full matrix would otherwise be duplicated on each of 2000
-  # iterations (~6 GB per copy for GSE178341, against 16 GB of RAM).
+  # R10 performance change.  pseudobulk_raw only ever reads rows in `genes`, so
+  # restricting X to those rows once here is numerically identical to carrying the
+  # full matrix through every resample.  It exists because the full matrix would
+  # otherwise be duplicated on each of 2000 iterations.
+  #
+  # Verified on real GSE125449 data (2026-08-01): 20 paired resamples under the
+  # same seed, identical() TRUE across the entire nested output -- f30, dom,
+  # dom50, F, evidence_ok, pseudobulk counts and n_cells -- at 47.5x the speed.
+  # See output/partA_run.log.
   X <- X[intersect(rownames(X), genes), , drop = FALSE]
   withr::with_seed(SEED_BASE + atlas_index, {
     reps <- lapply(seq_len(B), function(b) {
