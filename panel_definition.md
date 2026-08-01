@@ -277,3 +277,34 @@ itself flags a problem removes all analyst discretion from the choice.
 Made blind: no score has been computed, no model fitted, and no patient-level
 outcome data merged with expression. Only the Table 3 recommendation matrix was
 consulted.
+
+### Amendment 8 — 2026-08-01
+
+Prespecified model-degradation rule for small cohorts.
+
+Events per variable (EPV) is computed per cohort as (events on that cohort's
+primary endpoint) / (number of estimated parameters in the model being fitted).
+Applied per model, not per cohort, so a cohort may support M2 but not M4:
+
+  EPV >= 10  -> model fitted and entered into the meta-analysis as specified
+  5 <= EPV < 10 -> model fitted, entered into the meta-analysis, and flagged in
+                   the results table as low-EPV; a leave-one-out meta-analysis
+                   omitting every low-EPV cohort is reported as a prespecified
+                   sensitivity
+  EPV < 5    -> model NOT fitted for that cohort; the cohort is reported
+                descriptively and excluded from the meta-analysis for that model
+                only
+
+Cohort-level inclusion, superseding the ad hoc treatment of CHOL in B.i: a cohort
+whose TCGA-CDR Table 3 explanation states the sample size is too small for all
+endpoints is reported descriptively and excluded from the meta-analysis as a
+weighted stratum, regardless of EPV. This currently applies to TCGA-CHOL and is
+stated as a rule so it does not read as a post hoc judgement about one cohort.
+
+Reason: TCGA-READ has 26 OS and 39 PFI events against four covariates in M2 and
+six in M4, so it may not support the full model sequence. Deciding that after
+seeing the fits would reintroduce exactly the discretion Amendment 7 removed.
+
+Made blind: no score computed, no model fitted, no outcome data merged with
+expression. Event counts are the CDR's published 2018 snapshot, read from
+Table 3.

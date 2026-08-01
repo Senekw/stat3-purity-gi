@@ -1,9 +1,9 @@
 # Analysis plan — compartment decomposition of STAT3 activity scores in GI cancers
 
-**Version:** 1.2 (2026-07-31 — applies Amendment 7: B.i re-derived from Table 3
-under a single deterministic rule, COAD changes PFI→OS; adds `k_eval4` to A.g)
-**Prior versions:** 1.1 (Amendments 5–6; final gene list; §0.1/§0.2/§3.2 resolved);
-1.0 (initial)
+**Version:** 1.3 (2026-08-01 — applies Amendment 8: EPV model-degradation rule in
+B.j, per-model pooling in B.l, §3.3 rule resolved)
+**Prior versions:** 1.2 (Amendment 7; B.i re-derived, COAD PFI→OS; `k_eval4`);
+1.1 (Amendments 5–6; final gene list; §0.1/§0.2/§3.2 resolved); 1.0 (initial)
 **Written:** 2026-07-31
 **Author:** Sean GP Lee
 **Panel:** locked 2026-07-31 at commit `ac9c5e0`; 152 genes; see `panel_definition.md`
@@ -714,8 +714,13 @@ CHOL's asterisks are on **DSS**, not OS, and DSS is not a candidate endpoint her
 and PFI" — a caution against the *cohort*, not against a particular endpoint, and
 one that no choice of endpoint can remedy. CHOL therefore keeps OS as its endpoint
 under the rule and remains **descriptive only**, outside the meta-analysis as a
-weighted stratum, per B.l. This is a decision about cohort inclusion, not endpoint
+weighted stratum. This is a decision about cohort inclusion, not endpoint
 designation, and the rule is applied to CHOL unchanged.
+
+Cohort-level exclusion is now itself a rule rather than a judgement about this one
+cohort: **Amendment 8** states that any cohort whose Table 3 explanation declares
+the sample size too small for all endpoints is descriptive-only regardless of EPV.
+CHOL is currently the only cohort meeting it.
 
 ### Change from v1.1
 
@@ -803,6 +808,82 @@ Proportional-hazards assumption tested by `cox.zph` on every model; violations
 reported and, where present, handled by adding a `score × log(time)` interaction as
 a prespecified sensitivity rather than by silently accepting the violation.
 
+### Events per variable and the model-degradation rule (Amendment 8)
+
+**Parameter counts.** Amendment 8's EPV denominator is the number of *estimated
+parameters*, which exceeds the number of covariates because two covariates expand
+into multiple dummies:
+
+| Covariate | Levels | Estimated parameters |
+|---|---|---|
+| `score` | continuous | 1 |
+| `age_at_diagnosis` | continuous | 1 |
+| `sex` | 2 (reference + 1) | 1 |
+| `stage_group` | **3** — I/II, III/IV, **`missing`** | **2** |
+| `purity` | continuous | 1 |
+| `stromal_score` | continuous | 1 |
+
+`stage_group` carries an explicit `missing` level (B.j above retains
+missing-stage patients rather than dropping them), so it contributes **two**
+parameters, not one. Cox models estimate no intercept, so there is no additional
+parameter for it.
+
+| Model | Covariates | **Estimated parameters (EPV denominator)** |
+|---|---|---|
+| M1 | 1 | **1** |
+| M2 | 4 | **5** |
+| M3 | 5 | **6** |
+| M4 | 6 | **7** |
+
+Note this differs from the parenthetical in Amendment 8's reason clause, which
+refers to "four covariates in M2 and six in M4" — correct as a covariate count, but
+the EPV denominator specified in the same amendment is parameters, so M2 uses 5 and
+M4 uses 7. Using parameters is the stricter reading and the one applied. It changes
+no band assignment except CHOL's M2 (EPV 4.40 on parameters vs 5.50 on covariates),
+and CHOL is excluded by the cohort-level rule regardless, so the distinction is
+documented rather than consequential.
+
+**Provisional EPV, from published CDR event counts.** Endpoint per Amendment 7;
+events are the CDR's 2018 snapshot (B.i). **These are provisional pending the
+realised complete-case n**, which will be smaller: the expression cohorts are not
+identical to the CDR's clinical cohorts, and M1–M4 are fitted on a shared
+complete-case set across all model-4 covariates (B.j), so missing purity, stage or
+covariate data will reduce both n and events. Realised EPV is recomputed and
+reported per cohort per model, and the rule is applied to the realised values, not
+to these.
+
+| Cohort | Endpoint | Events | M1 | M2 | M3 | M4 |
+|---|---|---|---|---|---|---|
+| COAD | OS | 102 | 102.0 | 20.4 | 17.0 | 14.6 |
+| READ | **PFI** | 39 | 39.0 | **7.8** | **6.5** | **5.6** |
+| STAD | OS | 172 | 172.0 | 34.4 | 28.7 | 24.6 |
+| ESCA | OS | 77 | 77.0 | 15.4 | 12.8 | 11.0 |
+| PAAD | OS | 100 | 100.0 | 20.0 | 16.7 | 14.3 |
+| LIHC | OS | 132 | 132.0 | 26.4 | 22.0 | 18.9 |
+| CHOL | OS | 22 | 22.0 | 4.4 | 3.7 | 3.1 |
+
+Band assignment under Amendment 8:
+
+| Cohort | M2 | M3 | M4 | Disposition |
+|---|---|---|---|---|
+| COAD, STAD, ESCA, PAAD, LIHC | fitted | fitted | fitted | all EPV ≥ 10; enter the meta-analysis as specified |
+| **READ** | **low-EPV** | **low-EPV** | **low-EPV** | 5 ≤ EPV < 10 throughout: fitted, entered, **flagged**, and omitted in the leave-one-out sensitivity |
+| **CHOL** | — | — | — | **Excluded at cohort level**, not on EPV: Table 3 states the sample size is too small for all endpoints. Descriptive only. (Its EPV would also fall below 5 for M2–M4.) |
+
+Two observations worth recording:
+
+- **READ sits in the low-EPV band on all three adjusted models but is never
+  excluded**, because Amendment 7 designated PFI (39 events) rather than OS (26).
+  Had OS been primary, READ's M3 and M4 EPV would be 4.33 and 3.71 — below 5 — and
+  READ would have been dropped from the meta-analysis for both models. The two
+  amendments interact, and the interaction favours retaining data; recorded so the
+  dependency is visible rather than discovered later.
+- **No cohort is expected to split across models** on these provisional numbers:
+  every cohort falls in the same band for M2, M3 and M4. The per-model machinery in
+  Amendment 8 and B.l is nonetheless implemented, because realised EPV can differ
+  once complete-case attrition is applied — particularly for M3 and M4, which
+  require purity (§3.4).
+
 ## B.k The estimand: attenuation in log-HR
 
 This is the quantity the paper is about, and it is stated as a number with an
@@ -857,6 +938,45 @@ the thesis, not reframed.
   cohort is dropped on the basis of influence.
 - Funnel plots and small-study-effect tests are **not** performed: with six
   cohorts they have no power and would be decorative.
+
+### EPV handling in the pooled estimates (Amendment 8)
+
+**Flagging.** Every per-cohort row in the results table carries its realised EPV
+and a band label (`fitted`, `low-EPV`, `not fitted`). Low-EPV cohorts are included
+in the primary pooled estimate — Amendment 8 flags them, it does not exclude them —
+so the primary meta-analysis is not conditioned on precision, which would bias it.
+
+**Prespecified leave-one-out sensitivity.** A second pooled estimate is reported
+with **every** low-EPV cohort omitted simultaneously (not one at a time — that is
+the separate influence analysis above). On the provisional numbers this means the
+pooled estimate excluding READ. Both estimates are reported side by side for each
+model, and any material divergence is discussed rather than resolved in favour of
+whichever is more congenial.
+
+**Cohorts entering some models but not others.** Because the rule is applied per
+model, the set of contributing cohorts can differ between M1–M4. Handling:
+
+1. **Each model is pooled over exactly the cohorts that fitted it.** No imputation,
+   no carrying a cohort's M2 estimate into the M4 pool.
+2. **The contributing cohort set and its *n* are stated for every pooled estimate**,
+   in the table itself, so no pooled figure appears without its denominator.
+3. **The attenuation estimand (B.k) is pooled only over cohorts that fitted both
+   M2 and M4**, since `attenuation_total = β₂ − β₄` is undefined for a cohort
+   missing either. This set is stated explicitly and may be smaller than the M2
+   pool.
+4. **Where the contributing sets differ between M2 and M4, a matched-cohort
+   comparison is additionally reported**: M2 and M4 both re-pooled over the
+   intersection only. Without this, an apparent attenuation between the M2 and M4
+   pooled estimates could be an artefact of different cohorts contributing to each,
+   rather than of adjustment — which would corrupt the paper's primary claim. This
+   is the single most important consequence of the per-model rule and is required,
+   not optional.
+5. τ² is estimated separately per model rather than shared across the sequence,
+   since the contributing sets may differ.
+
+On the provisional numbers no cohort splits across M2–M4 (B.j), so items 3–4 would
+reduce to the same cohort set. They are specified because realised EPV after
+complete-case attrition may differ, particularly for the purity-requiring models.
 
 ## B.m Null-signature procedure
 
@@ -930,17 +1050,19 @@ relabelled (Guinney et al. 2015; `prior_art_matrix.csv`).
 Listed because each is a real gap in this plan, not a formality. Nothing below was
 guessed at in the text above; each is marked provisional where it appears.
 
-**Status as of 2026-07-31.** Registration-blocking items: **none remaining.** §3.2
-is resolved (endpoints filled from CDR Table 3) and §3.9 is resolved (Amendments 5
-and 6, plus the dual-count assertion). Every other item is resolvable during Part A
-and is guarded by a halt so that an unresolved one stops the pipeline rather than
-biasing it.
+**Status as of 2026-08-01.** Registration-blocking items: **none remaining.** §3.2
+is resolved (endpoints filled from CDR Table 3), §3.9 is resolved (Amendments 5
+and 6, plus the dual-count assertion), and §3.3's *rule* is resolved (Amendment 8),
+leaving only its realised numbers. Every other item is resolvable during Part A or
+the Part B merge and is guarded either by a halt or by a prespecified rule, so that
+an unresolved one stops the pipeline or is handled without discretion rather than
+biasing the result.
 
 | Item | Status | Blocks registration? | Resolved when |
 |---|---|---|---|
 | 3.1 atlas label strings | open | no | Part A, on atlas open; halt-on-unmapped |
 | 3.2 endpoint recommendations | **RESOLVED** | — | done, CDR Table 3 |
-| 3.3 event counts / EPV | open | no | Part B merge; reporting rule prespecified |
+| 3.3 event counts / EPV | **RULE RESOLVED** (Amendment 8); realised numbers open | no | Part B merge; rule leaves no discretion |
 | 3.4 purity coverage | open | no | Part B merge; ≥80% switch rule prespecified |
 | 3.5 GSE178341 per-cell propagation | open | no | Part A, on file open; two halts |
 | 3.6 GSE183904 malignancy cutoff | open | no | Part A; may require an amendment |
@@ -982,14 +1104,29 @@ Two rounds of correction followed, both recorded in B.i rather than absorbed:
    3's caution marks. **COAD is now OS.** READ is the only cohort of the seven whose
    OS mark is cautioned, and so the only one taking the alternative endpoint.
 
-## 3.3 Event counts, and whether any cohort is too small to model (B.i, B.l)
+## 3.3 Event counts, and whether any cohort is too small to model — RESOLVED by Amendment 8
 
-Which cohorts have adequate events for a five-covariate Cox model cannot be known
-without the CDR merge. CHOL is designated descriptive-only on sample count alone
-(n = 44). Whether READ (177 samples) supports model M4 with events-per-variable
-above the conventional 10 is unknown until events are counted. The plan commits to
-reporting events-per-variable per cohort and to flagging any model below 10 rather
-than to a fixed exclusion rule — and that flagging rule is itself prespecified here.
+The **rule** is now prespecified rather than left to a commitment to "report and
+flag": EPV = events on the cohort's primary endpoint ÷ estimated parameters in the
+model, applied **per model**, with EPV ≥ 10 fitted and pooled, 5 ≤ EPV < 10 fitted,
+pooled and flagged with a leave-one-out sensitivity, and EPV < 5 not fitted for that
+cohort and that model. Cohort-level exclusion is likewise a rule now: a cohort whose
+Table 3 explanation states the sample size is too small for all endpoints is
+descriptive-only regardless of EPV, which is what removes the earlier ad hoc
+treatment of CHOL.
+
+Parameter counts are fixed in B.j (M1 = 1, M2 = 5, M3 = 6, M4 = 7, with
+`stage_group` contributing two parameters for its three levels). Provisional EPV
+from the published CDR snapshot is tabulated there, and B.l specifies how differing
+per-model cohort sets are pooled — including the required matched-cohort comparison
+so that attenuation between the M2 and M4 pools cannot be an artefact of different
+cohorts contributing to each.
+
+**What remains** is only the realised numbers: complete-case *n* and events after
+the CDR merge and purity join, which will be smaller than the published snapshot.
+The rule is applied to the realised values. This is a Part B step, not a
+registration blocker, since no discretion is left in how the numbers are used once
+they exist.
 
 ## 3.4 Purity coverage (B.j)
 
