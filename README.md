@@ -4,13 +4,13 @@ Preregistered secondary analysis asking whether a STAT3 transcriptional activity
 score carries prognostic information in gastrointestinal cancers independent of
 tumour purity and stromal content.
 
-**Preregistration:** [DOI — add after OSF submission]
-**Registered at commit:** [hash — add after OSF submission]
+**Preregistration:** [OSF registration tcvgb](https://osf.io/tcvgb/)
+**Registered at commit:** `468c7b4`
 
 ## Status
 
-Panel locked. Analysis plan v1.3 complete. No compartment fraction computed, no
-survival model fitted.
+Panel locked. Analysis plan v1.4 is the post-registration Amendment 9
+implementation. No compartment fraction or survival model has been computed.
 
 ## Key documents
 

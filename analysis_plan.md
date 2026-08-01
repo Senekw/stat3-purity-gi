@@ -1,17 +1,22 @@
 # Analysis plan — compartment decomposition of STAT3 activity scores in GI cancers
 
-**Version:** 1.3 (2026-08-01 — applies Amendment 8: EPV model-degradation rule in
-B.j, per-model pooling in B.l, §3.3 rule resolved)
-**Prior versions:** 1.2 (Amendment 7; B.i re-derived, COAD PFI→OS; `k_eval4`);
+**Version:** 1.5 (2026-08-01 — applies Amendment 10: three-atlas compartment set,
+`k_all3`, `k_evalall`; `k_eval3` removed as collapsed; GSE178341 dual channel
+assertion 129 GEO / 128 in-data)
+**Prior versions:** 1.4 (Amendment 9; four-atlas set, `k_all4`, `k_eval3`);
+1.3 (Amendment 8; EPV model-degradation rule, per-model
+pooling, §3.3 rule resolved); 1.2 (Amendment 7; B.i re-derived, COAD PFI→OS;
+`k_eval4`);
 1.1 (Amendments 5–6; final gene list; §0.1/§0.2/§3.2 resolved); 1.0 (initial)
 **Written:** 2026-07-31
 **Author:** Sean GP Lee
 **Panel:** locked 2026-07-31 at commit `ac9c5e0`; 152 genes; see `panel_definition.md`
-**Status:** this is the document to be preregistered. Nothing in Part B is run
-until this plan is registered.
+**Status:** post-registration Amendment 9 implementation. Part A is being run
+from the committed local files only; the pipeline hard-stops after A.g and Part
+B is not run here.
 
 Companion documents, all binding:
-- `panel_definition.md` — panel prespecification and Amendments 1–4. LOCKED.
+- `panel_definition.md` — panel prespecification and Amendments 1–9. LOCKED.
 - `feasibility_assessment.md` — prior-art review and pilot compartment results.
   Authoritative for all pilot numbers.
 - `output/atlas_malignant_annotation_audit.csv` — how each atlas calls malignancy.
@@ -23,19 +28,22 @@ Companion documents, all binding:
 Both gaps below were open when this plan was first written. Both are now closed;
 the original statements are retained for the record, each with its resolution.
 
-### 0.1 — RESOLVED by Amendment 5
+### 0.1 — RESOLVED by Amendments 5 and 9
 
 Amendment 3's "at least two tissue-matched atlases" is amended to "at least two of
-the five compartment atlases, of any GI tissue". This is option (a) of the three
-set out below. Option (b) — adding the Sci Data 2026 integrated atlas — was
+the four compartment atlases, of any GI tissue". Amendment 9 removes GSE155698
+because its deposited matrices have no cell-type annotation. This retains option
+(a) of the three original options. Option (b) — adding the Sci Data 2026
+integrated atlas — was
 considered and **rejected**: it is an integration of constituent GEO series, and if
 GSE183904 or GSE178341 are among them, the two atlases would share cells, making
 the replication requirement appear satisfied while supplying no independent
 evidence. That is a sharper objection than the one raised in the original text
 below, which noted only that Amendment 4 had made the atlas eligible.
 
-Compensating reporting is required by Amendment 5 and specified in A.g: the
-per-atlas dominance matrix, the per-tissue breakdown, and `k_all5`. The per-tissue
+Compensating reporting is required by Amendments 5, 9 and 10 and specified in A.g:
+the per-atlas dominance matrix, the per-tissue breakdown, `k_all3`,
+and `k_evalall`. The per-tissue
 breakdown is what preserves the information the tissue-matched reading was trying
 to protect.
 
@@ -49,11 +57,17 @@ tissue-matched atlases". Atlas coverage by tissue:
 
 | Tissue | Atlases available | Count |
 |---|---|---|
-| Pancreatic | GSE155698, Peng | **2** |
+| Pancreatic | ~~GSE155698~~ (Amdt 9, no labels), Peng | 1 |
 | Liver / biliary | GSE125449 (covers both iCCA and HCC) | 1 |
 | Colorectal | GSE178341 | 1 |
-| Gastric | GSE183904 | 1 |
+| Gastric | ~~GSE183904~~ (Amdt 10, no labels) | **0** |
 | Oesophageal | none | 0 |
+
+**Superseded by Amendments 9 and 10.** The table above is the registration-time
+state. Two of the five atlases turned out to deposit no cell-type annotation at
+all, so the live set is three — Peng (pancreatic), GSE125449 (liver/biliary),
+GSE178341 (colorectal) — with **one atlas per tissue and no gastric or
+oesophageal coverage**.
 
 Amendment 4 notes that making Steele usable "giv[es] PDAC two tissue-matched
 atlases as Amendment 3 requires" — correct, but only for PDAC. Under a strict
@@ -119,79 +133,110 @@ assert_n <- function(observed, expected, atlas, rule) {
 }
 ```
 
-### GSE155698 — pancreatic (Steele)
+### GSE155698 — pancreatic (Steele) — removed by Amendment 9
 
-Expected surviving samples: **17**.
+This atlas remains on disk for provenance and is not used. Its deposited
+CellRanger matrices contain no cell-type annotation table, metadata file, or
+annotation column, so no prespecified lineage-level harmonisation is possible.
+It is excluded rather than assigned de novo labels.
+
+### GSE183904 — gastric (Kumar) — **REMOVED, Amendment 10**
+
+**No filter. This atlas is not opened.** GSE183904 was removed from the
+compartment set on 2026-08-01 after direct inspection of `GSE183904_RAW.tar`
+showed 40 flat `.csv.gz` members, one per GSM, each a gene × cell count matrix
+(26,572 gene rows, barcode column headers) with **no annotation row, no metadata
+table and no cluster file in any sample**. The GEO series carries no supplementary
+file beyond the RAW tar and its 40 GSM-level equivalents.
+
+The previously specified filter — normalise whitespace, keep
+`Primary Gastric Tissue (Tumor)`, expect 26 — is withdrawn. It was written against
+the sample-level `tissue` characteristic in GEO metadata, which does exist; what
+does not exist is any per-cell label to attach those samples' cells to, so the
+A.c compartment map cannot be built for this atlas at all.
+
+The script asserts the removal rather than silently omitting it:
 
 ```r
-# Series is 41 GSMs: 17 PDAC_TISSUE, 3 AdjNorm_TISSUE, 17 PDAC_PBMC, 4 Healthy_PBMC.
-keep <- grepl("^PDAC_TISSUE", sample_title)
+stopifnot(!"GSE183904" %in% atlases$atlas)   # Amendment 10
 ```
 
-**A filter keying on "PDAC" is WRONG and must not be used.** `grepl("PDAC", ...)`
-matches the 17 `PDAC_PBMC` samples as well. Peripheral blood contains essentially
-no epithelium, so including it would drive the epithelial fraction toward zero and
-manufacture this study's own conclusion rather than test it. This is the single
-most consequential filter in the plan.
-
-Assertions: 17 kept; zero kept matching `PBMC`; zero kept matching `AdjNorm`;
-`source_name` of all survivors equals `PANCREAS TUMOR`.
-
-### GSE183904 — gastric (Kumar)
-
-Expected surviving samples: **26**.
-
-```r
-# Labels are not clean: one GSM reads "Peritonium tissue  (Tumor)" (double space).
-tissue_norm <- gsub("\\s+", " ", trimws(tissue_field))
-keep <- tissue_norm == "Primary Gastric Tissue (Tumor)"
-```
-
-Whitespace normalisation is mandatory and must precede matching. Excluded: 10
-`Primary Gastric Tissue (Normal)`, 3 `Peritonium tissue (Tumor)`, 1
-`Peritonium tissue (Normal)` — peritoneal samples are excluded per Amendment 4
-even when they are tumour.
-
-Assertions: 26 kept; 40 GSMs seen in total; every one of the 40 normalised labels
-matches one of the four known strings, else halt (an unrecognised label means the
-series changed).
+**Gastric coverage is lost and reported as a limitation.** No substitute atlas is
+selected — see Amendment 10's rejection of the Sci Data 2026 integrated atlas.
 
 ### GSE178341 — colorectal (Pelka)
 
-Expected: **129 GSM channels** with `specimen_type == "T"` (52 are `N`), resolving
-to **62 unique patients** (28 MMRp + 34 MMRd, per Pelka et al. 2021). Both counts
-are asserted; a mismatch in either halts the script.
+Expected, **three counts, all asserted** (Amendment 10, from direct inspection):
+
+| Quantity | Expected | Source |
+|---|---|---|
+| GEO GSM channels with `specimen_type == "T"` | **129** | GEO series metadata (52 are `N`) |
+| Channels with ≥1 cell in the deposited matrices | **128** | distinct `batchID` in the cluster file over tumour cells |
+| Unique patients | **62** | distinct `PID` over tumour cells (34 MMRd + 28 MMRp, per Pelka et al. 2021) |
+
+**129 ≠ 128 is expected, not an error.** Channel `C144_T_1_1_12_c1_v2`
+(`GSM5388094`, the `CD45pCD3nCD19nMACS` sorted fraction) is present in GEO but
+contributes **zero cells** to the deposited matrices, consistent with a QC failure
+during processing. Patient C144 retains two other tumour channels
+(`C144_T_1_1_0_c1_v2` unsorted, `C144_T_1_1_1_c1_v2` CD45pMACS) and is not lost.
+The identity of the missing channel is asserted, not just the count, so that a
+*different* channel dropping in a future release halts rather than passing
+silently on an unchanged total.
 
 ```r
-keep_gsm <- specimen_type == "T"
+keep_gsm  <- specimen_type == "T"                       # GEO metadata
+keep_cell <- trimws(cell_meta$SPECIMEN_TYPE) == "T"     # per-cell metatable
 
 # Per-cell propagation must be verified on open, not assumed:
-if (!any(c("specimen_type","channel","sample_type") %in% colnames(cell_meta))) {
+if (!"SPECIMEN_TYPE" %in% colnames(cell_meta)) {
   stop("HALT [GSE178341]: no tumour/normal column in per-cell metatable. ",
        "Join via GSM before filtering; do not proceed.")
 }
-if (!any(c("patient","patient_id","PatientTypeID","donor") %in% colnames(cell_meta))) {
-  stop("HALT [GSE178341]: no patient identifier in per-cell metatable. ",
-       "The A.f bootstrap unit is patient; do not proceed without it.")
+# PID is the patient identifier. PatientTypeID is NOT: it is patient x specimen
+# and takes 64 distinct values over tumour cells, because C130 and C171 each
+# contributed two spatially distinct tumour specimens (_TA and _TB).
+if (!"PID" %in% colnames(cell_meta)) {
+  stop("HALT [GSE178341]: no PID column in per-cell metatable. ",
+       "The A.f bootstrap unit is patient; PatientTypeID is not a substitute.")
 }
 
-assert_n(n_distinct(gsm_id[keep_gsm]),     129, "GSE178341", "specimen_type == T (GSM channels)")
-assert_n(n_distinct(patient_id[keep_cell]), 62, "GSE178341", "specimen_type == T (unique patients)")
+in_data_channels <- unique(cluster$batchID[match(cell_meta$cellID[keep_cell],
+                                                 cluster$sampleID)])
+in_data_channels <- in_data_channels[!is.na(in_data_channels)]
+
+assert_n(n_distinct(gsm_id[keep_gsm]),          129, "GSE178341", "GEO GSM channels, T")
+assert_n(length(in_data_channels),              128, "GSE178341", "channels with cells, T")
+assert_n(n_distinct(cell_meta$PID[keep_cell]),   62, "GSE178341", "unique patients, T")
+
+# assert WHICH channel is missing, not merely how many
+missing_ch <- setdiff(geo_channel_ids[keep_gsm], in_data_channels)
+if (!identical(missing_ch, "C144_T_1_1_12_c1_v2"))
+  stop("HALT [GSE178341]: expected exactly C144_T_1_1_12_c1_v2 to be absent from ",
+       "the matrices; got: ", paste(missing_ch, collapse = ", "))
 ```
 
-Asserting both counts is the point: 129 and 62 are counts of *different things*,
-and only the second is the independent unit. The same specimen appears under
-multiple `processing_type` values (`unosrted` [sic], `LiveMACS`), so channels
-outnumber patients roughly two to one. If a future release of the series changes
-either number, the script must stop rather than silently switch the effective
-sample size or the bootstrap's independence assumption.
+Asserting all three is the point: 129, 128 and 62 count *different things*, and
+only the third is the independent unit. The same specimen appears under multiple
+`processing_type` values (`unosrted` [sic], `CD45pMACS`, `CD45pCD3nCD19nMACS`), so
+channels outnumber patients roughly two to one. If a future release changes any of
+the three, the script must stop rather than silently switch the effective sample
+size or the bootstrap's independence assumption.
 
-The published per-cell file is `GSE178341_crc10x_full_c295v4_submit_metatables.csv.gz`.
-If it carries no specimen column, the GSM-level designation must be joined onto
-cells through the sample identifier before filtering — and the script halts rather
-than guessing.
+**`PatientTypeID` is not a patient identifier — do not use it.** Over tumour cells
+it takes **64** distinct values, because patients C130 and C171 each contributed
+two spatially distinct tumour specimens (`C130_TA`/`C130_TB`, `C171_TA`/`C171_TB`);
+60 single-specimen patients + 4 = 64. Using it as the bootstrap unit would resample
+64 pseudo-patients as independent, splitting C130 and C171 across draws and
+understating the interval. The correct field is `PID` (62). This is the concrete
+form of the §0.2 units warning, and it is exactly the error that produced a
+spurious 64-patient halt during the first Part A attempt.
 
-**Bootstrap unit remains patient** (A.f), not GSM and not cell.
+The published per-cell file is `GSE178341_crc10x_full_c295v4_submit_metatables.csv.gz`
+and the label file is `GSE178341_crc10x_full_c295v4_submit_cluster.csv.gz`
+(`clTopLevel` carries the lineage labels).
+
+**Bootstrap unit remains patient — `PID`** (A.f), not `PatientTypeID`, not GSM,
+not cell.
 
 ### GSE125449 — liver, iCCA + HCC (Ma)
 
@@ -216,32 +261,32 @@ keep <- sample_group == "tumour"   # exact field name to be confirmed on open
 
 ## A.b Peng source decision
 
-**Decision: use the primary deposit, GSA `CRA001160` / project `PRJCA001063`
-(Genome Sequence Archive, BIG Data Center).**
+**Decision: use the Besca-reprocessed Zenodo mirror, not raw GSA
+`CRA001160` / `PRJCA001063`.** The on-disk source is
+`StdWf1_PRJCA001063_CRC_besca2.annotated.h5ad`, Zenodo DOI
+`10.5281/zenodo.3969339`, md5
+`41fb7b9f27b7bb613ff979baaac5272f`. It is a Besca-derived reprocessing of BIGD
+`PRJCA001063`, not an annotation produced by Peng et al. The verified release
+contains pancreatic ductal, acinar, stellate and islet labels, 57,423 cells,
+35 patients, 24 tumour and 11 normal samples. The `CRC` token in the filename
+is a workflow artifact.
 
-Reasons. It is the accession named in the paper's own data-availability
-statement, so the provenance chain is the authors' to the reader with no
-intermediary. A Zenodo mirror, if one exists, is a third-party re-upload whose
-processing (alignment version, filtering, cell calling, any re-annotation) is not
-documented in the paper and would have to be characterised and reported
-separately — added work and an added reviewer question, for no analytical gain.
+Use Peng's `celltype1` field for the compartment map. `celltype0` collapses
+myeloid and lymphoid into `hematopoietic` and cannot map onto the six
+prespecified compartments.
 
-If GSA access proves impractical (registration or download constraints) and a
-mirror is used instead, this plan requires recording, in
-`data/cache/provenance.txt`: the mirror URL and DOI, its upload date and
-depositor, the stated relationship to CRA001160, file-level checksums, and any
-processing the mirror applied. That record is a precondition of use, not a
-follow-up.
-
-Note the brief has referred to this as "the Peng Zenodo release"; the primary
-deposit is GSA, and the plan follows the primary deposit.
+Raw GSA `CRA001160` was rejected in favour of this processed mirror because the
+mirror is the available annotated release used by the locked local workflow;
+the choice is disclosed so the processing and annotation provenance is not
+mistaken for the authors' own annotation. `GSE155698_RAW.tar` remains on disk
+but is not used, per Amendment 9.
 
 ## A.c Compartment harmonisation map
 
 Target compartments, per Amendment 4: `epithelial`, `fibroblast_stromal`,
 `myeloid`, `lymphoid`, `endothelial`, `other`.
 
-Complete and verified for GSE125449 (label strings read from the downloaded
+Complete and verified for GSE125449 (label strings read from the committed
 per-cell table):
 
 | Atlas | Source label | Target compartment |
@@ -262,7 +307,7 @@ its own compartment, so `TEC` moves. Pilot stromal fractions are therefore not
 directly comparable to Part A output, and the plan will report both groupings for
 GSE125449 so the pilot remains auditable.
 
-For the remaining four atlases the mapping rule is fixed now, but the exact source
+For the remaining three atlases the mapping rule is fixed now, but the exact source
 label strings must be read from each file on open (see §3.1) and the map completed
 before any pseudobulk is computed. The rule:
 
@@ -446,72 +491,91 @@ A.g rule, giving a distribution and a 95% interval for *k* itself. The branch
 decision uses the point estimate; the interval is reported alongside, and if the
 interval spans a branch boundary that fact is stated in the paper.
 
-## A.g Computing k, per Amendment 3
+## A.g Computing k, per Amendments 3, 9 and 10
 
 *k* = number of panel genes that are epithelial-dominant (A.e) in **at least two
-of the five compartment atlases, of any GI tissue** (Amendment 5).
+of the three compartment atlases, of any GI tissue** (Amendments 5, 9 and 10).
+
+Note the escalation Amendment 10 discloses: the replication bar has risen from two
+of five (40%) through two of four (50%) to **two of three (67%)** without ever
+being deliberately restated as a proportion. "At least two" is the only coherent
+requirement at three atlases, so this is unavoidable, but it shrinks *k* and makes
+the descriptive-only branch more likely — the branch most consistent with the
+study's hypothesis. It is disclosed, not absorbed.
 
 ### Required outputs (Amendment 5)
 
 Three tables accompany *k* and are reported whatever branch obtains:
 
-1. **Per-atlas dominance matrix.** Panel genes × five atlases, each cell holding
-   the dominance indicator and `f[g](0.30)` (the binding value, per Amendment 6),
-   with `NA` where the gene is absent from that atlas's annotation or falls below
-   the 20-count evidence threshold. This is the primary evidence table for *k* and
-   makes every gene's contribution auditable.
-2. **Per-tissue breakdown.** Dominance counts by tissue — pancreatic (2 atlases),
-   liver/biliary (1), colorectal (1), gastric (1) — so a reader can see whether *k*
-   is carried disproportionately by any one tissue, which the pre-Amendment-5
-   tissue-matched reading would have forced.
-3. **Strict all-five count.** Number of panel genes epithelial-dominant in **all
-   five** atlases, reported as `k_all5`. This is the conservative counterpart to
-   *k*: it cannot be inflated by two agreeing atlases and is the number to quote
+1. **Per-atlas dominance matrix.** Panel genes × **three** atlases, each cell
+   holding the dominance indicator and `f[g](0.30)` (the binding value, per
+   Amendment 6), with `NA` where the gene is absent from that atlas's annotation or
+   falls below the 20-count evidence threshold. This is the primary evidence table
+   for *k* and makes every gene's contribution auditable.
+2. **Per-tissue breakdown.** Dominance counts by tissue — liver/biliary
+   (GSE125449), colorectal (GSE178341), pancreatic (Peng), one atlas each — so a
+   reader can see whether *k* is carried disproportionately by any one tissue.
+   With one atlas per tissue, the two-atlas replication requirement is now
+   necessarily satisfied across **two different tissues** (Amendment 10), which is
+   a stronger generality claim than two atlases of one tissue would have been.
+   **Gastric and oesophageal have no atlas**; that gap is reported as a limitation,
+   not imputed.
+3. **Strict all-three count.** Number of panel genes epithelial-dominant in **all
+   three** atlases, reported as `k_all3`. This is the conservative counterpart to
+   *k*: it cannot be carried by two agreeing atlases and is the number to quote
    when the claim is that a gene is epithelial regardless of tissue context.
 
-4. **`k_eval4`: *k* restricted to well-evaluated genes.** *k* recomputed over only
-   those panel genes **evaluable in at least four of the five atlases** — that is,
-   with a non-`NA` dominance call in ≥ 4 atlases. Reported as an additional
-   sensitivity alongside *k*, `k_50` and `k_all5`.
+4. **`k_evalall`: *k* restricted to fully evaluated genes.** *k* recomputed over
+   panel genes evaluable in **all three** atlases. Reported alongside *k*, `k_50`
+   and `k_all3`; it does not gate the branch.
 
-   This addresses a specific weakness of *k*: because absence encodes as `NA`
-   rather than `FALSE`, a gene evaluable in only two atlases can reach *k* on those
-   two alone, satisfying the replication requirement on the thinnest possible
-   evidence. `k_eval4` asks what *k* would be if only genes with broad evaluability
-   could contribute. Note it is not simply a subset relation on the count — a gene
-   can be in *k* but not `k_eval4` (dominant in 2 of 2 evaluable) and the reverse
-   cannot happen, so `k_eval4 ≤ k` always, and the gap between them measures how
-   much of *k* rests on sparsely evaluated genes.
+   At three atlases the former `k_eval3` (evaluable in ≥3 of 4) and `k_evalall`
+   (evaluable in all) **collapse to the same quantity**, since "≥3 of 3" and "all
+   of 3" are identical conditions. Per Amendment 10 the two are replaced by the
+   single `k_evalall`; `k_eval3` no longer exists and must not appear in output.
+
+   The quantity addresses a specific weakness of *k*: because absence encodes as
+   `NA` rather than `FALSE`, a gene evaluable in only two atlases can reach *k* on
+   those two alone, satisfying the replication requirement on the thinnest possible
+   evidence. `k_evalall` shows the consequence of requiring full evaluability.
 
 ```r
-# dominance: genes x atlases logical matrix, NA-aware
+# dominance: genes x 3 atlases logical matrix, NA-aware
+stopifnot(ncol(dominance) == 3L)
 n_dom  <- rowSums(dominance, na.rm = TRUE)      # atlases calling dominance
 n_eval <- rowSums(!is.na(dominance))            # atlases where the gene is evaluable
 
-k          <- sum(n_dom >= 2)                              # primary (Amendment 5)
-k_all5     <- sum(n_dom == 5 & n_eval == 5)                # strict
-k_eval4    <- sum(n_dom >= 2 & n_eval >= 4)                # evaluability sensitivity
+k          <- sum(n_dom >= 2)                               # primary (Amendment 5/10)
+k_all3     <- sum(n_dom == 3 & n_eval == 3)                 # strict dominance
+k_evalall  <- sum(n_dom >= 2 & n_eval == 3)                 # strict evaluability
 k_50       <- sum(rowSums(dominance_50, na.rm = TRUE) >= 2) # Amendment 6
 per_tissue <- tapply(seq_len(ncol(dominance)), atlas_tissue,
                      function(j) sum(rowSums(dominance[, j, drop = FALSE],
                                              na.rm = TRUE) >= 1))
 
-stopifnot(k_eval4 <= k, k_all5 <= k_eval4)     # ordering must hold by construction
+stopifnot(k_all3 <= k_evalall, k_evalall <= k)
 ```
 
 The evaluability distribution itself is reported: a table of how many panel genes
-are evaluable in 5, 4, 3, 2, 1 and 0 atlases. If most genes are evaluable in all
-five, `k_eval4` ≈ *k* and the sensitivity is uninformative — which is itself worth
-stating.
+are evaluable in 3, 2, 1 and 0 atlases.
 
-**The branch decision uses primary *k*** (A.g table). `k_50`, `k_all5` and
-`k_eval4` are reported alongside with bootstrap intervals and do not override it.
+**Ordering verified exhaustively over all 3³ = 27 evidence patterns** (2026-08-01,
+Amendment 10): zero violations of `k_all3 ≤ k_evalall ≤ k`. The three quantities
+remain genuinely distinct rather than collapsing — of the 27 patterns, 1 satisfies
+all three conditions, 3 satisfy `k` and `k_evalall` but not `k_all3`, 3 satisfy `k`
+alone, and 20 satisfy none. The script re-runs this verification before using any
+observed dominance matrix.
+
+**The branch decision uses primary *k*** (A.g table). `k_50`, `k_all3` and
+`k_evalall` are reported alongside with bootstrap intervals and do not override it.
 
 A gene absent from an atlas contributes `NA`, not `FALSE`: absence is missing
 evidence, not evidence against dominance. Consequently a gene present in only two
 atlases can reach *k* on those two, and the dominance matrix's `NA` pattern is
-reported so this is visible rather than hidden inside the count — with `k_eval4`
-quantifying the consequence.
+reported so this is visible rather than hidden inside the count — with `k_evalall`
+quantifying the consequence. Note that at three atlases a gene evaluable in exactly
+two and dominant in both enters *k* but not `k_evalall`, so the gap between them is
+now the entire "thin evidence" contribution.
 
 Panel size is locked at 152, so Amendment 3's proportional thresholds are fixed
 arithmetic:
@@ -1065,21 +1129,25 @@ biasing the result.
 | 3.3 event counts / EPV | **RULE RESOLVED** (Amendment 8); realised numbers open | no | Part B merge; rule leaves no discretion |
 | 3.4 purity coverage | open | no | Part B merge; ≥80% switch rule prespecified |
 | 3.5 GSE178341 per-cell propagation | open | no | Part A, on file open; two halts |
-| 3.6 GSE183904 malignancy cutoff | open | no | Part A; may require an amendment |
-| 3.7 Peng field names | open | no | Part A, on GSA deposit open |
+| 3.6 GSE183904 malignancy cutoff | **MOOT** (Amdt 10, atlas removed) | no | closed by removal |
+| 3.7 Peng field names | **RESOLVED** | — | done, read from h5ad `obs` 2026-08-01 |
 | 3.8 whether *k*'s CI spans a branch | open by construction | no | after the sweep; disclosure prespecified |
 | 3.9 §0.1 / §0.2 | **RESOLVED** | — | done, Amendments 5–6 and A.a |
 
-## 3.1 Exact level-1 label strings for four of five atlases (A.c)
+## 3.1 Exact level-1 label strings for two of three atlases (A.c)
 
-GSE125449's labels are exact — the per-cell table is on disk. GSE183904,
-GSE178341, GSE155698 and Peng have their **mapping rule** fixed in A.c, but the
+GSE125449's labels are exact — the per-cell table is on disk. Peng's are now also
+known (`celltype0`: epithelial cell, fibroblast, hematopoietic cell, endothelial
+cell, neural cell — read on load 2026-08-01), and GSE178341's lineage column is
+`clTopLevel` in the cluster file. GSE183904 is no longer in the set (Amendment 10).
+The remaining atlases have their **mapping rule** fixed in A.c, but the
 literal source strings must be read from each file. The published texts give
 lineage vocabulary, not the annotation column's exact values, and Kumar's 34
 lineage states and Pelka's 88 subsets are not enumerated verbatim in either paper's
 main text. Mitigation: the halt-on-unmapped-label check in A.c makes an incomplete
-map a loud failure rather than a silent miscount. Requires downloading the atlases,
-which this session was instructed not to do.
+map a loud failure rather than a silent miscount. The required files are expected
+under `data/`; the script halts if an annotation table or required field is absent
+rather than downloading data or assigning labels de novo.
 
 ## 3.2 Per-cohort endpoint recommendations (B.i) — RESOLVED 2026-07-31
 
@@ -1144,24 +1212,46 @@ the GSM-level designation must be joined on, is unresolved. Handled by the halt
 check rather than an assumption. Related: the patient identifier needed for the
 A.f bootstrap unit must be confirmed present in the same file.
 
-## 3.6 GSE183904 per-cell malignancy cutoff (Amendment 4 sensitivity analysis)
+## 3.6 GSE183904 per-cell malignancy cutoff — MOOT, Amendment 10
 
-Amendment 4's sensitivity analysis recomputes the fraction restricted to malignant
-cells "where the source atlas supplies CNV-based per-cell malignancy calls
-(GSE125449, GSE183904)". Kumar's main text reports inferCNV scores compared between
-epithelial and macrophage cells but does not state a per-cell malignancy threshold.
-Whether GSE183904 ships per-cell malignant calls, or only a CNV score requiring a
-threshold this project would have to choose, is unknown until the file is opened.
-If the latter, the GSE183904 arm of the sensitivity analysis cannot proceed on the
-atlas's own definition, and that limits the sensitivity analysis to GSE125449 —
-which should be recorded as an amendment rather than absorbed silently.
+The question was whether GSE183904 ships per-cell malignant calls or only a CNV
+score requiring a threshold this project would have to choose. **Neither: it ships
+no per-cell annotation of any kind**, and the atlas is removed from the set
+(Amendment 10). The gap is closed by removal, not by resolution.
 
-## 3.7 Peng field names and sample-level tumour flag (A.a, A.b)
+Consequence for Amendment 4's malignant-cell sensitivity analysis, which was
+specified over "(GSE125449, GSE183904)": it now rests on **GSE125449 alone**, the
+only remaining atlas supplying CNV-based per-cell malignancy calls (Ma's inferCNV
+rule: CNV score > 80th percentile AND correlation > 0.4). Peng's Besca-derived
+annotation and GSE178341's `clTopLevel` are lineage labels without malignancy
+calls. The sensitivity analysis is therefore single-atlas and is reported as such;
+it cannot speak to cross-atlas consistency of the malignant-restricted fraction.
 
-The exact metadata field distinguishing the 24 tumours from the 11 control
-pancreases is written as `sample_group == "tumour"` pending confirmation from the
-GSA deposit's own annotation. Also unverified: whether a Zenodo mirror exists at
-all, which A.b requires characterising *if* it is used.
+## 3.7 Peng field names and sample-level tumour flag — RESOLVED 2026-08-01
+
+Read directly from the Besca-reprocessed release on load (file manifest and
+`obs` columns only; no expression values):
+
+- **Tumour/normal field:** `obs/CONDITION` (duplicated as `obs/Type`), values `T`
+  (41,964 cells) and `N` (15,459). The provisional `sample_group == "tumour"` is
+  replaced by `CONDITION == "T"`.
+- **Patient field:** `obs/Patient`, 35 levels, prefixed `T`/`N` — **24 tumour and
+  11 normal**, exactly the A.a expectation.
+- **Lineage field:** `obs/celltype0`, five levels — epithelial cell, fibroblast,
+  hematopoietic cell, endothelial cell, neural cell.
+- **Total cells:** 57,423.
+
+The mirror question is also settled: the release used is **Zenodo
+10.5281/zenodo.3969339**, file `StdWf1_PRJCA001063_CRC_besca2.annotated.h5ad`,
+**md5 `41fb7b9f27b7bb613ff979baaac5272f` verified on disk**, reprocessed from BIGD
+PRJCA001063. Annotations are **Besca-derived, not the authors' own** — recorded in
+A.b. Raw GSA CRA001160 was rejected in favour of this processed mirror because the
+raw deposit carries no cell-type annotation.
+
+The `CRC` in the filename is a workflow naming artifact; the dataset is pancreatic.
+Verified on load — the vocabulary is pancreatic ductal / acinar / stellate /
+enteroendocrine with no colorectal type at any level — and the script halts if a
+colorectal vocabulary is seen instead.
 
 ## 3.8 Whether Part A's k interval spans a branch boundary (A.f, A.g)
 
@@ -1172,14 +1262,16 @@ decision, so that the disclosure is prespecified rather than discretionary.
 ## 3.9 §0.1 and §0.2 — RESOLVED 2026-07-31
 
 Neither was a computation gap. §0.1 (Amendment 3's tissue-matching requirement) is
-resolved by **Amendment 5**, which redefines replication as two of the five atlases
-of any GI tissue and requires the per-atlas dominance matrix, per-tissue breakdown
-and `k_all5` as compensating reporting. §0.2 (GSM channels vs patients) is resolved
-by asserting both counts — 129 channels and 62 patients — with the bootstrap unit
-fixed at patient and a halt if no patient identifier is present.
+resolved by **Amendments 5, 9 and 10**, which define replication as two of the
+three atlases of any GI tissue and require the per-atlas dominance matrix,
+per-tissue breakdown, `k_all3` and `k_evalall` as compensating reporting. §0.2
+(GSM channels vs patients) is resolved by asserting **three** counts — 129 GEO
+channels, 128 channels carrying cells, and 62 patients (Amendment 10) — with the
+bootstrap unit fixed at patient via `PID`, an assertion on the identity of the one
+absent channel, and a halt if `PID` is not present. `PatientTypeID` is explicitly
+excluded as a patient identifier: it yields 64, not 62.
 
 **Amendment 6** additionally closed a gap this section had not raised: the full-band
 dominance rule is algebraically equivalent to `A/B > 2.33`, materially stricter than
 dominance at typical purity (`A/B > 1`), and it leans toward the paper's thesis.
 That is now disclosed, and `k_50` is reported alongside primary *k*.
-

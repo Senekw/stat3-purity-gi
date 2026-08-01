@@ -308,3 +308,129 @@ seeing the fits would reintroduce exactly the discretion Amendment 7 removed.
 Made blind: no score computed, no model fitted, no outcome data merged with
 expression. Event counts are the CDR's published 2018 snapshot, read from
 Table 3.
+
+### Amendment 9 — 2026-08-01
+
+GSE155698 (Steele et al., pancreatic) is removed from the compartment atlas set.
+The set is reduced from five to four: GSE125449 (liver/biliary), GSE178341
+(colorectal), GSE183904 (gastric), and Peng (pancreatic).
+
+Reason: Amendment 4 states that lineage-level epithelial labels "are available
+and comparably defined in all five" atlases and that GSE155698 "becomes usable at
+lineage level." That is factually incorrect for this atlas. GSE155698_RAW.tar
+contains 41 per-sample archives holding only CellRanger output (barcodes,
+features, matrix), with no cell-type annotation table, no metadata file, and no
+annotation column in any sample; the four samples carrying extra files carry
+only format variants of the same matrices. The GEO series has no other
+supplementary file. The annotations exist in Steele et al.'s publication but
+were not deposited.
+
+Deriving cell-type labels de novo was rejected: it would make pancreatic the only
+tissue whose compartment labels are this project's own construction, on data of
+different platform and depth from the other atlases, reintroducing precisely the
+cross-atlas method asymmetry Amendment 4 was written to eliminate. Substituting
+a different pancreatic atlas was also rejected, since selecting a replacement
+dataset after registration is a researcher degree of freedom the amendment
+record cannot neutralise.
+
+Consequent restatements:
+- Amendment 5's replication requirement becomes "in at least two of the four
+  compartment atlases, of any GI tissue."
+- k_all5 becomes k_all4 (dominance in all four atlases).
+- k_eval4 is replaced by TWO reported quantities, because no single threshold on
+  four atlases is the exact analogue of "at least four of five" (80%):
+  k_eval3 = k restricted to genes evaluable in at least three of four atlases;
+  k_evalall = k restricted to genes evaluable in all four atlases. Both are
+  reported alongside k. k_evalall is the stricter analogue and preserves the
+  original's intent; k_eval3 is retained because k_evalall may prove small
+  enough to be uninformative. Neither gates the branch decision, which uses
+  primary k. Reporting both rather than choosing one avoids a threshold selected
+  after the atlas set changed.
+- Amendment 4's sentence "GSE155698 (Steele) becomes usable at lineage level,
+  giving PDAC two tissue-matched atlases as Amendment 3 requires" is withdrawn
+  as factually incorrect.
+
+Each of the four tissues now has exactly one atlas. The two-atlas replication
+requirement is therefore necessarily satisfied across two different tissues,
+which is a stronger generality claim than two atlases of one tissue would have
+been.
+
+DIRECTION OF BIAS — this amendment is NOT conservative. Removing an atlas can
+only reduce k or leave it unchanged: a gene dominant in exactly two atlases, one
+of which was GSE155698, now falls to one and is no longer counted. A smaller k
+makes the descriptive-only branch more likely, and that is the branch most
+consistent with this study's hypothesis. This is the one amendment in the record
+that favours the hypothesis. It is unavoidable — no handling of a missing
+annotation is neutral — and it is disclosed rather than absorbed. The full
+per-atlas dominance matrix is reported so readers can see which genes were
+affected.
+
+Made blind: no compartment fraction for the 152-gene panel had been computed.
+The only atlas content inspected was the file manifest of GSE155698_RAW.tar,
+Peng's cell-type vocabulary, and Peng's tumour/normal sample counts. No
+expression values entered any computation.
+
+### Amendment 10 — 2026-08-01
+
+GSE183904 (Kumar et al., gastric) is removed from the compartment atlas set. The
+set is reduced to three: GSE125449 (liver/biliary), GSE178341 (colorectal), and
+Peng (pancreatic). No gastric or oesophageal atlas remains.
+
+Reason: direct inspection of GSE183904_RAW.tar shows 40 flat .csv.gz members, one
+per GSM, each a gene x cell count matrix (26,572 gene rows, barcode column
+headers). No annotation row, no metadata table, no cluster file, in any sample.
+The GEO series carries no supplementary file beyond the RAW tar and its 40
+GSM-level equivalents. As with GSE155698, the annotations exist in the source
+publication but were not deposited.
+
+This is the second atlas to fail the same premise. Amendment 4's statement that
+lineage-level labels are "available and comparably defined in all five" atlases
+was derived from the source publications' methods sections rather than from the
+deposits themselves, and was wrong for two of five. The error and its detection
+are reported in the paper rather than silently corrected: annotation availability
+in public single-cell deposits is materially worse than the corresponding
+publications imply, which is itself a finding relevant to any study of this design.
+
+Consequent restatements:
+- Amendment 5's replication requirement becomes "in at least two of the three
+  compartment atlases, of any GI tissue."
+- k_all4 becomes k_all3 (dominance in all three atlases).
+- k_eval3 and k_evalall collapse to a single quantity at three atlases and are
+  replaced by k_evalall = k restricted to genes evaluable in all three atlases.
+- Compartment coverage is now liver/biliary, colorectal and pancreatic only.
+  TCGA-STAD, TCGA-ESCA and TCGA-READ have no tissue-matched atlas. This does not
+  affect Part B, which does not depend on the decomposition, and those cohorts
+  contribute fully to the primary analysis.
+
+Rejected alternative: substituting the Sci Data 2026 integrated gastrointestinal
+atlas for gastric coverage. Amendment 5's two grounds for rejecting it no longer
+apply — its lack of malignant-cell annotation ceased to matter under Amendment 4's
+lineage-level estimand, and the risk of shared cells with GSE183904 is moot now
+that GSE183904 is excluded. It was nonetheless rejected because selecting a
+replacement dataset after registration is a researcher degree of freedom the
+amendment record cannot neutralise, on the same reasoning applied to Steele in
+Amendment 9. The loss of gastric coverage is reported as a limitation.
+
+DIRECTION OF BIAS — this amendment is NOT conservative, on two counts. First,
+removing an atlas can only reduce k or leave it unchanged. Second, the
+replication requirement rises from two of five (40%) through two of four (50%) to
+two of three (67%) without ever being deliberately restated as a proportion; the
+bar a gene must clear is now substantially higher than at registration. Both
+effects shrink k and make the descriptive-only branch more likely, which is the
+branch most consistent with this study's hypothesis. Retaining "at least two" is
+the only coherent replication requirement at three atlases, so the escalation is
+unavoidable, but it is disclosed rather than absorbed. The full per-atlas
+dominance matrix is reported so readers can see exactly which genes each removal
+affected.
+
+Made blind: no compartment fraction for the 152-gene panel had been computed. The
+only atlas content inspected was file manifests, matrix dimensions, gene-row
+names, and cell-type vocabularies. No expression values entered any computation.
+
+Also corrected in this amendment, from direct inspection rather than metadata:
+GSE178341's expected tumour channel count is 129 GSMs in GEO but 128 in the
+deposited matrices. Channel C144_T_1_1_12_c1_v2 (GSM5388094, CD45pCD3nCD19nMACS
+fraction) contributes zero cells, consistent with a QC failure during processing;
+patient C144 retains two other tumour channels. Both counts are asserted. The
+expected patient count remains 62 (34 MMRd, 28 MMRp), confirmed identical in the
+metatables and GEO title parsing, matching Pelka's published cohort.
