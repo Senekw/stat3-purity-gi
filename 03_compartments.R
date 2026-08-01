@@ -868,8 +868,64 @@ read_h5ad_counts <- function(path, sec) {
   M <- Matrix::t(M)                 # -> genes x cells
   rownames(M) <- gsym
   colnames(M) <- bc
-  assert_raw_counts(M, sec, src)
-  M
+
+  # ---- AMENDMENT 13: recover raw counts by inverting the deposited normalisation
+  # raw/X is log1p(CP10K), not counts -- the deposit has no count layer at all.
+  # counts = round(expm1(raw/X) * n_counts / 1e4).  The three assertions below are
+  # the amendment's own, computed over ALL non-zero entries, each halting on
+  # failure. They establish EXACT recovery, not approximation.
+  n_counts <- as.numeric(rhdf5::h5read(path, "obs/n_counts"))
+  if (length(n_counts) != ncol(M))
+    halt(sec, "obs/n_counts has ", length(n_counts), " entries for ", ncol(M), " cells")
+  if (any(!is.finite(n_counts)) || any(n_counts <= 0))
+    halt(sec, "obs/n_counts contains non-positive or non-finite values")
+
+  CP <- M
+  CP@x <- expm1(CP@x)                                   # log1p -> CP10K
+
+  # (i) per-cell sum of expm1(raw/X) == 10000, confirming CP10K
+  cp_sums <- Matrix::colSums(CP)
+  rel_i <- max(abs(cp_sums - 1e4) / 1e4)
+  if (!(rel_i < 1e-6))
+    halt(sec, "Amendment 13 assertion (i) FAILED: per-cell sum of expm1(raw/X) is not ",
+         "10000 within 1e-6 relative tolerance (max relative deviation ",
+         format(rel_i, digits = 4), ", worst cell ", colnames(M)[which.max(abs(cp_sums - 1e4))],
+         "). raw/X is not CP10K-normalised as Amendment 13 states; the recovery is invalid.")
+
+  R <- CP
+  R@x <- CP@x * rep(n_counts, diff(CP@p)) / 1e4          # -> counts, pre-rounding
+
+  # (iii) every recovered value within 0.1 of an integer BEFORE rounding
+  dev_iii <- max(abs(R@x - round(R@x)))
+  if (!(dev_iii < 0.1))
+    halt(sec, "Amendment 13 assertion (iii) FAILED: a recovered value deviates ",
+         format(dev_iii, digits = 4), " from the nearest integer, exceeding the 0.1 ",
+         "tolerance. Rounding could return a wrong integer, so recovery is not exact ",
+         "and the matrix must not be used.")
+
+  R@x <- round(R@x)
+
+  # (ii) per-cell sum of recovered counts == obs/n_counts
+  rec_sums <- Matrix::colSums(R)
+  rel_ii <- max(abs(rec_sums - n_counts) / n_counts)
+  if (!(rel_ii < 1e-6))
+    halt(sec, "Amendment 13 assertion (ii) FAILED: per-cell sum of recovered counts does ",
+         "not equal obs/n_counts within 1e-6 relative tolerance (max relative deviation ",
+         format(rel_ii, digits = 4), ", worst cell ",
+         colnames(M)[which.max(abs(rec_sums - n_counts) / n_counts)],
+         "). n_counts is a library size over a different gene set than raw/X; the ",
+         "recovery is invalid.")
+
+  message(sprintf("  ok  %-28s Amendment 13 recovery over %s non-zero entries:", sec,
+                  format(length(R@x), big.mark = ",")))
+  message(sprintf("      (i)   max rel. deviation of per-cell sum(expm1) from 10000 = %.3e  (tol 1e-6)", rel_i))
+  message(sprintf("      (ii)  max rel. deviation of recovered per-cell sum from n_counts = %.3e  (tol 1e-6)", rel_ii))
+  message(sprintf("      (iii) max deviation from integer before rounding = %.3e  (tol 0.1)", dev_iii))
+
+  # A.d's integrality check is NOT relaxed: it runs unchanged on the recovered
+  # matrix and must pass on genuine integers.
+  assert_raw_counts(R, sec, paste0(src, " (Amendment 13 recovered counts)"))
+  R
 }
 
 # ==============================================================================
@@ -1002,7 +1058,9 @@ bootstrap_atlas <- function(X, cells, genes, atlas_index, B = B_RESAMPLES) {
   # Verified on real GSE125449 data (2026-08-01): 20 paired resamples under the
   # same seed, identical() TRUE across the entire nested output -- f30, dom,
   # dom50, F, evidence_ok, pseudobulk counts and n_cells -- at 47.5x the speed.
-  # See output/partA_run.log.
+  # The benchmark ran as a standalone comparison script, not as part of the Part A
+  # run, so output/partA_run.log does NOT contain it; the result is recorded in
+  # NOTES_FOR_REVIEW.md section 14 and in the commit that introduced this line.
   X <- X[intersect(rownames(X), genes), , drop = FALSE]
   withr::with_seed(SEED_BASE + atlas_index, {
     reps <- lapply(seq_len(B), function(b) {

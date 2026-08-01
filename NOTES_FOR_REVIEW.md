@@ -2,6 +2,93 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 14. Automated Reviewer findings, and a tooling gap in how they reach the assistant
+
+**The tooling gap first, because it is the reportable part.** During this session
+the Reviewer panel accumulated **15 checks / 10 unresolved findings**, but only
+**2** were ever surfaced in the working conversation — both `fail`-level, both
+fixed immediately. The other **10 are all `warn`-level and were never injected**;
+the assistant only saw them after querying the findings surface directly at the
+author's prompting. Background reviews do not interrupt on warns by design, so a
+warn-level finding can sit unaddressed indefinitely while work continues on top
+of it.
+
+Consequence for this project: **assume nothing about review status without
+querying it explicitly.** Two of the ten (§9/§10 below) concerned a numerical
+claim underpinning Amendment 13 and would have gone into the record uncorrected.
+Recorded here as a process finding: a review signal that does not reach the
+worker is a silent failure mode, and this project's fail-closed discipline should
+extend to the review channel itself.
+
+### Reconciliation of the panel's counters
+
+| Panel shows | Reconciles to |
+|---|---|
+| 15 checks | 15 rows total |
+| 10 findings | 10 `warn` / `unaddressed` |
+| 3 fixed | 5 `resolved` = 2 `fail` + 2 `pass` + 1 `warn`. The "3 fixed" counter appears to count the 2 fails plus 1 resolved warn; the 2 `pass` rows are verifications that never required a fix. |
+
+### The 10 unresolved findings, with disposition
+
+All are `warn` / low severity. None invalidates a Part A result; all concern
+prose, citation or scope precision in saved artifacts.
+
+| # | Claim | Disposition |
+|---|---|---|
+| 1 | REVIEW artifact said `keep` in `load_GSE125449` is "never used to check anything" | **Correct finding.** `keep` *is* used (`if (!any(keep)) halt(...)` and to filter `meta`). The real gap was narrower: no assertion on `sum(keep) == nrow(meta)`. Moot in effect — B2 was later disproved (zero barcode collisions), so no code changed. Artifact wording stands as-written history. |
+| 2 | R8 said hardcoded `152` appears in "three vapply calls"; there were four | **Correct finding.** Off-by-one in the count only; the recommendation was right and **all four** were replaced with `length(PANEL_GENES)`. |
+| 3 | Cited HANDOFF §11.6 for an *R*-kernel grant failure; §11.6 names only the python kernel | **Correct finding.** Sourcing overreach in chat prose. The remedy applied (use `bash`) is what §11.6 prescribes. No artifact affected. |
+| 4 | FIXES.md said the band identity was "checked exhaustively over n = 1…400" | **Correct finding.** The *shipped* `verify_branch_bands()` loops 8 panel sizes, not 1..400. A 1..400 sweep *was* run as a separate exploratory check before the function was written, but the artifact conflates the two. |
+| 5 | "24 T + 11 N patients ✓" for Peng presented as freshly reproduced | **Correct finding.** In that audit those figures were quoted from `assert_n` source lines, not recomputed. They *were* independently confirmed later, in the Peng dry run and the full Part A run. |
+| 6 | Commit `dceeb1c`'s message describes the channel file, which gitignore excluded from that commit | **Correct finding.** The file landed in `c58b889`. The message overstates that commit's contents. |
+| 7 | Said "explicit exception rather than a bare `-f`", then used `git add -f` | **Correct finding.** Both were done: the `.gitignore` exception makes tracking durable, `-f` was belt-and-braces for the initial add. The prose implied an either/or. |
+| 8 | R10 comment pointed at `output/partA_run.log` for the benchmark, which that file does not contain | **Correct finding. FIXED** — the comment now points at this file (§14) and the introducing commit. |
+| 9 | NOTES said `sum(expm1(raw/X))` = "exactly 10000 for the cells checked" | **Correct finding. FIXED** — see §12. The exploratory gate was *absolute* 1e-3 (= relative 1e-7, below float32 precision), so 5/400 cells tripped it. Amendment 13 asserts *relative* 1e-6: 0/400 fail, full run max 3.42e-07. |
+| 10 | Same "exactly 10000 per cell" phrasing, unhedged, repeated in a commit message | **Correct finding.** Same root cause as §9. The NOTES text is fixed; the commit message is immutable history and is corrected here instead. |
+
+Findings 1–7 are recorded rather than edited: they describe chat prose or the
+as-written state of superseded artifacts, and rewriting history to look cleaner
+than it was would be worse than leaving an accurate record with its corrections
+attached. Findings 8 and 9 named live text in files still in use, so both were
+fixed.
+
+## 13. CANDIDATE FINDING for the paper's discussion — deposit defects in three of five atlases
+
+**Not an incidental problem with this study. A general, reportable result about
+single-cell deposit quality.**
+
+Three of the five atlases originally selected for Part A carried defects that
+were invisible from their publications and only surfaced on direct inspection of
+the deposits:
+
+| Atlas | Publication implies | Deposit actually contains | Consequence |
+|---|---|---|---|
+| **GSE155698** (Steele, pancreatic) | cell-type annotation | count matrices only, no annotation | Removed, Amendment 9 |
+| **GSE183904** (Kumar, gastric) | cell-type annotation | count matrices only, no annotation | Removed, Amendment 10 |
+| **Peng** (Besca reprocessing) | `raw/X` raw counts | log1p-CP10K; no count layer anywhere | Recovered by inversion, Amendment 13 |
+
+Two further deposit-level surprises in the two surviving GEO atlases, both
+requiring amendments:
+
+- **GSE125449**: the two deposited sets have different gene universes (20,124 vs
+  19,572 rows) with no note in the publication (Amendment 12).
+- **GSE178341**: 129 GEO tumour channels but 128 in the deposited matrices; one
+  channel carries zero cells (recorded under Amendment 10).
+
+The pattern is consistent: **the methods sections describe the analysis the
+authors performed, not the artefact they deposited.** Amendment 4's claim that
+lineage labels were "available and comparably defined in all five" atlases was
+taken from the source publications and was wrong for two of five. Peng's case is
+sharper still — the field name `raw/X` positively implies raw counts and does not
+contain them.
+
+For a paper whose thesis is that a widely used biomarker behaves differently once
+its compartment composition is examined, this is a thematically aligned secondary
+finding: **claims about public single-cell data are frequently not checkable from
+the publication, and are sometimes contradicted by the deposit.** Worth a short
+discussion paragraph with the table above. Every instance here is documented with
+the amendment that resolved it, so the evidence is already assembled.
+
 ## 12. BLOCKER — Peng's `raw/X` is log1p-CP10K, not raw counts
 
 **Part A halts at A.a/Peng. This is a data finding, not a code defect, and the
@@ -17,8 +104,17 @@ counts (139415620 of 139415620 non-zero entries fractional; e.g. 0.6134,
 
 **Every one** of the 139,415,620 non-zero entries is fractional. Diagnosis:
 
-- `sum(expm1(raw/X))` = **exactly 10000** for the cells checked → the layer is
-  **log1p of CP10K-normalised** expression.
+- `sum(expm1(raw/X))` = **10000 to within 3.4e-07 relative** across all 57,423
+  cells → the layer is **log1p of CP10K-normalised** expression.
+
+  Precision note, because an earlier revision of this section said "exactly
+  10000" and that was too strong. The exploratory check used an *absolute* gate
+  of 1e-3 on a sum of 1e4 — a relative tolerance of 1e-7, which is below
+  float32 storage precision (~1.19e-07) — and 5 of 400 sampled cells tripped it,
+  printing `FALSE`. That was a badly chosen gate, not a failed premise.
+  Amendment 13's assertion (i) uses a *relative* 1e-6 tolerance, which 0 of the
+  same 400 cells fail, and the full run passed it at a maximum of 3.42e-07 over
+  every cell. The CP10K conclusion is unaffected.
 - The `.h5ad` contains **no other count layer**: `X` is 2,033 × 57,423 (HVG
   subset, also normalised), there is no `/layers` group, and the only other
   sparse matrices are the neighbour graph (`obsp/connectivities`, `distances`).

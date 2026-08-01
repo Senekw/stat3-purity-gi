@@ -236,6 +236,12 @@ first.
    that the ESMO abstract reports the score as a validated prognostic biomarker
    while this paper argues it is substantially stromal — that self-correction
    is legitimate and must be stated openly, not buried.
+5. Reviewer findings must be queried explicitly. `host.findings()` is called at
+   the end of every work item and ALL findings reported regardless of severity.
+   Warn-level findings are never injected into the working conversation — during
+   Part A, ten warns sat unaddressed while work continued on top of them,
+   including two bearing on a numerical claim underpinning Amendment 13. Never
+   rely on injection. Report the full list, with disposition for each.
 
 ---
 
