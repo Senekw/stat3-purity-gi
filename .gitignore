@@ -17,3 +17,13 @@ renv/sandbox/
 .RData
 .Rproj.user/
 .DS_Store
+renv/library-local/
+MANIFEST.txt
+*.rds
+!data/**/*.rds
+data/
+renv/library-local/
+MANIFEST.txt
+*.rds
+!data/**/*.rds
+data/
