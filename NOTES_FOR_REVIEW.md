@@ -2,6 +2,47 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 11. BLOCKER — GSE125449 Set1 and Set2 have different gene universes
+
+**Part A cannot run until this is decided. It is a prespecification gap, not a
+bug, and the fix changes a reported quantity — so it is not mine to choose.**
+
+Discovered 2026-08-01 while proving the R10 speedup on real data. `load_GSE125449`
+halts at its own guard:
+
+```
+Set1 gene rows: 20124 | Set2 gene rows: 19572
+identical(rownames(Set1), rownames(Set2)) -> FALSE
+HALT [A.a/GSE125449]: Set1 and Set2 gene rows differ; cannot combine without a join
+```
+
+The guard is correct and fired exactly as intended — `cbind` on mismatched row
+spaces would silently misalign genes against cells. Per the standing rule the run
+was stopped rather than the assertion adjusted.
+
+`analysis_plan.md` v1.5 specifies combining Set1 and Set2 but does not say how to
+reconcile their gene universes. The three options are not equivalent:
+
+| Option | Panel coverage | Note |
+|---|---|---|
+| Intersection (18,367 genes) | **143 / 152** panel, 146 / 155 reporting | Loses 6 panel genes measured in one set |
+| Union with 0-fill | 149 / 155 | **Violates A.d**: absent genes must be `NA`, never 0 |
+| Union with NA-fill | 149 / 155 | Per-gene denominators differ between sets; changes what f(π) means |
+
+The 6 panel genes present in one set but lost to intersection: **CCL7, CRLF2,
+CSF2, IL9R, ITGB3, LEP**. None is an origin-six gene, so SOCS3, MYC and IL6 are
+unaffected either way.
+
+Intersection is the most defensible — it is the only option that keeps a single
+coherent denominator per cell and does not invent zeros — but it drops 6 of 152
+panel genes from one of three atlases, which mechanically lowers each gene's
+evaluability and can only move `k` downward. Given Amendments 9 and 10 already
+pushed `k` down and both disclosed it as non-conservative, this is a third
+same-direction effect and should be disclosed on the same footing.
+
+**Recommendation: an amendment specifying intersection, recording the 6 lost
+genes by name and the direction of bias.** Not implemented — awaiting a decision.
+
 ## 1. `git init` is blocked in this sandbox (step 1, partially incomplete)
 
 `git init` inside the granted host path fails with `Operation not permitted` on
