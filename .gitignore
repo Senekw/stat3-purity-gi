@@ -1,5 +1,9 @@
 # Data is large and re-downloadable; provenance is committed instead.
 data/raw/
+# ...but the GEO tumour channel list IS provenance: analysis_plan.md requires the
+# 129-channel count to be asserted against a committed artefact rather than
+# re-fetched from GEO at analysis time.
+!data/raw/GSE178341_geo_tumour_channels.txt
 data/tcga/
 data/geo/
 data/manual/

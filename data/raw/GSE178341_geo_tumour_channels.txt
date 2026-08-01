@@ -1,0 +1,146 @@
+# GSE178341 tumour channel list (batchID format)
+# One channel identifier per line; 129 GEO samples with specimen_type == "T".
+#
+# SOURCE: GEO series matrix GSE178341_series_matrix.txt.gz, downloaded from
+#   https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178341/matrix/
+#   on 2026-08-01.
+# DERIVATION: !Sample_title carries the channel id as the final bracketed token,
+#   e.g. 'Single cell expression of human CRC samples from patient C103_T
+#   [C103_T_1_1_0_c1_v2]' -> C103_T_1_1_0_c1_v2.  Rows filtered to
+#   !Sample_characteristics_ch1 'specimen_type: T'.  Series carries 181 samples
+#   in total; 129 are tumour.
+# FORMAT: batchID, matching the `batchID` column of
+#   GSE178341_crc10x_full_c295v4_submit_cluster.csv.gz -- NOT GSM accessions.
+# NOTE: 128 of these 129 carry >=1 cell in the deposited matrices.  The absent
+#   channel is C144_T_1_1_12_c1_v2 (GSM5388094, CD45pCD3nCD19nMACS fraction,
+#   zero cells, QC failure).  03_compartments.R asserts that identity, so this
+#   file is deliberately the GEO-side list and is NOT derived from the deposit.
+C103_T_1_1_0_c1_v2
+C103_T_1_1_3_c1_v2
+C104_T_1_1_0_c1_v2
+C104_T_1_1_3_c1_v2
+C105_T_1_1_0_c1_v2
+C105_T_1_1_3_c1_v2
+C106_T_1_1_0_c1_v2
+C106_T_1_1_3_c1_v2
+C107_T_1_1_0_c1_v2
+C107_T_1_1_1_c1_v2
+C107_T_1_1_3_c1_v2
+C109_T_0_1_0_c1_v2
+C109_T_0_1_1_c1_v2
+C110_T_1_1_0_c1_v2
+C110_T_1_1_1_c1_v2
+C111_T_0_2_0_c1_v2
+C111_T_0_2_0_c2_v2
+C111_T_0_2_1_c1_v2
+C112_T_0_1_0_c1_v2
+C112_T_0_1_1_c1_v2
+C113_T_1_1_0_c1_v2
+C113_T_1_1_1_c1_v2
+C114_T_1_1_0_c1_v2
+C114_T_1_1_1_c1_v2
+C115_T_1_1_1_c1_v2
+C115_T_1_1_2_c1_v2
+C116_T_0_2_0_c1_v2
+C116_T_0_2_1_c1_v2
+C116_T_0_2_2_c1_v2
+C118_T_1_1_1_c1_v2
+C118_T_1_1_2_c1_v2
+C119_T_0_2_0_c1_v2
+C122_T_1_1_0_c1_v2
+C122_T_1_1_1_c1_v2
+C123_T_1_1_0_c1_v2
+C123_T_1_1_1_c1_v2
+C124_T_0_3_0_c1_v2
+C124_T_0_3_1_c1_v2
+C125_T_1_1_0_c1_v2
+C125_T_1_1_1_c1_v2
+C125_T_1_1_1_c2_v2
+C126_T_1_1_0_c1_v2
+C126_T_1_1_1_c1_v2
+C126_T_1_1_1_c2_v2
+C129_T_1_1_0_c1_v2
+C129_T_1_1_1_c1_v2
+C130_TA_1_1_0_c1_v2
+C130_TA_1_1_1_c1_v2
+C130_TB_1_1_0_c1_v2
+C130_TB_1_1_1_c1_v2
+C132_T_1_1_0_c1_v2
+C132_T_1_1_1_c1_v2
+C133_T_0_0_0_c1_v2
+C133_T_0_0_0_c2_v2
+C134_T_0_3_0_c1_v2
+C134_T_0_3_0_c2_v2
+C134_T_0_3_1_c1_v2
+C134_T_0_3_1_c2_v2
+C135_T_1_1_0_c1_v2
+C135_T_1_1_1_c1_v2
+C135_T_1_1_1_c2_v2
+C136_T_1_1_0_c1_v2
+C136_T_1_1_1_c1_v2
+C136_T_1_1_1_c2_v2
+C137_T_1_1_0_c1_v2
+C137_T_1_1_1_c1_v2
+C137_T_1_1_1_c2_v2
+C138_T_0_0_0_c1_v2
+C138_T_0_0_0_c2_v2
+C138_T_0_0_1_c1_v2
+C138_T_0_0_1_c2_v2
+C139_T_1_1_0_c1_v2
+C139_T_1_1_0_c2_v2
+C139_T_1_1_1_c1_v2
+C140_T_1_1_0_c1_v2
+C140_T_1_1_1_c1_v2
+C140_T_1_1_1_c2_v2
+C142_T_1_1_0_c1_v2
+C142_T_1_1_1_c1_v2
+C143_T_1_1_0_c1_v2
+C143_T_1_1_1_c1_v2
+C144_T_1_1_0_c1_v2
+C144_T_1_1_12_c1_v2
+C144_T_1_1_1_c1_v2
+C145_T_1_1_0_c1_v2
+C145_T_1_1_1_c1_v2
+C146_T_1_1_0_c1_v2
+C146_T_1_1_1_c1_v2
+C147_T_1_1_0_c1_v2
+C147_T_1_1_1_c1_v2
+C149_T_1_1_0_c1_v2
+C149_T_1_1_1_c1_v2
+C150_T_1_1_0_c1_v2
+C150_T_1_1_1_c1_v2
+C151_T_0_0_0_c1_v2
+C152_T_0_0_0_c1_v2
+C153_T_1_1_0_c1_v2
+C153_T_1_1_1_c1_v2
+C154_T_1_1_0_c1_v3
+C155_T_0_0_0_c1_v3
+C156_T_1_1_0_c1_v3
+C156_T_1_1_1_c1_v3
+C157_T_0_0_0_c1_v3
+C158_T_1_1_0_c1_v3
+C158_T_1_1_1_c1_v3
+C159_T_1_1_0_c1_v3
+C159_T_1_1_1_c1_v3
+C160_T_1_1_0_c1_v3
+C161_T_1_1_0_c1_v3
+C162_T_0_0_0_c1_v3
+C162_T_0_0_0_c2_v2
+C162_T_0_0_1_c1_v3
+C162_T_0_0_1_c2_v2
+C163_T_1_1_0_c1_v3
+C164_T_1_1_0_c1_v3
+C165_T_0_0_0_c1_v3
+C165_T_0_0_1_c1_v3
+C166_T_0_0_0_c1_v3
+C167_T_1_1_0_c1_v3
+C168_T_1_1_0_c1_v3
+C169_T_1_1_0_c1_v3
+C170_T_0_0_0_c1_v3
+C170_T_0_0_1_c1_v3
+C171_TA_1_1_0_c1_v3
+C171_TA_1_1_1_c1_v3
+C171_TB_1_1_0_c1_v3
+C171_TB_1_1_1_c1_v3
+C172_T_0_0_0_c1_v3
+C173_T_0_0_0_c1_v3
