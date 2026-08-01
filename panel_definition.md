@@ -434,3 +434,24 @@ fraction) contributes zero cells, consistent with a QC failure during processing
 patient C144 retains two other tumour channels. Both counts are asserted. The
 expected patient count remains 62 (34 MMRd, 28 MMRp), confirmed identical in the
 metatables and GEO title parsing, matching Pelka's published cohort.
+
+### Amendment 11 — 2026-08-01
+
+For the Peng pancreatic atlas, compartment mapping uses the celltype1 annotation
+level rather than celltype0.
+
+Reason: Amendment 4 specifies six compartments (epithelial, fibroblast/stromal,
+myeloid, lymphoid, endothelial, other) mapped from "each atlas's own level-1
+labels." Peng's celltype0 collapses myeloid and lymphoid into a single
+"hematopoietic" category and therefore cannot express Amendment 4's compartment
+scheme. celltype1 separates myeloid leukocyte, T lineage and B lineage, and maps
+onto the six compartments directly.
+
+DIRECTION OF BIAS: none, and this is provable rather than argued. The estimand is
+the epithelial contribution to pseudobulk, i.e. epithelial counts divided by total
+counts. Subdividing the non-epithelial mass changes neither numerator nor
+denominator, so f(pi) is numerically identical under celltype0 and celltype1 for
+every gene at every grid point, and k is unaffected. Only the reported breakdown
+of non-epithelial compartments differs.
+
+Made blind: no compartment fraction for the 152-gene panel had been computed.

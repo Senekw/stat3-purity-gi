@@ -75,10 +75,25 @@ if (anyDuplicated(atlases$atlas))   halt("A.a", "duplicate atlas identifiers")
 if (anyDuplicated(atlases$tissue))
   halt("A.a", "duplicate tissue labels: Amendment 10 states one atlas per tissue")
 
-# Tissue witnesses.  Marker genes must be present in the atlas's gene universe
-# AND detected; the label pattern must match at least one of its own cell-type
-# labels.  Deliberately organ-specific: a transposition of two rows in the frame
-# above cannot satisfy the other atlas's witness.
+# Tissue witnesses.  Its PURPOSE is to catch a transposed tissue assignment, and
+# it does that; it is not a general tissue classifier.
+#
+# What is actually checked (S2 -- the previous comment here overstated it by
+# saying marker genes must be "detected"):
+#   (i)  marker-gene PRESENCE in the atlas's gene universe -- membership only, no
+#        expression is read.  For a whole-transcriptome human reference all three
+#        witnesses' genes are present, so this term is effectively constant and
+#        contributes no discrimination between tissues.  It is a precondition,
+#        not evidence.
+#   (ii) the LABEL pattern, which must match at least one of the atlas's own
+#        cell-type labels.  This term carries the whole discrimination: the
+#        patterns are mutually exclusive across the three declared tissues, so a
+#        transposed row cannot satisfy another atlas's witness.
+# Scoring weights the label term 10x the gene term for exactly that reason.
+# Verified on real labels: GSE125449 scores liver_biliary = 14 against
+# colorectal = 4 and pancreatic = 2, so claiming either other tissue halts.
+# Note the tie-break is `<` against the max, so a tie passes -- adequate here
+# because the label patterns cannot both match, and deliberately left alone.
 TISSUE_WITNESS <- list(
   liver_biliary = list(
     genes  = c("ALB", "APOA1", "KRT19", "SERPINA1"),   # hepatocyte + cholangiocyte
@@ -161,6 +176,42 @@ if (!setequal(ORIGIN_NONQUAL, c("BCL2", "MMP9", "HGF")))
   halt("panel", "origin-six non-qualifying set changed: ",
        paste(ORIGIN_NONQUAL, collapse = ", "), " (expected BCL2, MMP9, HGF)")
 
+# --- S1: the REPORTING set (155) vs the INFERENTIAL set (152) -----------------
+# Prespecification section 4 and Amendment 2 both commit to reporting BCL2, MMP9
+# and HGF as a LABELLED NON-QUALIFYING SUBSET -- never silently dropped.  A
+# previous version filtered the output table from the 152-gene panel, so those
+# three could not appear at all and the `qualifying` column was TRUE in every row.
+#
+# Two sets are therefore carried, and the distinction is load-bearing:
+#   PANEL_GENES  (152) -- the locked panel. The ONLY set any k variant sees.
+#   REPORT_GENES (155) -- panel + the three non-qualifying, for compartment
+#                         fractions and the origin-six table ONLY.
+# The three extra genes are reported with fractions but must never enter k, k_50,
+# k_all3, k_evalall, the dominance matrix or the evaluability distribution.
+# assert_inferential_set() below enforces that at every point where it matters.
+REPORT_GENES <- c(PANEL_GENES, ORIGIN_NONQUAL)
+if (anyDuplicated(REPORT_GENES))
+  halt("panel", "a non-qualifying origin gene is also in the locked panel: ",
+       paste(intersect(PANEL_GENES, ORIGIN_NONQUAL), collapse = ", "))
+assert_n(length(REPORT_GENES), 155L, "panel", "reporting genes (152 panel + 3 non-qualifying)")
+
+# The inferential firewall.  Called on every gene-indexed object that feeds a k
+# variant.  Cheap, and it makes the 152/155 boundary impossible to cross silently.
+assert_inferential_set <- function(x, what) {
+  g <- if (is.null(dim(x))) names(x) else rownames(x)
+  if (is.null(g)) halt("A.g", what, " has no gene names; cannot verify the inferential set")
+  if (!identical(g, PANEL_GENES))
+    halt("A.g", what, " is not exactly the 152-gene locked panel in order (n = ", length(g),
+         if (length(setdiff(g, PANEL_GENES)))
+           paste0("; extra: ", paste(utils::head(setdiff(g, PANEL_GENES), 5), collapse = ", "))
+         else "",
+         if (length(setdiff(PANEL_GENES, g)))
+           paste0("; missing: ", paste(utils::head(setdiff(PANEL_GENES, g), 5), collapse = ", "))
+         else "",
+         "). The non-qualifying subset must never enter a k variant.")
+  invisible(TRUE)
+}
+
 # ==============================================================================
 # A.g INVARIANT, VERIFIED BEFORE ANY OBSERVED DATA IS USED
 # ==============================================================================
@@ -195,6 +246,10 @@ verify_k_ordering <- function(n_atlas = 3L) {
   invisible(TRUE)
 }
 verify_k_ordering(3L)
+
+# Amendment 3's bands are verified here too -- before any atlas is opened -- but
+# the definition lives with branch_of_k in A.g.  Deferred to a call site after
+# that definition; see `verify_branch_bands(length(PANEL_GENES))` below.
 
 # ==============================================================================
 # A.c  COMPARTMENT HARMONISATION MAP  (Amendment 4)
@@ -237,32 +292,79 @@ MAP_GSE178341 <- c(
   "B"      = "lymphoid"
 )
 
-# --- Peng (Besca celltype0): lineage level, read from obs/celltype0
+# --- Peng (Besca celltype1): AMENDMENT 11, 2026-08-01.
+# Compartment mapping uses celltype1, not celltype0.  celltype0 collapses myeloid
+# and lymphoid into a single `hematopoietic cell` category and therefore cannot
+# express Amendment 4's six-compartment scheme at all; celltype1 separates
+# myeloid leukocyte, T lineage and B lineage and maps onto the six directly.
+#
+# celltype1 is a strict refinement of celltype0 (verified: every celltype1 label
+# nests inside exactly one celltype0 label), so this subdivides the non-epithelial
+# mass without moving any cell across the epithelial boundary.  Amendment 11's
+# stated direction of bias -- none -- is verified numerically in A.c below rather
+# than argued.
 MAP_Peng <- c(
-  "epithelial cell"    = "epithelial",      # ductal + acinar + endocrine, per A.c judgement call
+  "pancreatic ductal cell"           = "epithelial",          # ductal
+  "pancreatic acinar cell"           = "epithelial",          # acinar, per A.c judgement call
+  "enteroendocrine cell"             = "epithelial",          # endocrine/islet, per A.c judgement call
+  "fibroblast"                       = "fibroblast_stromal",
+  "pancreatic stellate cell"         = "fibroblast_stromal",  # stellate = pancreatic CAF lineage
+  "blood vessel endothelial cell"    = "endothelial",
+  "myeloid leukocyte"                = "myeloid",
+  "T cell"                           = "lymphoid",
+  "lymphocyte of B lineage"          = "lymphoid",
+  "neural cell"                      = "other"                # neural crest lineage, not stromal (A.c)
+)
+
+# The celltype0 map is retained ONLY to verify Amendment 11's bias claim (A.c
+# below).  It is not used to build compartments.  `hematopoietic cell` is
+# deliberately unmappable at this level -- that is precisely why Amendment 11
+# moves to celltype1.
+MAP_Peng_ct0_epi_only <- c(
+  "epithelial cell"    = "epithelial",
   "fibroblast"         = "fibroblast_stromal",
   "endothelial cell"   = "endothelial",
-  "hematopoietic cell" = NA_character_,     # RESOLVED BELOW -- see note
-  "neural cell"        = "other"            # neural crest lineage, not stromal (A.c)
+  "hematopoietic cell" = "hematopoietic_UNRESOLVED",
+  "neural cell"        = "other"
 )
 
 COMPARTMENT_MAPS <- list(GSE125449 = MAP_GSE125449,
                          GSE178341 = MAP_GSE178341,
                          Peng      = MAP_Peng)
 
-# `hematopoietic cell` at celltype0 collapses myeloid AND lymphoid into one
-# level, so it cannot be mapped at this granularity without discarding the
-# myeloid/lymphoid distinction that Amendment 4 requires as separate
-# compartments.  Peng therefore uses celltype1 for the haematopoietic branch
-# only; celltype0 supplies the rest.  This is a documented refinement of A.c's
-# "level-1 label" wording, not a change of estimand: the epithelial /
-# non-epithelial split -- the only split A.e's f(pi) depends on -- is identical
-# either way.
-MAP_Peng_ct1 <- c(
-  "myeloid leukocyte"       = "myeloid",
-  "T cell"                  = "lymphoid",
-  "lymphocyte of B lineage" = "lymphoid"
-)
+# verify_amendment11_bias: Amendment 11 states its direction of bias is "none,
+# and this is provable rather than argued" -- f(pi) is numerically identical under
+# celltype0 and celltype1 because subdividing the non-epithelial mass changes
+# neither the numerator nor the denominator of the estimand.
+#
+# That claim rests on ONE structural fact: the epithelial cell set must be exactly
+# the same under both annotation levels.  Asserted here on the real labels, not
+# assumed.  If it fails, the amendment's reasoning is falsified and the run halts.
+verify_amendment11_bias <- function(ct0, ct1) {
+  bad0 <- setdiff(unique(ct0), names(MAP_Peng_ct0_epi_only))
+  if (length(bad0))
+    halt("A.c", "Peng celltype0 has unmapped label(s): ", paste(sort(bad0), collapse = ", "))
+  epi_ct0 <- unname(MAP_Peng_ct0_epi_only[ct0]) == "epithelial"
+  epi_ct1 <- unname(MAP_Peng[ct1]) == "epithelial"
+  if (!identical(epi_ct0, epi_ct1))
+    halt("A.c", "AMENDMENT 11 BIAS CLAIM FALSIFIED: the epithelial cell set differs ",
+         "between celltype0 and celltype1 (", sum(epi_ct0), " vs ", sum(epi_ct1),
+         " cells, ", sum(xor(epi_ct0, epi_ct1)), " disagreeing). Amendment 11 states the ",
+         "direction of bias is none BECAUSE subdividing non-epithelial mass cannot move ",
+         "the epithelial/non-epithelial boundary. It has moved. STOP and report.")
+
+  # celltype1 must also be a strict refinement: each celltype1 label nests inside
+  # exactly one celltype0 label.  Otherwise "subdivision" is the wrong description.
+  cross <- table(ct1, ct0)
+  multi <- rownames(cross)[rowSums(cross > 0) > 1L]
+  if (length(multi))
+    halt("A.c", "celltype1 is not a strict refinement of celltype0: label(s) ",
+         paste(multi, collapse = ", "), " span more than one celltype0 category.")
+
+  message(sprintf("  ok  A.c  Amendment 11 bias claim verified: epithelial set identical under celltype0/celltype1 (%d cells); celltype1 is a strict refinement",
+                  sum(epi_ct1)))
+  invisible(TRUE)
+}
 
 # map_labels: exact lookup, halt on anything unmapped.  No partial matching, no
 # regex, no silent NA.
@@ -456,6 +558,30 @@ load_GSE178341 <- function() {
 }
 
 # ------------------------------------------------------------------ helpers
+# assert_raw_counts: A.d requires RAW UMI counts.  Raw counts are integer-valued;
+# any library-size correction, CP10K or log transform makes them fractional.
+# This is the guard the estimand rests on: pseudobulking normalised values is the
+# error that made the HPA pilot measure the wrong quantity, and nothing
+# downstream -- monotonicity, dominance, the k ordering -- can detect it, because
+# normalised values are positive and plausibly scaled.
+assert_raw_counts <- function(M, sec, src) {
+  v <- M@x
+  if (!length(v)) halt(sec, "matrix '", src, "' has no non-zero entries")
+  if (any(!is.finite(v)))
+    halt(sec, "matrix '", src, "' contains non-finite values")
+  if (any(v < 0))
+    halt(sec, "matrix '", src, "' contains negative values; raw UMI counts cannot be negative")
+  if (!all(abs(v - round(v)) < 1e-8))
+    halt(sec, "matrix '", src, "' is not integer-valued and is therefore NOT raw counts ",
+         "(", sum(abs(v - round(v)) >= 1e-8), " of ", length(v), " non-zero entries fractional; ",
+         "e.g. ", paste(utils::head(v[abs(v - round(v)) >= 1e-8], 3), collapse = ", "), "). ",
+         "A.d forbids CP10K, log or any library-size correction before the rowSums. ",
+         "Point the loader at the raw layer; do not normalise here and do not relax this check.")
+  message(sprintf("  ok  %-28s %-46s = %s", sec, paste0("'", src, "' integer-valued (raw counts)"),
+                  format(length(v), big.mark = ",")))
+  invisible(TRUE)
+}
+
 # 10x-style HDF5 -> dgCMatrix, raw counts.
 read_h5_counts <- function(path, sec) {
   ls_h5 <- rhdf5::h5ls(path, recursive = TRUE)
@@ -468,12 +594,23 @@ read_h5_counts <- function(path, sec) {
   shp <- as.integer(gx("shape"))
   fg  <- ls_h5[ls_h5$group == paste0("/", grp, "/features"), "name"]
   gsym <- if (length(fg)) as.character(gx("features/name")) else as.character(gx("genes"))
-  M <- Matrix::sparseMatrix(i = as.integer(gx("indices")) + 1L,
+  # index1 = FALSE declares `i` 0-based; the CSC `indices` field IS 0-based, so it
+  # is passed through unmodified.  A previous version added 1L here as well, which
+  # corrects the same offset twice and shifts every gene down one row -- silently
+  # whenever the last feature is undetected, so each gene would carry its
+  # PREDECESSOR's counts.  Asserted rather than trusted:
+  idx0 <- as.integer(gx("indices"))
+  if (length(idx0) && (min(idx0) < 0L || max(idx0) > shp[1] - 1L))
+    halt(sec, "CSC row indices are not 0-based within [0, nrow-1]: observed range [",
+         min(idx0), ", ", max(idx0), "] against nrow = ", shp[1],
+         ". Do not add an offset here; establish the file's indexing convention first.")
+  M <- Matrix::sparseMatrix(i = idx0,
                             p = as.integer(gx("indptr")),
                             x = as.numeric(gx("data")),
                             dims = shp, index1 = FALSE)
   rownames(M) <- gsym
   colnames(M) <- as.character(gx("barcodes"))
+  assert_raw_counts(M, sec, paste0(grp, "/data"))
   M
 }
 
@@ -533,11 +670,12 @@ load_Peng <- function() {
 
   # celltype0 for the epithelial/stromal/endothelial branches; celltype1 splits
   # `hematopoietic cell` into myeloid vs lymphoid, which celltype0 collapses.
-  lab <- ct0
-  hem <- ct0 == "hematopoietic cell"
-  comp <- character(length(lab))
-  comp[!hem] <- map_labels(lab[!hem], MAP_Peng[names(MAP_Peng) != "hematopoietic cell"], "Peng/celltype0")
-  comp[hem]  <- map_labels(ct1[hem],  MAP_Peng_ct1, "Peng/celltype1(haematopoietic)")
+  # Amendment 11: compartments come from celltype1 throughout -- not celltype0
+  # with a haematopoietic patch.  The bias claim is verified against the real
+  # labels first; if the epithelial set is not identical across the two levels,
+  # the amendment's reasoning is falsified and this halts.
+  verify_amendment11_bias(ct0, ct1)
+  comp <- map_labels(ct1, MAP_Peng, "Peng/celltype1")
 
   X <- read_h5ad_counts(fp, sec)
   X <- X[, keep, drop = FALSE]
@@ -556,22 +694,50 @@ load_Peng <- function() {
 # h5ad X -> genes x cells raw counts.  AnnData stores cells x genes CSR; this
 # returns the transpose without normalising anything.
 read_h5ad_counts <- function(path, sec) {
-  src <- if (length(rhdf5::h5ls(path, recursive = TRUE)$name[
-               rhdf5::h5ls(path, recursive = TRUE)$group == "/raw"]) > 0) "raw/X" else "X"
   ls_h5 <- rhdf5::h5ls(path, recursive = TRUE)
+
+  # `raw/X` is REQUIRED, not preferred.  In a Besca-processed h5ad, `X` is
+  # log-normalised; the previous version fell back to it silently whenever /raw
+  # was absent or empty, which would pseudobulk normalised values -- exactly what
+  # A.d forbids.  A missing raw layer means this is not the registered release,
+  # so it halts rather than substituting a different quantity.
+  src <- "raw/X"
+  if (!length(ls_h5$name[ls_h5$group == "/raw"]))
+    halt(sec, "h5ad has no /raw group, so no raw count layer. A.d requires RAW UMI counts ",
+         "and `X` in this release is log-normalised. Falling back to `X` would measure the ",
+         "wrong quantity. Verify the file is the registered Besca release (md5 ", PENG_MD5, ").")
   fields <- ls_h5$name[ls_h5$group == paste0("/", src)]
   if (!all(c("data", "indices", "indptr") %in% fields))
     halt(sec, "h5ad '", src, "' is not sparse CSR/CSC; found: ", paste(fields, collapse = ", "))
-  vg <- if (src == "raw/X") "raw/var" else "var"
+
+  # AnnData stores obs x var CSR.  Read the declared encoding rather than assuming
+  # it: a CSC file read as CSR transposes the meaning of every index.
+  enc <- tryCatch(as.character(rhdf5::h5readAttributes(path, src)[["encoding-type"]]),
+                  error = function(e) character(0))
+  if (length(enc) && !identical(enc, "csr_matrix"))
+    halt(sec, "h5ad '", src, "' declares encoding-type '", enc,
+         "', not 'csr_matrix'. The reader below assumes CSR (obs x var); a CSC ",
+         "matrix read as CSR would transpose genes and cells. Handle explicitly.")
+  vg <- "raw/var"
   gsym <- as.character(rhdf5::h5read(path, paste0(vg, "/index")))
   bc   <- as.character(rhdf5::h5read(path, "obs/index"))
-  M <- Matrix::sparseMatrix(j = as.integer(rhdf5::h5read(path, paste0(src, "/indices"))) + 1L,
+  # index1 = FALSE declares `j` 0-based; the CSR `indices` field IS 0-based and is
+  # passed through unmodified.  See the note in read_h5_counts: adding 1L here
+  # corrects the same offset twice and silently shifts every gene by one column
+  # pre-transpose.
+  idx0 <- as.integer(rhdf5::h5read(path, paste0(src, "/indices")))
+  if (length(idx0) && (min(idx0) < 0L || max(idx0) > length(gsym) - 1L))
+    halt(sec, "CSR column indices are not 0-based within [0, n_var-1]: observed range [",
+         min(idx0), ", ", max(idx0), "] against n_var = ", length(gsym),
+         ". Do not add an offset here; establish the file's indexing convention first.")
+  M <- Matrix::sparseMatrix(j = idx0,
                             p = as.integer(rhdf5::h5read(path, paste0(src, "/indptr"))),
                             x = as.numeric(rhdf5::h5read(path, paste0(src, "/data"))),
                             dims = c(length(bc), length(gsym)), index1 = FALSE)
   M <- Matrix::t(M)                 # -> genes x cells
   rownames(M) <- gsym
   colnames(M) <- bc
+  assert_raw_counts(M, sec, src)
   M
 }
 
@@ -590,6 +756,21 @@ pseudobulk_raw <- function(X, cells, genes) {
               dimnames = list(genes, COMPARTMENTS))
   n_cells <- setNames(integer(length(COMPARTMENTS)), COMPARTMENTS)
   have <- intersect(genes, rownames(X))
+
+  # Row selection by NAME returns only the FIRST match.  CellRanger feature lists
+  # repeat gene symbols (distinct Ensembl IDs collapsing to one symbol), so a
+  # duplicated panel symbol would be silently undercounted by whatever its second
+  # row carries -- a per-gene, per-atlas bias in f(pi) that no downstream check
+  # can see.  Halt rather than pick a summing rule here: aggregating duplicate
+  # rows is a quantitative decision and belongs in an amendment, not in a helper.
+  dup_panel <- unique(rownames(X)[duplicated(rownames(X)) & rownames(X) %in% genes])
+  if (length(dup_panel))
+    halt("A.d", "panel gene symbol(s) appear on more than one matrix row: ",
+         paste(utils::head(sort(dup_panel), 10), collapse = ", "),
+         if (length(dup_panel) > 10) paste0(" (+", length(dup_panel) - 10, " more)") else "",
+         ". Name-based row selection would take only the first and undercount the rest. ",
+         "Decide the aggregation rule as a dated amendment; do not silently sum here.")
+
   for (cc in COMPARTMENTS) {
     idx <- which(cells$compartment == cc)
     n_cells[cc] <- length(idx)
@@ -667,7 +848,9 @@ SEED_BASE   <- 20260731L
 one_atlas_stats <- function(X, cells, genes) {
   pb <- pseudobulk_raw(X, cells, genes)
   tot <- rowSums(pb$counts, na.rm = TRUE)
-  evidence_ok <- !is.na(pb$counts[, 1]) & tot >= EVIDENCE_MIN
+  # by name, not position: the previous `pb$counts[, 1]` silently depended on
+  # COMPARTMENTS[1] being "epithelial"
+  evidence_ok <- !is.na(pb$counts[, "epithelial"]) & tot >= EVIDENCE_MIN
   F  <- sweep_f(pb$counts, pb$n_cells)
   rownames(F) <- genes
   list(pb = pb, F = F, evidence_ok = evidence_ok,
@@ -679,6 +862,14 @@ one_atlas_stats <- function(X, cells, genes) {
 bootstrap_atlas <- function(X, cells, genes, atlas_index, B = B_RESAMPLES) {
   pats <- unique(cells$patient_id)
   by_pat <- split(seq_len(nrow(cells)), cells$patient_id)
+
+  # R10 performance change, VERIFIED IDENTICAL (see run log).  pseudobulk_raw only
+  # ever reads rows in `genes`, so restricting X to those rows once here is
+  # numerically identical to carrying the full matrix through every resample --
+  # asserted over 20 paired resamples on real data before this was applied.  It
+  # exists because the full matrix would otherwise be duplicated on each of 2000
+  # iterations (~6 GB per copy for GSE178341, against 16 GB of RAM).
+  X <- X[intersect(rownames(X), genes), , drop = FALSE]
   withr::with_seed(SEED_BASE + atlas_index, {
     reps <- lapply(seq_len(B), function(b) {
       draw <- sample(pats, length(pats), replace = TRUE)
@@ -704,6 +895,8 @@ bootstrap_atlas <- function(X, cells, genes, atlas_index, B = B_RESAMPLES) {
 # k_50      : as k, but dominance evaluated at pi = 0.50 only (Amendment 6)
 compute_k <- function(dominance) {
   if (ncol(dominance) != 3L) halt("A.g", "dominance matrix must have exactly 3 atlas columns")
+  # S1: every k variant is computed over exactly the 152 locked panel genes.
+  assert_inferential_set(dominance, "dominance matrix passed to compute_k")
   n_dom  <- rowSums(dominance, na.rm = TRUE)
   n_eval <- rowSums(!is.na(dominance))
   k         <- sum(n_dom >= 2L)
@@ -714,15 +907,30 @@ compute_k <- function(dominance) {
        n_dom = n_dom, n_eval = n_eval)
 }
 
-# Amendment 3 branch, on primary k against the 152-gene panel.
-# Wording is Amendment 3's own, not a paraphrase: the middle band is EXPLORATORY
-# ONLY, which is materially weaker than "reported with caveats".  Both bounds are
-# proportions of the final panel; k >= 8 is the amendment's additional floor on
-# the top band, and coincides with ceiling(5% of 152) at the bottom band.
-branch_of_k <- function(k, n_panel = 152L) {
-  hi <- ceiling(0.20 * n_panel)   # 31 at n_panel = 152
-  lo <- ceiling(0.05 * n_panel)   # 8  at n_panel = 152
-  if (k >= hi && k >= 8L)
+# Amendment 3 branch.  Wording is Amendment 3's own, not a paraphrase: the middle
+# band is EXPLORATORY ONLY, which is materially weaker than "reported with
+# caveats".
+#
+# Both bounds are PROPORTIONS of the final panel, so they are computed from
+# n_panel rather than written as literals:
+#   BUILT       iff  k/n >= 20%  AND  k >= 8   (the amendment's absolute floor)
+#   EXPLORATORY iff  5% <= k/n < 20%
+#   DESCRIPTIVE iff  k/n < 5%
+# For integer k, `k/n >= p` is exactly `k >= ceiling(p*n)` -- including when p*n
+# is itself an integer -- so ceiling() implements the proportion faithfully at
+# any n, not merely at n = 152.  verify_branch_bands() below asserts this rather
+# than leaving it as a claim in a comment.
+#
+# NB the two lower bounds are DISTINCT quantities that happen to coincide at
+# n = 152: ceiling(0.05 * 152) = 8 and the amendment's absolute floor is also 8.
+# They diverge elsewhere (n = 140 -> 7, n = 161 -> 9).  The assertion pins the
+# coincidence so a future panel-size change cannot silently conflate them.
+BRANCH_ABS_FLOOR <- 8L   # Amendment 3's absolute floor on the top band
+
+branch_of_k <- function(k, n_panel = length(PANEL_GENES)) {
+  hi <- ceiling(0.20 * n_panel)
+  lo <- ceiling(0.05 * n_panel)
+  if (k >= hi && k >= BRANCH_ABS_FLOOR)
     "epithelial subscore BUILT; subscore survival models run as SECONDARY"
   else if (k >= lo)
     "subscore reported as EXPLORATORY only"
@@ -730,9 +938,41 @@ branch_of_k <- function(k, n_panel = 152L) {
     "decomposition DESCRIPTIVE only"
 }
 
+# verify_branch_bands: the bands are checked against Amendment 3 stated as
+# PROPORTIONS, over every k for a range of panel sizes.  This is what makes the
+# construction correct by definition rather than by arithmetic luck at n = 152.
+verify_branch_bands <- function(n_panel) {
+  band <- function(s) if (grepl("BUILT", s)) "BUILT"
+                      else if (grepl("EXPLORATORY", s)) "EXPLORATORY" else "DESCRIPTIVE"
+  for (n in unique(c(n_panel, 20L, 140L, 152L, 160L, 161L, 200L, 400L))) {
+    for (k in 0:n) {
+      want <- if (k >= 0.20 * n && k >= BRANCH_ABS_FLOOR) "BUILT"
+              else if (k >= 0.05 * n) "EXPLORATORY" else "DESCRIPTIVE"
+      got  <- band(branch_of_k(k, n))
+      if (!identical(want, got))
+        halt("A.g", "Amendment 3 band mismatch at n_panel = ", n, ", k = ", k,
+             ": proportion rule gives ", want, ", branch_of_k gives ", got, ".")
+    }
+  }
+  # The two lower bounds are separate constructions; record their relationship at
+  # the live panel size instead of assuming they always agree.
+  lo <- ceiling(0.05 * n_panel)
+  message(sprintf("  ok  A.g  Amendment 3 bands verified as proportions (n=%d: DESCRIPTIVE k<%d, EXPLORATORY %d-%d, BUILT k>=%d%s)",
+                  n_panel, lo, lo, ceiling(0.20 * n_panel) - 1L, ceiling(0.20 * n_panel),
+                  if (lo == BRANCH_ABS_FLOOR)
+                    sprintf("; 5%% bound and absolute floor coincide at %d", lo)
+                  else
+                    sprintf("; 5%% bound %d differs from absolute floor %d", lo, BRANCH_ABS_FLOOR)))
+  invisible(TRUE)
+}
+
 # ==============================================================================
 # DRIVER
 # ==============================================================================
+# Pre-data invariant, same class as verify_k_ordering(): runs before any atlas
+# file is opened, so a band-definition error is caught without touching data.
+verify_branch_bands(length(PANEL_GENES))
+
 message("\n== A.a/A.b  loading the three registered atlases ==")
 LOADERS <- list(GSE125449 = load_GSE125449,
                 GSE178341 = load_GSE178341,
@@ -744,18 +984,30 @@ dat <- lapply(atlases$atlas, function(a) LOADERS[[a]]())
 names(dat) <- atlases$atlas
 
 message("\n== A.d/A.e  pseudobulk and purity sweep ==")
+# Statistics are computed over the 155-gene REPORTING set so the three
+# non-qualifying origin genes get compartment fractions (S1).  Everything
+# inferential is restricted back to the 152-gene panel immediately below.
 stats <- lapply(names(dat), function(a) {
-  st <- one_atlas_stats(dat[[a]]$X, dat[[a]]$cells, PANEL_GENES)
+  st <- one_atlas_stats(dat[[a]]$X, dat[[a]]$cells, REPORT_GENES)
   assert_monotone(st$F, a)
-  message(sprintf("  ..  %-12s evaluable genes = %d / 152", a, sum(st$evidence_ok)))
+  message(sprintf("  ..  %-12s evaluable genes = %d / %d panel (+%d / %d non-qualifying)",
+                  a, sum(st$evidence_ok[PANEL_GENES]), length(PANEL_GENES),
+                  sum(st$evidence_ok[ORIGIN_NONQUAL]), length(ORIGIN_NONQUAL)))
   st
 })
 names(stats) <- names(dat)
 
-dominance    <- vapply(stats, `[[`, logical(152), "dom")
-dominance_50 <- vapply(stats, `[[`, logical(152), "dom50")
+# THE INFERENTIAL FIREWALL (S1).  Dominance is subset to the locked 152 BEFORE
+# any k variant is computed; the three non-qualifying genes stop here.
+dominance    <- vapply(stats, function(s) s$dom[PANEL_GENES],   logical(length(PANEL_GENES)))
+dominance_50 <- vapply(stats, function(s) s$dom50[PANEL_GENES], logical(length(PANEL_GENES)))
 rownames(dominance) <- rownames(dominance_50) <- PANEL_GENES
 colnames(dominance) <- colnames(dominance_50) <- names(stats)
+assert_inferential_set(dominance,    "dominance matrix")
+assert_inferential_set(dominance_50, "dominance matrix at pi = 0.50")
+if (any(ORIGIN_NONQUAL %in% rownames(dominance)))
+  halt("A.g", "non-qualifying gene(s) reached the dominance matrix: ",
+       paste(intersect(ORIGIN_NONQUAL, rownames(dominance)), collapse = ", "))
 
 message("\n== A.g  k and variants ==")
 K   <- compute_k(dominance)
@@ -766,22 +1018,36 @@ message("  Amendment 3 branch (on primary k): ", branch_of_k(K$k))
 
 message("\n== A.f  patient-level bootstrap (B = ", B_RESAMPLES, ", unit = patient) ==")
 boots <- lapply(seq_along(dat), function(i)
-  bootstrap_atlas(dat[[i]]$X, dat[[i]]$cells, PANEL_GENES, atlas_index = i))
+  bootstrap_atlas(dat[[i]]$X, dat[[i]]$cells, REPORT_GENES, atlas_index = i))
 names(boots) <- names(dat)
 
+# Amendment 6 requires k_50 to be reported WITH its bootstrap interval, on the
+# same footing as k.  bootstrap_atlas already returns dom50_reps -- the pi = 0.50
+# dominance calls for every resample -- so k_50's interval is derived from the
+# SAME 2000 patient-level resamples as the others.  A previous version consumed
+# only dom_reps here and wrote NA into k_50's interval columns, which left an
+# Amendment 6 requirement unmet even though the replicates existed.
 k_reps <- vapply(seq_len(B_RESAMPLES), function(b) {
-  dm <- vapply(boots, function(bt) bt$dom_reps[, b], logical(152))
-  rownames(dm) <- PANEL_GENES
-  unlist(compute_k(dm)[c("k", "k_all3", "k_evalall")])
-}, numeric(3))
+  # rows are the 155 reporting genes; subset to the locked 152 before compute_k
+  dm   <- vapply(boots, function(bt) bt$dom_reps[PANEL_GENES,   b], logical(length(PANEL_GENES)))
+  dm50 <- vapply(boots, function(bt) bt$dom50_reps[PANEL_GENES, b], logical(length(PANEL_GENES)))
+  rownames(dm) <- rownames(dm50) <- PANEL_GENES
+  c(unlist(compute_k(dm)[c("k", "k_all3", "k_evalall")]),
+    k_50 = compute_k(dm50)$k)
+}, numeric(4))
+if (!identical(rownames(k_reps), c("k", "k_all3", "k_evalall", "k_50")))
+  halt("A.f", "k_reps rows are ", paste(rownames(k_reps), collapse = ", "),
+       "; expected k, k_all3, k_evalall, k_50. The CI columns below index by name.")
 k_ci <- apply(k_reps, 1, quantile, c(0.025, 0.975), na.rm = TRUE)
 
 # ==============================================================================
 # OUTPUTS  (A.g required reporting)
 # ==============================================================================
-f30 <- vapply(stats, function(s) s$F[, 1], numeric(152))
+# Reported over all 155 genes (S1): the three non-qualifying origin genes carry
+# compartment fractions and are labelled, never omitted.  `in_panel` marks which
+# rows were eligible for k.
 dom_long <- do.call(rbind, lapply(names(stats), function(a) data.frame(
-  gene        = PANEL_GENES,
+  gene        = REPORT_GENES,
   atlas       = a,
   tissue      = atlases$tissue[atlases$atlas == a],
   f_at_0.30   = stats[[a]]$F[, 1],
@@ -792,8 +1058,12 @@ dom_long <- do.call(rbind, lapply(names(stats), function(a) data.frame(
   evaluable   = stats[[a]]$evidence_ok,
   dominant    = stats[[a]]$dom,
   dominant_50 = stats[[a]]$dom50,
-  origin_six  = PANEL_GENES %in% ORIGIN_SIX,
+  origin_six  = REPORT_GENES %in% ORIGIN_SIX,
+  in_panel    = REPORT_GENES %in% PANEL_GENES,
+  qualifying  = REPORT_GENES %in% PANEL_GENES,
   stringsAsFactors = FALSE)))
+assert_n(sum(!dom_long$in_panel), 3L * length(stats), "S1",
+         "non-qualifying rows present in the reported table")
 
 write.csv(dom_long, file.path(OUTDIR, "compartment_dominance_matrix.csv"), row.names = FALSE)
 
@@ -802,7 +1072,9 @@ write.csv(data.frame(atlases_evaluable = names(evaluability),
                      n_genes = as.integer(evaluability)),
           file.path(OUTDIR, "evaluability_distribution.csv"), row.names = FALSE)
 
-per_tissue <- vapply(names(stats), function(a) sum(stats[[a]]$dom, na.rm = TRUE), integer(1))
+# panel genes only -- per-tissue dominance is an inferential quantity (S1)
+per_tissue <- vapply(names(stats),
+                     function(a) sum(stats[[a]]$dom[PANEL_GENES], na.rm = TRUE), integer(1))
 write.csv(data.frame(atlas = names(per_tissue),
                      tissue = atlases$tissue[match(names(per_tissue), atlases$atlas)],
                      n_dominant = as.integer(per_tissue)),
@@ -811,14 +1083,29 @@ write.csv(data.frame(atlas = names(per_tissue),
 k_tab <- data.frame(
   quantity = c("k", "k_all3", "k_evalall", "k_50"),
   estimate = c(K$k, K$k_all3, K$k_evalall, K50$k),
-  ci_lo    = c(k_ci[1, "k"], k_ci[1, "k_all3"], k_ci[1, "k_evalall"], NA),
-  ci_hi    = c(k_ci[2, "k"], k_ci[2, "k_all3"], k_ci[2, "k_evalall"], NA),
+  ci_lo    = c(k_ci[1, "k"], k_ci[1, "k_all3"], k_ci[1, "k_evalall"], k_ci[1, "k_50"]),
+  ci_hi    = c(k_ci[2, "k"], k_ci[2, "k_all3"], k_ci[2, "k_evalall"], k_ci[2, "k_50"]),
   stringsAsFactors = FALSE)
+if (anyNA(k_tab$ci_lo) || anyNA(k_tab$ci_hi))
+  halt("A.g", "k_estimates has a missing interval bound for: ",
+       paste(k_tab$quantity[is.na(k_tab$ci_lo) | is.na(k_tab$ci_hi)], collapse = ", "),
+       ". Amendment 6 requires k_50 to be reported with its bootstrap interval.")
 write.csv(k_tab, file.path(OUTDIR, "k_estimates.csv"), row.names = FALSE)
 
-# Origin six as a labelled subset: SOCS3/MYC/IL6 in panel, BCL2/MMP9/HGF not.
+# Origin six as a labelled subset (prespecification section 4): SOCS3/MYC/IL6
+# qualify, BCL2/MMP9/HGF do not.  All six appear, with `qualifying` and a reason;
+# a previous version drew from a 152-gene table in which the non-qualifying three
+# could not appear, so `qualifying` was TRUE in every row.
 origin_tab <- dom_long[dom_long$gene %in% ORIGIN_SIX, ]
-origin_tab$qualifying <- origin_tab$gene %in% ORIGIN_IN_PANEL
+origin_tab$non_qualifying_reason <- ifelse(
+  origin_tab$gene %in% PANEL_GENES, "",
+  ifelse(origin_tab$gene == "BCL2", "no ChIP-seq evidence in any group (fails Criterion B)",
+                                    "mouse ChIP-seq only (excluded by Amendment 2, human-only)"))
+assert_n(length(unique(origin_tab$gene)), 6L, "S1", "origin-six genes in the reported table")
+if (!setequal(unique(origin_tab$gene[!origin_tab$qualifying]), ORIGIN_NONQUAL))
+  halt("S1", "origin-six table's non-qualifying rows are ",
+       paste(sort(unique(origin_tab$gene[!origin_tab$qualifying])), collapse = ", "),
+       "; expected BCL2, MMP9, HGF.")
 write.csv(origin_tab, file.path(OUTDIR, "origin_six_compartment.csv"), row.names = FALSE)
 
 writeLines(c(
