@@ -715,10 +715,19 @@ compute_k <- function(dominance) {
 }
 
 # Amendment 3 branch, on primary k against the 152-gene panel.
+# Wording is Amendment 3's own, not a paraphrase: the middle band is EXPLORATORY
+# ONLY, which is materially weaker than "reported with caveats".  Both bounds are
+# proportions of the final panel; k >= 8 is the amendment's additional floor on
+# the top band, and coincides with ceiling(5% of 152) at the bottom band.
 branch_of_k <- function(k, n_panel = 152L) {
-  if (k >= ceiling(0.20 * n_panel)) "epithelial-restricted subscore is viable"
-  else if (k >= 8L)                 "reduced-panel subscore, reported with caveats"
-  else                              "descriptive-only"
+  hi <- ceiling(0.20 * n_panel)   # 31 at n_panel = 152
+  lo <- ceiling(0.05 * n_panel)   # 8  at n_panel = 152
+  if (k >= hi && k >= 8L)
+    "epithelial subscore BUILT; subscore survival models run as SECONDARY"
+  else if (k >= lo)
+    "subscore reported as EXPLORATORY only"
+  else
+    "decomposition DESCRIPTIVE only"
 }
 
 # ==============================================================================
