@@ -438,11 +438,41 @@ load_GSE125449 <- function() {
   })
   names(mats) <- sets
 
-  # Genes must agree across sets before cbind, else the row space is incoherent.
-  if (!identical(rownames(mats$Set1), rownames(mats$Set2)))
-    halt(sec, "Set1 and Set2 gene rows differ; cannot combine without a join")
+  # AMENDMENT 12, 2026-08-01: the two sets have DIFFERENT gene universes
+  # (Set1 20,124 rows; Set2 19,572), so they are combined on the INTERSECTION.
+  # Union with 0-fill would record an unmeasured gene as measured-at-zero,
+  # violating A.d's "absence is NA, never 0"; union with NA-fill would give the
+  # two sets different denominators. Intersection keeps every retained value a
+  # measured one.
+  assert_n(nrow(mats$Set1), 20124L, sec, "Set1 gene rows as deposited")
+  assert_n(nrow(mats$Set2), 19572L, sec, "Set2 gene rows as deposited")
 
-  X <- cbind(mats$Set1, mats$Set2)
+  common <- intersect(rownames(mats$Set1), rownames(mats$Set2))
+  if (anyDuplicated(common))
+    halt(sec, "duplicate gene symbols in the Set1/Set2 intersection: ",
+         paste(utils::head(unique(common[duplicated(common)]), 10), collapse = ", "),
+         ". Name-based row selection would take only the first.")
+  assert_n(length(common), 18367L, sec, "genes in the Set1/Set2 intersection (Amendment 12)")
+
+  # The six panel genes Amendment 12 names must be exactly the ones lost, so a
+  # future deposit revision cannot silently change coverage.
+  AMDT12_EXCLUDED <- c("CCL7", "CRLF2", "CSF2", "IL9R", "ITGB3", "LEP")
+  in_either <- union(rownames(mats$Set1), rownames(mats$Set2))
+  lost <- sort(setdiff(intersect(PANEL_GENES, in_either), common))
+  if (!identical(lost, sort(AMDT12_EXCLUDED)))
+    halt(sec, "Amendment 12 names CCL7, CRLF2, CSF2, IL9R, ITGB3, LEP as the panel genes ",
+         "excluded by the intersection, but the observed set is ",
+         if (length(lost)) paste(lost, collapse = ", ") else "(none)",
+         ". The deposit's gene universes have changed; re-check coverage before proceeding.")
+  if (length(intersect(lost, ORIGIN_SIX)))
+    halt(sec, "an origin-six gene is excluded by the Amendment 12 intersection: ",
+         paste(intersect(lost, ORIGIN_SIX), collapse = ", "),
+         ". Amendment 12 states no origin-six gene is affected.")
+  assert_n(sum(PANEL_GENES %in% common), 143L, sec, "panel genes retained in GSE125449 (Amendment 12)")
+  message("  ok  A.a/GSE125449   Amendment 12 intersection: excluded ",
+          paste(lost, collapse = ", "), " (panel coverage 143/152)")
+
+  X <- cbind(mats$Set1[common, , drop = FALSE], mats$Set2[common, , drop = FALSE])
   meta$cell_id <- meta$`Cell Barcode`
   keep <- meta$cell_id %in% colnames(X)
   if (!any(keep)) halt(sec, "no metadata barcode matches a matrix column")

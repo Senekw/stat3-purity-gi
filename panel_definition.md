@@ -455,3 +455,36 @@ every gene at every grid point, and k is unaffected. Only the reported breakdown
 of non-epithelial compartments differs.
 
 Made blind: no compartment fraction for the 152-gene panel had been computed.
+
+### Amendment 12 — 2026-08-01
+
+For GSE125449, the two deposited sets (Set1, 20,124 gene rows; Set2, 19,572) are
+combined on the INTERSECTION of their gene universes. Genes present in only one
+set are excluded from that atlas and reported.
+
+Reason: analysis_plan.md v1.5 specifies combining the sets but does not state how
+to reconcile their differing gene universes, and load_GSE125449's guard correctly
+halts rather than cbind-ing mismatched row spaces. Of the three available
+reconciliations, only intersection avoids inventing a value. Union with zero-fill
+would record a gene as measured at zero when it was not measured, violating A.d's
+rule that absence is NA and never 0. Union with NA-fill would give Set1 and Set2
+different denominators, so their pseudobulk fractions would not be comparable
+across the very sets being combined. Intersection keeps every retained value a
+measured one.
+
+Affected panel genes, excluded from GSE125449 only: CCL7, CRLF2, CSF2, IL9R,
+ITGB3, LEP. Panel coverage in this atlas becomes 143 of 152. No origin-six gene is
+affected. These genes remain fully evaluable in GSE178341 and Peng, so each can
+still reach k on those two atlases under Amendment 5's two-of-three requirement.
+
+DIRECTION OF BIAS: this amendment is NOT conservative. Six genes lose one of their
+three possible atlases, so each must now be dominant in both remaining atlases
+rather than any two of three. That can only reduce k or leave it unchanged, making
+the descriptive-only branch more likely — the branch most consistent with this
+study's hypothesis. This is the third such effect, after Amendments 9 and 10, and
+is disclosed on the same footing. The evaluability distribution and the per-atlas
+dominance matrix are reported so readers can see exactly which genes each
+reduction affected, and the six names above are reported explicitly.
+
+Made blind: no compartment fraction for the 152-gene panel had been computed. The
+only content inspected was gene row names and set dimensions.
