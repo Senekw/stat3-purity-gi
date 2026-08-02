@@ -65,6 +65,29 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
+## 32. THE CODE-PATH IDENTITY GUARD IN 09 WAS TAUTOLOGICAL
+
+Reviewer finding c829bc1c, correct and mine. 09's guard was meant to prove the
+null path calls the same functions as the real panel. It compared
+`fns$score_cohort` to `e07$score_cohort` — the object it had just been copied
+from — so it could never be FALSE. The same class of defect the audits have been
+catching elsewhere, sitting in the check meant to certify the decisive analysis.
+
+Replaced with a comparison against the COMMITTED FILES, freshly sourced. Note
+`identical()` on closures compares environments too, so two sourcings of one file
+are NOT identical and the comparison must be on the function BODY. All 8 reused
+functions are checked, and a negative control asserts the comparison can
+discriminate two different functions. Verified: passes for matching bodies, FALSE
+for `score_cohort` vs `meta_one`, TRUE across independent sourcings. Results
+bit-identical before and after.
+
+Related, finding f73b1d89: the run order said "reuse the functions from 06 and
+07". The scoring functions are in 07, but the MODEL functions are in 08, not 06 —
+06 computes purity and defines nothing this path needs. Sourcing 07 + 08 is what
+"the identical code path" requires; 06 + 07 would never reach the models. Now
+documented in the source rather than left as a silent divergence from the
+instruction.
+
 ## 29. THE 09 RUN ORDER MISSTATED THREE B.m PARAMETERS; THE REGISTERED TEXT WAS FOLLOWED
 
 The Part B run order of 2026-08-02 specified three B.m parameters from memory that

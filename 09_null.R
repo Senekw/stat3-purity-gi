@@ -45,9 +45,17 @@
 # subset of it. Asserted numerically identical to per-set score_cohort() on a
 # sample of sets before it is relied on (see the identity gate below).
 #
-# The null sets are scored and fitted by the SAME FUNCTION OBJECTS as the real
-# panel: score_cohort() from 07 and complete_case_set()/fit_cohort()/meta_one()
-# from 08, sourced and asserted identical rather than reimplemented.
+# The null sets are scored and fitted by the same functions as the real panel,
+# sourced from the committed scripts and asserted against their definitions there
+# rather than reimplemented.
+#
+# WHICH SCRIPTS: the run order said "reuse the functions from 06 and 07". The
+# scoring functions are indeed in 07 (score_cohort, expression_log2tpm,
+# zero_variance_genes), but the MODEL functions are in 08, not 06 --
+# complete_case_set, fit_cohort, model_formula, epv_band, meta_one. 06 computes
+# purity and defines no function this path needs. Sourcing 07 + 08 is therefore
+# what "the identical code path as the real panel" requires; 06 + 07 would not
+# reach the models at all. Recorded because the run order named different files.
 
 suppressPackageStartupMessages({
   library(SummarizedExperiment)
@@ -218,13 +226,29 @@ if (sys.nframe() == 0L) {
               META_ELIGIBLE = e08$META_ELIGIBLE)
   for (n in names(fns))
     if (is.null(fns[[n]])) halt("B.m", "function '", n, "' was not found in 07/08")
-  # Identity, not just presence: the null path must call the SAME objects.
-  if (!identical(fns$score_cohort, e07$score_cohort) ||
-      !identical(fns$fit_cohort, e08$fit_cohort) ||
-      !identical(fns$meta_one, e08$meta_one))
-    halt("B.m", "the null path is not bound to the real panel's function objects")
-  message("  ok  B.m        null path bound to 07/08's own function objects (",
-          length(fns), " reused)")
+  # The earlier form of this guard compared fns$score_cohort to e07$score_cohort
+  # -- the object it had just been copied from -- so it could never be FALSE. That
+  # is the same class of defect the audits have been catching elsewhere, and it
+  # was here in the check meant to prove this script reuses the real panel's code.
+  #
+  # The real question is whether the functions bound here are the ones the COMMITTED
+  # scripts define. identical() on closures compares environments too, so two
+  # sourcings of the same file are NOT identical; the comparison must be on the
+  # function BODY. A body mismatch means 07/08 changed under this script's feet.
+  chk_env <- new.env(); sys.source("07_score.R", envir = chk_env)
+  chk8    <- new.env(); sys.source("08_survival.R", envir = chk8)
+  body_same <- function(a, b) identical(deparse(body(a)), deparse(body(b)))
+  for (nm in c("score_cohort", "expression_log2tpm", "zero_variance_genes"))
+    if (!body_same(fns[[nm]], chk_env[[nm]]))
+      halt("B.m", "'", nm, "' does not match the definition in 07_score.R")
+  for (nm in c("complete_case_set", "fit_cohort", "model_formula", "epv_band", "meta_one"))
+    if (!body_same(fns[[nm]], chk8[[nm]]))
+      halt("B.m", "'", nm, "' does not match the definition in 08_survival.R")
+  # And prove the guard can fire, rather than trusting that it would.
+  if (body_same(fns$score_cohort, fns$meta_one))
+    halt("B.m", "the body comparison cannot discriminate two different functions")
+  message("  ok  B.m        all 8 reused functions match their committed definitions ",
+          "in 07_score.R / 08_survival.R (body comparison, negative control passed)")
 
   # ---- inputs -------------------------------------------------------------
   clin <- read.csv(file.path(OUTDIR, "clinical_analysis_set.csv"), stringsAsFactors = FALSE)
