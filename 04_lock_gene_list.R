@@ -37,8 +37,10 @@ if (!all(mx >= 0 & mx <= 1)) halt("detection values outside [0,1]; units are not
 ##   An earlier revision of this comment said the Amendment 12 genes "get two
 ##   atlases while every other gene gets three".  Both halves are wrong. CRLF2 and
 ##   LEP have ONE evaluable atlas, not two -- Amendment 12 removes GSE125449 and
-##   the floor removes Peng -- and three genes with only two atlases (DNTT, INHBE,
-##   OPRM1, PAX3) are not Amendment 12 genes at all.
+##   the floor removes Peng -- and three genes with only two atlases (INHBE,
+##   OPRM1, PAX3) are not Amendment 12 genes at all.  The single-atlas set is
+##   exactly CRLF2, DNTT and LEP; DNTT reaches n=1 through the evidence floor
+##   alone, since it is not an Amendment 12 gene.
 ## This matters because a gene held to the 1% threshold over fewer atlases has
 ## fewer chances to clear it. Recorded per gene in n_atlases_evaluable rather than
 ## left implicit; asserted below so the disparity cannot drift unnoticed.
