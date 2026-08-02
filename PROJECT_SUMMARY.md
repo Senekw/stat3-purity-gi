@@ -451,6 +451,34 @@ COAD M2/M4, STAD M4 and PAAD M3 all p_tt > 0.26.
 
 Age, sex and stage are all below 1.2 in every cohort.
 
+### B.4a Multiplicity (B.n)
+
+Per-cohort estimates are secondary and descriptive. B.n adjusts them by
+Benjamini–Hochberg **within model**, across the **six meta-analysed cohorts**;
+CHOL is not in the family and receives `NA`. **No correction is applied across
+M1–M4** — B.n states they are "a prespecified nested sequence addressing a single
+question, not four independent hypotheses". The pooled estimate is untouched: it
+is "one estimand, one test".
+
+Of 24 per-cohort tests, **8 reach p < 0.05 raw and 3 survive BH at q = 0.05**:
+
+| Cohort | Model | β | p raw | p BH |
+|---|---|---|---|---|
+| LIHC | M4 | 0.3626 | 0.00068 | **0.0041** |
+| LIHC | M3 | 0.3215 | 0.00215 | **0.0129** |
+| PAAD | M3 | 0.4578 | 0.00681 | **0.0204** |
+| LIHC | M1 | 0.2331 | 0.00841 | 0.0505 |
+| PAAD | M1 | 0.2769 | 0.01886 | 0.0566 |
+| PAAD | M4 | 0.4111 | 0.01767 | 0.0530 |
+| LIHC | M2 | 0.2339 | 0.00967 | 0.0580 |
+| PAAD | M2 | 0.2754 | 0.02299 | 0.0690 |
+
+Verified by independent recomputation of `p.adjust(..., method = "BH")` within
+each model, and by asserting that no adjusted value falls below its raw value and
+that no descriptive cohort received one. Adding B.n left **every other committed
+number bit-identical** — 48 output files compared; only `survival_per_cohort.csv`
+and its CHOL subset changed, and only by gaining the two new columns.
+
 ### Registered sensitivities
 
 | Sensitivity | M2 pooled | M4 pooled | k |
@@ -603,6 +631,7 @@ records what each amendment itself states, not a later gloss.
 | 13 | 2026-08-01 | Peng raw counts **recovered by inverting the deposited normalisation** | The deposit has no count layer; `raw/X` is log1p-CP10K, verified as `sum(expm1(x)) = 10000` per cell | Recovery verified exact: recovered sums equal the deposited `n_counts` to 0.000e+00, max deviation from integers 1.17e-02, far below the 0.5 at which rounding could err |
 | 14 | 2026-08-01 | k and variants computed over the **locked 152-gene panel**, not the final scoring list | k describes the panel's compartment behaviour; the scoring list is a different object serving a different purpose | Keeps k independent of Part B's exclusion rules. **Its stated reason is partly false** — see §C.4 |
 | 15 | 2026-08-02 | Exclusion rule 3.3 on its **literal** reading: any gene annotated chrX or chrY, including pseudoautosomal. Final list 140 | Settles an ambiguity the author's earlier justification had gotten backwards | Removes 3 more genes (140 vs 143). Explicitly relies on neither the assistant's withdrawn dosage argument nor the auditor's replacement objection |
+| 16 | 2026-08-02 | **Specifies script 10 (external validation)**, absent from analysis_plan.md v1.5 which ends at B.o. Four cohorts fixed in advance; FU-iCCA phosphoproteomic concordance designated primary | The original six-gene score was validated against RPPA in the same dataset its genes were selected from; this removes that circularity | **Made after the Part B primary result was known — disclosed, not absorbed.** Every parameter fixed before any validation data is opened. No pooling with discovery. Stated limitation: the phosphosite is bulk, so it can show the score tracks STAT3 phosphorylation but not which cells it occurs in |
 
 ## C.2 Every audit pass
 
@@ -738,32 +767,35 @@ freshly-sourced committed files with a negative control.
 
 ## R.1 Script 10 — external validation (not started)
 
-**Not specified in `analysis_plan.md`.** The plan runs A.a–A.g and B.h–B.o, and
-B.o is its last section; there is no registered external-validation section, no
-named validation cohort, and no registered endpoint or covariate set for one.
-Scripts 05–08 were written as **pure functions** precisely so that a validation
-cohort reuses the identical code path rather than a copy-pasted variant, so the
-machinery is ready — but the specification is not.
+**Now specified by Amendment 16** (2026-08-02), which supplies the section
+`analysis_plan.md` v1.5 lacked. Four cohorts fixed in advance: FU-iCCA (NODE
+OEP001105), GSE39582, GSE66229 and ICGC PACA-AU/PACA-CA. The **primary** validation
+analysis is FU-iCCA phosphoproteomic concordance — the transcriptomic score
+correlated against the directly measured STAT3 pY705 phosphosite — because the
+original six-gene score was validated against RPPA in the same dataset its genes
+came from, and that circularity is what this removes. Survival replication in the
+other three is secondary. Purity is ESTIMATE-derived throughout; the 140-gene list
+is primary with 143 as sensitivity; **no pooling with the TCGA discovery cohorts**.
 
-Before 10 is written, a dated amendment should fix, at minimum: which cohort(s);
-the endpoint and censoring horizon; whether the primary list is 140 or 143 there;
-whether purity comes from CPE, ESTIMATE, or a cohort-specific source; and whether
-the estimand is `attenuation_total` again or the M1/M2 association alone. Choosing
-any of these after seeing a validation result would be a researcher degree of
-freedom the amendment record cannot neutralise — the same reasoning Amendment 9
-used when it declined to substitute a replacement atlas.
+The amendment discloses that it was made after the Part B primary result was
+known — unavoidable, since the plan contained no validation section — and fixes
+every parameter before any validation data is opened.
+
+Scripts 05–08 were written as pure functions precisely so a validation cohort
+reuses the identical code path, so the machinery is ready. **The data is not**:
+see `DATA_NEEDED.md`. Two of the four cohorts need credentials a human must
+obtain, and the primary cohort has the hardest access path of the four.
 
 ## R.2 Registered but not yet run
 
 | Item | Section | Status |
 |---|---|---|
-| **B.n multiplicity — Benjamini–Hochberg FDR** across the six meta-analysed cohorts, q = 0.05, raw and adjusted in the same table | B.n | **NOT IMPLEMENTED.** `output/survival_per_cohort.csv` reports a raw `p` per cohort per model with no adjusted column. B.n applies "where they are tested", and they are reported, so this is a genuine gap — not a deferral. CHOL is not in the family; no correction across M1–M4 |
+| **B.n multiplicity — Benjamini–Hochberg FDR** | B.n | **IMPLEMENTED 2026-08-02.** `survival_per_cohort.csv` now carries `p_adj_BH` and `multiplicity_family` beside the raw `p`. See §B.4a |
 | **`CMSclassifier` concordance check** against CMScaller's calls | B.o | Deferred. The package is not installed; CMScaller 2.0.1 alone produced the reported calls |
 | **Score distribution by CMS as a figure** | B.o.1 | Deferred to the figures script. The underlying cross-tabulation and χ² are computed and committed |
 
 Neither B.o deferral gates any reported result — B.o "does not gate the primary
-analysis" by its own text. **B.n is different**: it is a registered reporting
-requirement on numbers that are already in a committed output file.
+analysis" by its own text.
 
 ## R.3 Figures
 

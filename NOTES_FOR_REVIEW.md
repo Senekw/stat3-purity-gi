@@ -65,7 +65,52 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
-## 33. GAP — B.n's Benjamini-Hochberg adjustment is registered but NOT implemented
+## 34. AMENDMENT 16 — script 10 specified; DATA_NEEDED.md records two access blockers
+
+Amendment 16 supplies the external-validation section analysis_plan.md v1.5
+lacked. Written before any validation data was opened, and it discloses in its own
+text that it was made after the Part B primary result was known.
+
+DATA_NEEDED.md was built by querying the repositories, not from memory. Two
+findings that bear on whether the amendment is runnable as written:
+
+**FU-iCCA (the PRIMARY analysis) has the hardest access path of the four
+cohorts.** NODE's project page is a JavaScript shell (906 bytes, no file names in
+the HTML) and there is no public API -- every documented-looking endpoint returns
+{"code":500,"msg":"404 NOT_FOUND"}. The frontend bundle exposes separate
+/download/node/data/:id and /download/node/data/public/:id routes and carries
+user-facing text about restricted data requiring the submitter's authorisation.
+Whether OEP001105 is public or restricted could not be determined without a
+browser session and is the first thing to check: if restricted, the primary
+analysis depends on an author request with a lead time in weeks. The paper is
+closed-access (no OA copy via Unpaywall, Semantic Scholar or PMC), so the
+data-availability statement must be read from the publisher PDF.
+
+Also unconfirmed: whether the deposit reports **STAT3 pY705 as a distinct
+phosphosite**. Amendment 16's primary analysis is defined on that site. If the
+deposit carries only protein-level STAT3 or a different site, the primary analysis
+as registered cannot run, and that must be raised before any substitute is
+considered.
+
+**GSE66229 has no survival data in GEO.** Both the SuperSeries and its GSE62254
+tumour subseries carry exactly two characteristic fields, `tissue` and `patient`.
+No survival time, no event, no age/sex/stage; the suppl/ directory holds only the
+RAW tar and filelist.txt. The ACRG clinical data must come from the Cristescu 2015
+Nat Med supplement. If that supplement provides survival but not age/sex/stage,
+then per Amendment 16 only M1 is fittable there and M2-M4 are reported as not
+fitted -- a legitimate outcome under the amendment, not grounds for proxies.
+
+**ICGC could not be checked at all**: dcc.icgc.org and docs.icgc-argo.org are both
+outside this environment's network allowlist. Note the legacy DCC portal has been
+retired, so the current host must be confirmed rather than assumed, and ICGC
+RNA-seq is typically distributed as normalised counts rather than the TPM B.h
+specifies -- any conversion is a deviation needing its own amendment.
+
+**Verified feasible:** all 140 and all 143 genes are present on GPL570 (checked
+against the platform table's 24,442 symbols), so both microarray cohorts can carry
+the full score.
+
+## 33. RESOLVED — B.n's Benjamini-Hochberg adjustment is now implemented
 
 Found while writing PROJECT_SUMMARY.md, by reading the plan section by section
 against the committed outputs rather than against the scripts.
@@ -91,10 +136,20 @@ Scope, per B.n as written:
   a single question, not four independent hypotheses"
 - so the family is 6 p-values per model, adjusted within model
 
-Not implemented here because it changes what a committed output reports and the
-Part A/B work is closed. It is a one-line addition to 08's per-cohort table
-(`p.adjust(p[meta_eligible], method = "BH")` within model) and should be made
-before the per-cohort table appears in the paper.
+**Implemented 2026-08-02.** `survival_per_cohort.csv` now carries `p_adj_BH` and
+`multiplicity_family` beside the raw `p`. Family = the six meta-analysed cohorts,
+within model; CHOL receives NA and is labelled "not in family (descriptive cohort,
+B.n)". Two guards: BH is monotone so an adjusted value below its raw value halts,
+and a descriptive cohort receiving an adjusted value halts.
+
+Of 24 per-cohort tests, 8 reach p < 0.05 raw and **3 survive BH at q = 0.05**
+(LIHC M4 0.0041, LIHC M3 0.0129, PAAD M3 0.0204). LIHC M1 lands at 0.0505 and
+PAAD M4 at 0.0530 -- both just outside.
+
+Re-running 08 left every other committed number bit-identical: 48 output files
+compared, only `survival_per_cohort.csv` and its CHOL subset changed, and only by
+gaining the two new columns. The adjustment was verified by independent
+recomputation of `p.adjust(..., method="BH")` within each model.
 
 ## 32. THE CODE-PATH IDENTITY GUARD IN 09 WAS TAUTOLOGICAL
 

@@ -1,0 +1,31 @@
+
+== B.j/B.k/B.l  survival, attenuation, meta-analysis ==
+  ok  B.j        joined rows == clinical rows                             = 1793
+  ok  B.j        every model the EPV rule says to fit converged
+  ok  B.n        BH applied within model, family sizes: M1=6 M2=6 M3=6 M4=6  (CHOL excluded; no correction across M1-M4)
+  ..  B.n        per-cohort tests at 0.05: 8 raw, 3 after BH
+  ..  B.k        paired bootstrap, B = 2000, seed 20260731
+  ok  B.l        primary attenuation pool formed over k = 6 cohorts (COAD+READ+STAD+ESCA+PAAD+LIHC)
+  ok  B.l        contributing cohort set is identical for M2 and M4 (6 cohorts); no matched re-pool needed
+  ..  B.l        sensitivity refit: alt_endpoint
+  ..  B.l        sensitivity refit: estimate_purity
+  ..  B.l        sensitivity refit: score_143
+  ..  B.l        sensitivity refit: no_redacted
+  !!  B.l        alt_endpoint: M2 and M4 pools differ (M2 k=6, M4 k=5); matched re-pool over k=5
+
+-- per cohort, per model --
+
+-- attenuation --
+
+-- meta-analysis --
+
+-- attenuation, meta-analysed (PRIMARY) --
+
+-- PH tests --
+
+-- VIF (M4) --
+
+-- score/stromal/purity correlations --
+
+B.j/B.k/B.l complete.
+There were 50 or more warnings (use warnings() to see the first 50)

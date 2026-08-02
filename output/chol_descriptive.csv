@@ -1,5 +1,5 @@
-"cohort","model","n","events","params","epv","band","use_sex","fitted","beta","se","HR","HR_lo","HR_hi","p","meta_eligible"
-"TCGA-CHOL","M1",35,18,1,18,"fit_and_pool",TRUE,TRUE,-0.160616,0.216782,0.8516,0.5568,1.3025,0.4587,FALSE
-"TCGA-CHOL","M2",35,18,5,3.6,"do_not_fit",TRUE,FALSE,NA,NA,NA,NA,NA,NA,FALSE
-"TCGA-CHOL","M3",35,18,6,3,"do_not_fit",TRUE,FALSE,NA,NA,NA,NA,NA,NA,FALSE
-"TCGA-CHOL","M4",35,18,7,2.57,"do_not_fit",TRUE,FALSE,NA,NA,NA,NA,NA,NA,FALSE
+"cohort","model","n","events","params","epv","band","use_sex","fitted","beta","se","HR","HR_lo","HR_hi","p","meta_eligible","p_adj_BH","multiplicity_family"
+"TCGA-CHOL","M1",35,18,1,18,"fit_and_pool",TRUE,TRUE,-0.160616,0.216782,0.8516,0.5568,1.3025,0.4587,FALSE,NA,"not in family (descriptive cohort, B.n)"
+"TCGA-CHOL","M2",35,18,5,3.6,"do_not_fit",TRUE,FALSE,NA,NA,NA,NA,NA,NA,FALSE,NA,"not in family (descriptive cohort, B.n)"
+"TCGA-CHOL","M3",35,18,6,3,"do_not_fit",TRUE,FALSE,NA,NA,NA,NA,NA,NA,FALSE,NA,"not in family (descriptive cohort, B.n)"
+"TCGA-CHOL","M4",35,18,7,2.57,"do_not_fit",TRUE,FALSE,NA,NA,NA,NA,NA,NA,FALSE,NA,"not in family (descriptive cohort, B.n)"

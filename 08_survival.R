@@ -362,6 +362,55 @@ if (sys.nframe() == 0L) {
                  stringsAsFactors = FALSE)
     }))
   }))
+  # ---------------------------------------------------------------- B.n
+  # "The per-cohort estimates are secondary and descriptive. Where they are
+  # tested, p-values are adjusted across the six meta-analysed cohorts by
+  # Benjamini-Hochberg FDR at q = 0.05, and both raw and adjusted values are
+  # reported in the same table."
+  #
+  # FAMILY: the six META-ANALYSED cohorts, WITHIN model. CHOL is excluded from the
+  # family by B.n's own text ("CHOL is reported descriptively and is not counted in
+  # the multiplicity family") and receives NA, not an adjusted value computed over
+  # a family it does not belong to.
+  #
+  # NO CORRECTION ACROSS M1-M4. B.n: they "are a prespecified nested sequence
+  # addressing a single question, not four independent hypotheses; no correction is
+  # applied across them, and this is stated." Adjusting within model rather than
+  # over the whole 4x6 grid is that statement made operational.
+  #
+  # The primary inference is unaffected: B.n applies no correction to the pooled
+  # estimate, which is "one estimand, one test".
+  per_cohort$p_adj_BH <- NA_real_
+  per_cohort$multiplicity_family <- NA_character_
+  for (m in names(MODEL_PARAMS)) {
+    ix <- which(per_cohort$model == m & per_cohort$meta_eligible & !is.na(per_cohort$p))
+    if (!length(ix)) next
+    per_cohort$p_adj_BH[ix] <- signif(stats::p.adjust(per_cohort$p[ix], method = "BH"), 4)
+    per_cohort$multiplicity_family[ix] <-
+      sprintf("BH within %s, k=%d meta-analysed cohorts", m, length(ix))
+  }
+  per_cohort$multiplicity_family[!per_cohort$meta_eligible] <-
+    "not in family (descriptive cohort, B.n)"
+
+  # BH is monotone and never shrinks a p-value; an adjusted value below its raw
+  # value would mean the family was mis-assembled.
+  bad_bh <- which(!is.na(per_cohort$p_adj_BH) & per_cohort$p_adj_BH < per_cohort$p - 1e-9)
+  if (length(bad_bh))
+    halt("B.n", "BH-adjusted p is below the raw p for: ",
+         paste(per_cohort$cohort[bad_bh], per_cohort$model[bad_bh], collapse = ", "))
+  if (any(!is.na(per_cohort$p_adj_BH[!per_cohort$meta_eligible])))
+    halt("B.n", "a descriptive cohort received an adjusted p-value; ",
+         "CHOL is not in the multiplicity family")
+  n_fam <- vapply(names(MODEL_PARAMS), function(m)
+    sum(per_cohort$model == m & !is.na(per_cohort$p_adj_BH)), integer(1))
+  message("  ok  B.n        BH applied within model, family sizes: ",
+          paste(sprintf("%s=%d", names(n_fam), n_fam), collapse = " "),
+          "  (CHOL excluded; no correction across M1-M4)")
+  n_sig_raw <- sum(per_cohort$p < 0.05 & per_cohort$meta_eligible, na.rm = TRUE)
+  n_sig_adj <- sum(per_cohort$p_adj_BH < 0.05, na.rm = TRUE)
+  message(sprintf("  ..  B.n        per-cohort tests at 0.05: %d raw, %d after BH",
+                  n_sig_raw, n_sig_adj))
+
   write.csv(per_cohort, file.path(OUTDIR, "survival_per_cohort.csv"), row.names = FALSE)
 
   # ---- attenuation + paired bootstrap (B.k) --------------------------------

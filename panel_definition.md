@@ -629,3 +629,46 @@ locked 152-gene panel, not the scoring set.
 
 Made blind: no score has been constructed, no survival model fitted, and no
 outcome data opened.
+
+### Amendment 16 — 2026-08-02
+
+External validation (script 10) is specified here, having been absent from
+analysis_plan.md v1.5, which ends at B.o.
+
+Cohorts, fixed in advance:
+  - FU-iCCA (Dong et al. 2022, NODE OEP001105), n up to 255 with RNA-seq and 214
+    with phosphoproteomics
+  - GSE39582 (Marisa et al., colorectal)
+  - GSE66229 (ACRG, gastric)
+  - ICGC pancreatic (PACA-AU, PACA-CA)
+
+PRIMARY VALIDATION ANALYSIS — FU-iCCA phosphoproteomic concordance. The
+transcriptomic score is computed by the identical B.h pipeline and correlated with
+the directly measured STAT3 pY705 phosphosite. Pearson and Spearman with 95% CIs
+and n. This is the only out-of-sample test of whether the score tracks STAT3
+phosphorylation. It is designated primary because the original six-gene score was
+validated against RPPA in the same dataset from which its genes were selected, and
+that circularity is what this analysis removes.
+
+Limitation, stated in advance: the phosphosite is measured in bulk tissue and
+carries the same compartment ambiguity as the mRNA score. It can establish that
+the score tracks STAT3 phosphorylation; it cannot establish which cells that
+phosphorylation occurs in.
+
+SECONDARY — survival replication in GSE39582, GSE66229 and ICGC. The score is
+computed identically and the B.j model sequence fitted as far as each cohort's
+covariates permit. Where a covariate is unavailable, the model requiring it is not
+fitted and is reported as not fitted, never approximated. Purity is ESTIMATE-
+derived throughout, since CPE does not cover these cohorts. The estimand is the
+per-cohort score log-HR; attenuation is reported only where both M2 and M4 fit.
+
+Gene list: the 140-gene primary list, with the 143-gene list as sensitivity, as in
+Part B.
+
+No pooling with the TCGA discovery cohorts. Validation cohorts are reported
+separately and are not meta-analysed with discovery.
+
+Made after the Part B primary result was known. That is unavoidable — the plan
+contained no validation section — and is disclosed rather than absorbed. Every
+parameter above is fixed before any validation data is opened, and no validation
+result has been computed.

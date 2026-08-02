@@ -1,17 +1,3 @@
-
-== B.j/B.k/B.l  survival, attenuation, meta-analysis ==
-  ok  B.j        joined rows == clinical rows                             = 1793
-  ok  B.j        every model the EPV rule says to fit converged
-  ..  B.k        paired bootstrap, B = 2000, seed 20260731
-  ok  B.l        primary attenuation pool formed over k = 6 cohorts (COAD+READ+STAD+ESCA+PAAD+LIHC)
-  ok  B.l        contributing cohort set is identical for M2 and M4 (6 cohorts); no matched re-pool needed
-  ..  B.l        sensitivity refit: alt_endpoint
-  ..  B.l        sensitivity refit: estimate_purity
-  ..  B.l        sensitivity refit: score_143
-  ..  B.l        sensitivity refit: no_redacted
-  !!  B.l        alt_endpoint: M2 and M4 pools differ (M2 k=6, M4 k=5); matched re-pool over k=5
-
--- per cohort, per model --
     cohort model   n events params    epv              band use_sex fitted
  TCGA-COAD    M1 455    102      1 102.00      fit_and_pool    TRUE   TRUE
  TCGA-COAD    M2 455    102      5  20.40      fit_and_pool    TRUE   TRUE
@@ -41,37 +27,64 @@
  TCGA-CHOL    M2  35     18      5   3.60        do_not_fit    TRUE  FALSE
  TCGA-CHOL    M3  35     18      6   3.00        do_not_fit    TRUE  FALSE
  TCGA-CHOL    M4  35     18      7   2.57        do_not_fit    TRUE  FALSE
-      beta       se     HR  HR_lo  HR_hi         p meta_eligible
-  0.005159 0.094338 1.0052 0.8355 1.2093 0.9564000          TRUE
-  0.004596 0.098124 1.0046 0.8288 1.2176 0.9626000          TRUE
- -0.019686 0.118769 0.9805 0.7769 1.2375 0.8684000          TRUE
- -0.071333 0.137779 0.9312 0.7108 1.2198 0.6046000          TRUE
- -0.035099 0.166886 0.9655 0.6961 1.3391 0.8334000          TRUE
- -0.045714 0.157689 0.9553 0.7013 1.3013 0.7719000          TRUE
-  0.016465 0.187710 1.0166 0.7037 1.4687 0.9301000          TRUE
- -0.022076 0.221829 0.9782 0.6333 1.5109 0.9207000          TRUE
-  0.113122 0.083450 1.1198 0.9508 1.3187 0.1752000          TRUE
-  0.075526 0.085496 1.0785 0.9121 1.2752 0.3770000          TRUE
-  0.012236 0.092029 1.0123 0.8452 1.2124 0.8942000          TRUE
-  0.008397 0.092021 1.0084 0.8420 1.2077 0.9273000          TRUE
-  0.054184 0.115658 1.0557 0.8416 1.3243 0.6394000          TRUE
-  0.146456 0.118195 1.1577 0.9183 1.4595 0.2153000          TRUE
-  0.211618 0.136952 1.2357 0.9448 1.6161 0.1223000          TRUE
-  0.207848 0.139230 1.2310 0.9370 1.6173 0.1355000          TRUE
-  0.276873 0.117908 1.3190 1.0468 1.6619 0.0188600          TRUE
-  0.275399 0.121129 1.3171 1.0387 1.6700 0.0229900          TRUE
-  0.457845 0.169187 1.5807 1.1346 2.2022 0.0068070          TRUE
-  0.411072 0.173273 1.5084 1.0741 2.1185 0.0176700          TRUE
-  0.233098 0.088456 1.2625 1.0615 1.5015 0.0084090          TRUE
-  0.233928 0.090408 1.2636 1.0584 1.5085 0.0096680          TRUE
-  0.321546 0.104778 1.3793 1.1232 1.6937 0.0021490          TRUE
-  0.362574 0.106751 1.4370 1.1657 1.7715 0.0006827          TRUE
- -0.160616 0.216782 0.8516 0.5568 1.3025 0.4587000         FALSE
-        NA       NA     NA     NA     NA        NA         FALSE
-        NA       NA     NA     NA     NA        NA         FALSE
-        NA       NA     NA     NA     NA        NA         FALSE
-
--- attenuation --
+      beta       se     HR  HR_lo  HR_hi         p meta_eligible p_adj_BH
+  0.005159 0.094338 1.0052 0.8355 1.2093 0.9564000          TRUE 0.956400
+  0.004596 0.098124 1.0046 0.8288 1.2176 0.9626000          TRUE 0.962600
+ -0.019686 0.118769 0.9805 0.7769 1.2375 0.8684000          TRUE 0.930100
+ -0.071333 0.137779 0.9312 0.7108 1.2198 0.6046000          TRUE 0.906900
+ -0.035099 0.166886 0.9655 0.6961 1.3391 0.8334000          TRUE 0.956400
+ -0.045714 0.157689 0.9553 0.7013 1.3013 0.7719000          TRUE 0.926300
+  0.016465 0.187710 1.0166 0.7037 1.4687 0.9301000          TRUE 0.930100
+ -0.022076 0.221829 0.9782 0.6333 1.5109 0.9207000          TRUE 0.927300
+  0.113122 0.083450 1.1198 0.9508 1.3187 0.1752000          TRUE 0.350400
+  0.075526 0.085496 1.0785 0.9121 1.2752 0.3770000          TRUE 0.565500
+  0.012236 0.092029 1.0123 0.8452 1.2124 0.8942000          TRUE 0.930100
+  0.008397 0.092021 1.0084 0.8420 1.2077 0.9273000          TRUE 0.927300
+  0.054184 0.115658 1.0557 0.8416 1.3243 0.6394000          TRUE 0.956400
+  0.146456 0.118195 1.1577 0.9183 1.4595 0.2153000          TRUE 0.430600
+  0.211618 0.136952 1.2357 0.9448 1.6161 0.1223000          TRUE 0.244600
+  0.207848 0.139230 1.2310 0.9370 1.6173 0.1355000          TRUE 0.271000
+  0.276873 0.117908 1.3190 1.0468 1.6619 0.0188600          TRUE 0.056580
+  0.275399 0.121129 1.3171 1.0387 1.6700 0.0229900          TRUE 0.068970
+  0.457845 0.169187 1.5807 1.1346 2.2022 0.0068070          TRUE 0.020420
+  0.411072 0.173273 1.5084 1.0741 2.1185 0.0176700          TRUE 0.053010
+  0.233098 0.088456 1.2625 1.0615 1.5015 0.0084090          TRUE 0.050450
+  0.233928 0.090408 1.2636 1.0584 1.5085 0.0096680          TRUE 0.058010
+  0.321546 0.104778 1.3793 1.1232 1.6937 0.0021490          TRUE 0.012890
+  0.362574 0.106751 1.4370 1.1657 1.7715 0.0006827          TRUE 0.004096
+ -0.160616 0.216782 0.8516 0.5568 1.3025 0.4587000         FALSE       NA
+        NA       NA     NA     NA     NA        NA         FALSE       NA
+        NA       NA     NA     NA     NA        NA         FALSE       NA
+        NA       NA     NA     NA     NA        NA         FALSE       NA
+                     multiplicity_family
+ BH within M1, k=6 meta-analysed cohorts
+ BH within M2, k=6 meta-analysed cohorts
+ BH within M3, k=6 meta-analysed cohorts
+ BH within M4, k=6 meta-analysed cohorts
+ BH within M1, k=6 meta-analysed cohorts
+ BH within M2, k=6 meta-analysed cohorts
+ BH within M3, k=6 meta-analysed cohorts
+ BH within M4, k=6 meta-analysed cohorts
+ BH within M1, k=6 meta-analysed cohorts
+ BH within M2, k=6 meta-analysed cohorts
+ BH within M3, k=6 meta-analysed cohorts
+ BH within M4, k=6 meta-analysed cohorts
+ BH within M1, k=6 meta-analysed cohorts
+ BH within M2, k=6 meta-analysed cohorts
+ BH within M3, k=6 meta-analysed cohorts
+ BH within M4, k=6 meta-analysed cohorts
+ BH within M1, k=6 meta-analysed cohorts
+ BH within M2, k=6 meta-analysed cohorts
+ BH within M3, k=6 meta-analysed cohorts
+ BH within M4, k=6 meta-analysed cohorts
+ BH within M1, k=6 meta-analysed cohorts
+ BH within M2, k=6 meta-analysed cohorts
+ BH within M3, k=6 meta-analysed cohorts
+ BH within M4, k=6 meta-analysed cohorts
+ not in family (descriptive cohort, B.n)
+ not in family (descriptive cohort, B.n)
+ not in family (descriptive cohort, B.n)
+ not in family (descriptive cohort, B.n)
     cohort   n events   beta_M1   beta_M2   beta_M3   beta_M4 attenuation_total
  TCGA-COAD 455    102  0.005159  0.004596 -0.019686 -0.071333          0.075929
  TCGA-READ 165     36 -0.035099 -0.045714  0.016465 -0.022076         -0.023638
@@ -107,8 +120,6 @@
                       0     0.075159      0.077424      0.028699          TRUE
                      93     0.155185      0.144761      0.043627          TRUE
                       0     0.061932      0.056689      0.030259          TRUE
-
--- meta-analysis --
  analysis k                       cohorts n_total      est  se_hksj     ci_lo
        M1 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 0.121174 0.047054  0.000219
        M2 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 0.122869 0.047778  0.000051
@@ -124,16 +135,12 @@
  0.207224 0.002178 16.09  6.0369    5 0.30260 -0.048824 0.294562
  0.242307 0.018588 53.99 10.9672    5 0.05204 -0.245597 0.560008
  0.248518 0.023679 57.45 11.9518    5 0.03545 -0.297589 0.602084
-
--- attenuation, meta-analysed (PRIMARY) --
           analysis k                       cohorts n_total       est  se_hksj
  attenuation_total 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 -0.024766 0.039101
      ci_lo    ci_hi      p     HR  HR_lo  HR_hi ci_lo_wald ci_hi_wald    fe_est
  -0.125279 0.075747 0.5543 0.9755 0.8823 1.0787  -0.116342    0.06681 -0.008059
   fe_ci_lo fe_ci_hi     tau2    I2      Q Q_df    Q_p     pi_lo    pi_hi
  -0.066717 0.050599 0.005195 44.35 8.5395    5 0.1289 -0.235553 0.186022
-
--- PH tests --
     cohort model    p_score     p_global violated_score violated_global
  TCGA-COAD    M1 0.34412543 3.441254e-01          FALSE           FALSE
  TCGA-COAD    M2 0.41461222 4.226819e-02          FALSE            TRUE
@@ -160,8 +167,6 @@
  TCGA-LIHC    M3 0.11550337 3.041309e-04          FALSE            TRUE
  TCGA-LIHC    M4 0.11123087 9.209206e-05          FALSE            TRUE
  TCGA-CHOL    M1 0.71584527 7.158453e-01          FALSE           FALSE
-
--- VIF (M4) --
     cohort          term   GVIF Df GVIF_adj
  TCGA-COAD         score 2.0241  1   1.4227
  TCGA-COAD           age 1.0764  1   1.0375
@@ -199,8 +204,6 @@
  TCGA-LIHC   stage_group 1.0964  2   1.0233
  TCGA-LIHC        purity 1.7739  1   1.3319
  TCGA-LIHC stromal_score 1.6807  1   1.2964
-
--- score/stromal/purity correlations --
     cohort r_estimate_stromal r_panel_subscore r_score_purity
  TCGA-COAD             0.6662           0.9820        -0.4838
  TCGA-READ             0.6217           0.9809        -0.4557
@@ -209,6 +212,3 @@
  TCGA-PAAD             0.6339           0.9782        -0.6034
  TCGA-LIHC             0.3990           0.9860        -0.4334
  TCGA-CHOL             0.6000           0.9567        -0.4385
-
-B.j/B.k/B.l complete.
-There were 50 or more warnings (use warnings() to see the first 50)
