@@ -546,3 +546,43 @@ contain the count matrix directly. It was not used, because joining a separately
 processed matrix to Besca's annotations by barcode introduces a matching risk
 larger than the recovery this amendment avoids. The recovery is verified exact,
 so nothing is lost by not pursuing it.
+
+### Amendment 14 — 2026-08-01
+
+k and its variants are computed over the LOCKED 152-gene panel, not over the
+final scoring gene list.
+
+Reason: Amendment 3 defines k as the number of "panel genes" that are
+epithelial-dominant, and the panel is the 152 genes locked on 2026-07-31 at
+commit ac9c5e0. The final gene list (143 genes after prespecification exclusion
+rules 3.1-3.3) is the set over which the STAT3 activity SCORE is constructed in
+Part B; it is derived from the compartment output and did not exist when k was
+defined. Recomputing a prespecified quantity over a set derived downstream of it
+would be a post-hoc redefinition.
+
+Prespecified-in-arrears sensitivity, reported alongside primary k: k recomputed
+over the 143-gene final list is 43, and k_all3 is 23. The Amendment 3 branch is
+BUILT under both definitions, and primary k's CI lower bound (38) remains above
+the 31 boundary. The branch decision is therefore insensitive to this choice.
+
+Three excluded genes are epithelial-dominant and account for the difference:
+GFAP (dominant in all three atlases; excluded by rule 2 at 0.502% maximum
+detection), PAX3 (two atlases; rule 2 at 0.136%), and IL13RA1 (two atlases; rule
+3.3, chrX).
+
+DISCLOSURE — this decision is NOT blind, and it favours the reported result.
+Both values were computed before the choice was made. Recomputing over the final
+list would give a smaller k (43 vs 46), which is directionally consistent with
+this study's hypothesis, so the option NOT taken is the one that would have
+favoured the hypothesis. The decision is made on the definitional ground above,
+not on the direction of the difference, and both numbers are reported so readers
+can apply either definition.
+
+Note for interpretation: GFAP illustrates why the two quantities differ. It is
+epithelial-dominant in all three atlases yet detected in 0.502% of cells at most,
+so its dominance call rests on very little evidence. This is a general caution
+about the 24-gene all-atlas set, and per-gene detection rates are reported
+alongside dominance for exactly this reason.
+
+Made blind: no score has been constructed, no survival model fitted, and no
+outcome data opened.

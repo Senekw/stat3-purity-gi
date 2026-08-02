@@ -2,6 +2,72 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 18. CORRECTION — the rule-2 genes are not "MSigDB pathway membership" entrants
+
+The instruction accompanying Amendment 14 asked me to log that GFAP, PAX3 and
+OPRM1 "are neural-lineage genes entering via MSigDB pathway membership." The
+first half is right and worth reporting; **the second half is contradicted by the
+panel's own provenance**, so I logged the verified route instead.
+
+All three entered by **criterion B (direct transcriptional target)**, not
+criterion A (MSigDB `HALLMARK_IL6_JAK_STAT3_SIGNALING`):
+
+| Gene | `route` | In HALLMARK set | STAT3 ChIP-seq term(s) |
+|---|---|---|---|
+| GFAP | `B_only` | **no** | `STAT3_HELAS3_HG19` (ENCODE), ReMap STAT3, TRRUST v2 |
+| PAX3 | `B_only` | **no** | `STAT3_23295773_CHIPSEQ_U87_HUMAN`, `STAT3_24763339_CHIPSEQ_IMNESCS_MOUSE`, TRRUST v2 |
+| OPRM1 | `B_only` | **no** | `STAT3_23295773_CHIPSEQ_U87_HUMAN`, TRRUST v2 |
+
+The two rule-2 genes that *did* enter via criterion A are **DNTT** and **CRLF2**
+(both `A_only`, both in the HALLMARK set) — neither is neural.
+
+This sharpens rather than weakens the observation. Three of the six undetectable
+genes are neural-lineage, and they entered on **direct STAT3 binding evidence**:
+PAX3 and OPRM1 both trace to `STAT3_23295773_CHIPSEQ_U87_HUMAN` — a **U87
+glioblastoma** experiment — and GFAP to a HeLa STAT3 ChIP. So the neural
+signal enters through the cell lines behind the ChIP-seq libraries, not through
+pathway annotation. A panel built from ChIP-seq in glioma and HeLa lines carries
+their lineage context into a GI study, and these genes then prove undetectable in
+GI tumour tissue. That is a cleaner statement of the deposit-provenance caution
+than "pathway membership" would have been, and it belongs in the discussion.
+
+## 17. UNREGISTERED INTERPRETIVE CHOICE — rule 3.3 and the pseudoautosomal genes
+
+**Surfaced while locking the list. It does not change any reported Part A number,
+but it does change the scoring set, so it is recorded rather than absorbed.**
+
+Rule 3.3 reads, in full: *"Sex-chromosome genes, since cohorts differ in sex
+composition."* Applying it needs a decision the registered text does not make.
+
+Four panel genes lie in the **pseudoautosomal region** and are annotated on
+**both** chrX and chrY — GENCODE v36 emits a second `_PAR_Y` row for each:
+**CRLF2, CSF2RA, IL3RA, IL9R**. (These are the same four `_PAR_Y` duplicates that
+appeared in Part A's GSE178341 reader, where all four Y-copies carried zero
+counts.) Two readings are available:
+
+| Reading | Basis | Excludes | Final list |
+|---|---|---|---|
+| **NARROW** (implemented) | the rule's stated **reason** | genes annotated *only* on X or Y | **143** |
+| BROAD | the rule's stated **text** | anything with any row on X or Y | 140 |
+
+**Implemented: NARROW**, for two reasons. Amendment 14 registers the final list
+at 143, which is the narrow reading, and the rule's own stated reason does not
+apply to PAR genes: they escape X-inactivation and are present in two copies in
+both sexes, so cohort sex composition does not bias them.
+
+**What it costs**: CSF2RA, IL3RA and IL9R are retained under narrow and would be
+dropped under broad. None is epithelial-dominant in any atlas, and **k is 43
+under both readings**, so no Part A quantity depends on this.
+
+**Why it is recorded anyway.** The choice was surfaced *after* Amendment 14 was
+written, so the amendment cannot be said to have settled it — 143 is consistent
+with narrow, but nothing in the registered text shows the question was considered.
+`04_lock_gene_list.R` states both readings and asserts the PAR set is exactly
+those four genes, so a future annotation change halts the lock rather than
+silently relocking a different scoring set. If you want the broad reading, it
+needs a dated amendment; do not switch it silently, since it changes the Part B
+denominator.
+
 ## 16. DISCREPANCY IN REGISTERED TEXT — Amendment 13's stated deviation is 4x low
 
 **The amendment's procedure and its registered tolerance both stand. One prose

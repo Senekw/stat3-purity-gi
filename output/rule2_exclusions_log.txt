@@ -1,0 +1,56 @@
+# Prespecification exclusion rule 2 -- gene identities and provenance
+# Written 2026-08-01 by 04_lock_gene_list.R. Rule 2 exclusions are REPORTED,
+# never silently dropped (prespecification section 3): "a canonical STAT3 target
+# that is undetectable in tumour tissue is itself informative."
+
+RULE AS REGISTERED
+  "Not detected in the single-cell atlases at a minimum of 1% of cells in at
+   least one annotated compartment (undetectable genes carry no compartment
+   information either way)."
+
+APPLIED AS: excluded if the gene reaches 1% of cells in NO annotated compartment
+in ANY of the three atlases. "Annotated" excludes compartments with zero cells --
+GSE178341 has no endothelial and no `other` compartment (see NOTES section 15),
+so absence there is an annotation gap, not a detection failure.
+
+SIX GENES EXCLUDED, best detection anywhere:
+
+  DNTT     0.0270%   GSE178341 / lymphoid     route A_only   dominant in 0 atlases
+  PAX3     0.1356%   Peng      / epithelial   route B_only   dominant in 2 atlases
+  CRLF2    0.1385%   GSE178341 / myeloid      route A_only   dominant in 0 atlases
+  LEP      0.3032%   GSE178341 / myeloid      route B_only   dominant in 0 atlases
+  GFAP     0.5017%   Peng      / epithelial   route B_only   dominant in 3 atlases
+  OPRM1    0.8720%   GSE178341 / lymphoid     route B_only   dominant in 0 atlases
+
+The threshold is not a knife edge: the nearest retained genes are CNTFR (1.0025%)
+and CSF2 (1.1034%). Only OPRM1 at 0.8720% is close to the boundary.
+
+NEURAL-LINEAGE GENES, AND HOW THEY ENTERED THE PANEL
+
+GFAP, PAX3 and OPRM1 are neural-lineage genes. They did NOT enter via MSigDB
+pathway membership (criterion A) -- all three are `B_only` and none is in
+HALLMARK_IL6_JAK_STAT3_SIGNALING. They entered on criterion B, direct
+transcriptional-target evidence:
+
+  GFAP    STAT3_HELAS3_HG19 (ENCODE, HeLa-S3) + ReMap STAT3 + TRRUST v2
+  PAX3    STAT3_23295773_CHIPSEQ_U87_HUMAN + STAT3_24763339_CHIPSEQ_IMNESCS_MOUSE
+          + TRRUST v2
+  OPRM1   STAT3_23295773_CHIPSEQ_U87_HUMAN + TRRUST v2
+
+PAX3 and OPRM1 both trace to the same U87 GLIOBLASTOMA experiment; GFAP to a HeLa
+ChIP. The neural signal therefore enters through the CELL LINES behind the
+ChIP-seq libraries, not through pathway annotation -- and those genes then prove
+undetectable in GI tumour tissue. Reportable as a panel-construction caution: a
+criterion-B panel inherits the lineage context of the experiments it was built
+from.
+
+The two rule-2 genes that did enter via criterion A are DNTT and CRLF2 (both in
+the HALLMARK set); neither is neural.
+
+CONSEQUENCE FOR k
+
+GFAP is epithelial-dominant in all three atlases and PAX3 in two, yet both are
+undetectable by rule 2 -- dominance calls resting on very little evidence, which
+is why per-gene detection rates are reported alongside dominance. Under
+Amendment 14 primary k is computed over the locked 152 and is unaffected (46);
+over the 143-gene final list it is 43.
