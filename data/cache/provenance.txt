@@ -1,0 +1,18 @@
+retrieved: 2026-07-31
+R: R version 4.5.3 (2026-03-11)
+TCGAbiolinks: 2.38.0
+GEOquery: 2.78.0
+
+GDC data release: check GDCquery output above and record it here
+
+aran_purity.xlsx
+  source:   https://static-content.springer.com/esm/art%3A10.1038%2Fncomms9971/MediaObjects/41467_2015_BFncomms9971_MOESM1236_ESM.xlsx
+  citation: Aran D, Sirota M, Butte AJ. Systematic pan-cancer analysis of tumour
+            purity. Nat Commun 6:8971 (2015). Supplementary Data 1.
+  retrieved: 2026-08-02
+  md5:      c459e6a965789b96860fc77bd346c681
+  contents: 9,364 sample rows, 21 TCGA cancer types; columns Sample ID, Cancer
+            type, ESTIMATE, ABSOLUTE, LUMP, IHC, CPE (3 header rows before names).
+  note:     STAD, ESCA, PAAD and CHOL are NOT in this freeze -- their CPE coverage
+            is genuinely 0% and the plan 3.4 switch rule makes ESTIMATE primary
+            there. Asserted by md5 in 06_purity.R; 06 halts if the file is absent.
