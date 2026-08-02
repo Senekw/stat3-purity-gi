@@ -242,12 +242,14 @@ if (sys.nframe() == 0L) {
   # epithelial-dominant." PANEL is the locked 152, so the registered wording gives
   # the 106-gene set and that is what `stromal_score` carries.
   #
-  # The Implementation Auditor objects that this readmits 9 of the 12 genes that
-  # prespecification rules 2 and 3.3 removed from the scoring list -- including
-  # TIMP1, excluded ONLY for sitting on chrX yet detected in 98.4% of stromal
-  # cells, and IL3RA/IL2RG/CSF2RA at 61%/57%/44%. Rule 3.3 exists to keep
-  # sex-differential expression out of the models; entering through the covariate
-  # re-opens that door.
+  # The Implementation Auditor objects that this readmits genes that
+  # prespecification rules 2 and 3.3 removed from the scoring list. Realised, after
+  # the evaluability fix below, SIX are readmitted: TIMP1, IL3RA, IL2RG, CSF2RA,
+  # IL9R and OPRM1. FIVE of those six are excluded ONLY under rule 3.3 -- TIMP1
+  # (chrX, detected in 98.4% of stromal cells), IL3RA 61.1%, IL2RG 56.7%, CSF2RA
+  # 44.1%, IL9R 4.2% -- and OPRM1 is the one excluded as undetectable. Rule 3.3
+  # exists to keep sex-differential expression out of the models; entering through
+  # the covariate re-opens that door.
   #
   # Both are computed. The 97-gene variant is carried alongside as
   # `stromal_score_140` so the choice can be made on the numbers rather than

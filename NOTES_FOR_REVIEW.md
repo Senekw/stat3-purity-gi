@@ -143,9 +143,12 @@ not made after seeing k"). The panel-derived subscore is retained as
 
 **This resolves an audit finding by making it moot.** The Implementation Auditor
 objected (F2, blocking) that the subscore was built over the locked 152-gene panel
-and so readmitted 9 genes that exclusion rules 2 and 3.3 had removed — including
-TIMP1, excluded only for sitting on chrX yet detected in 98.4% of stromal cells,
-and IL3RA/IL2RG/CSF2RA at 61%/57%/44%. The registered text
+and so readmitted genes that exclusion rules 2 and 3.3 had removed. Realised, after
+the evaluability fix, **six** are readmitted: TIMP1, IL3RA, IL2RG, CSF2RA, IL9R and
+OPRM1. **Five of the six are excluded only under rule 3.3** — TIMP1 (chrX, detected
+in 98.4% of stromal cells), IL3RA 61.1%, IL2RG 56.7%, CSF2RA 44.1%, IL9R 4.2% —
+with OPRM1 the one excluded as undetectable. (An earlier version of this note said
+four sex-chromosome-only genes; IL9R was omitted from that count.) The registered text
 (analysis_plan.md:718-719) says "panel genes", which is the 152; the auditor's
 reading would use the 140. Both were computed rather than one being chosen:
 
