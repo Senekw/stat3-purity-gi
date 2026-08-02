@@ -1,0 +1,5 @@
+classifier: CMScaller 2.0.1
+templates: templates.CMS (Eide et al. 2017), single-sample NTP
+nPerm: 1000, seed: 20261731
+input: log2(TPM+1), Entrez rownames mapped from the templates' own symbol column
+unclassified samples retained as a level, never dropped (B.o)

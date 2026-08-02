@@ -1,0 +1,154 @@
+                         config                role                statistic
+      registered_152|registered  primary_registered          pooled_M1_logHR
+      registered_152|registered  primary_registered          pooled_M2_logHR
+      registered_152|registered  primary_registered pooled_attenuation_total
+          tested_140|registered    size_sensitivity          pooled_M1_logHR
+          tested_140|registered    size_sensitivity          pooled_M2_logHR
+          tested_140|registered    size_sensitivity pooled_attenuation_total
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc          pooled_M1_logHR
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc          pooled_M2_logHR
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc pooled_attenuation_total
+ n_null          min         q25      median         mean          q75
+  10000  0.064987569  0.10791523  0.11748611  0.117481400  0.126995997
+  10000  0.069252905  0.11214692  0.12173410  0.121937827  0.131689419
+  10000 -0.007999759  0.01115182  0.01531793  0.015243757  0.019522222
+  10000  0.060477270  0.10281999  0.11237591  0.112342731  0.121796966
+  10000  0.060866155  0.10812748  0.11787002  0.117945351  0.127583958
+  10000 -0.009747269  0.01108610  0.01543011  0.015302686  0.019746989
+   1000  0.095349570  0.11996827  0.12726335  0.127563266  0.135024319
+   1000  0.105109435  0.12685218  0.13466963  0.134515100  0.142203306
+   1000 -0.036531086 -0.01411926 -0.00928306 -0.009601332 -0.005322377
+         max  observed observed_percentile
+ 0.168141723  0.121174               60.48
+ 0.178048839  0.122869               52.70
+ 0.036919954 -0.024766                0.00
+ 0.163874255  0.121174               73.49
+ 0.168053846  0.122869               63.94
+ 0.037114655 -0.024766                0.00
+ 0.158608672  0.121174               27.90
+ 0.165810873  0.122869               14.50
+ 0.009674945 -0.024766                1.20
+                         config                role     statistic    observed
+      registered_152|registered  primary_registered    p_crude_M1  0.12117400
+      registered_152|registered  primary_registered p_adjusted_M2  0.12286900
+      registered_152|registered  primary_registered       p_atten -0.02257655
+          tested_140|registered    size_sensitivity    p_crude_M1  0.12117400
+          tested_140|registered    size_sensitivity p_adjusted_M2  0.12286900
+          tested_140|registered    size_sensitivity       p_atten -0.02257655
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc    p_crude_M1  0.12117400
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc p_adjusted_M2  0.12286900
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc       p_atten -0.02257655
+ N_requested n_pooled p_two_sided_PRIMARY hits_two p_one_sided_directional
+       10000    10000          0.39526047     3952              0.39526047
+       10000    10000          0.47305269     4730              0.47305269
+       10000    10000          0.11568843     1156              0.00009999
+       10000    10000          0.26517348     2651              0.26517348
+       10000    10000          0.36066393     3606              0.36066393
+       10000    10000          0.12658734     1265              0.00009999
+        1000     1000          0.72127872      721              0.72127872
+        1000     1000          0.85514486      855              0.85514486
+        1000     1000          0.02297702       22              0.02297702
+ directional_tail hits_one p_granularity
+            upper     3952   0.000099990
+            upper     4730   0.000099990
+            lower        0   0.000099990
+            upper     2651   0.000099990
+            upper     3606   0.000099990
+            lower        0   0.000099990
+            upper      721   0.000999001
+            upper      855   0.000999001
+            lower       22   0.000999001
+                         config                role     n
+      registered_152|registered  primary_registered 10000
+          tested_140|registered    size_sensitivity 10000
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc  1000
+ prop_null_CI_excludes_1
+                  0.2808
+                  0.1745
+                  0.9720
+    cohort          cms   n   pct
+ TCGA-COAD         CMS1  83 18.24
+ TCGA-READ         CMS1  16  9.70
+ TCGA-COAD         CMS2 157 34.51
+ TCGA-READ         CMS2  52 31.52
+ TCGA-COAD         CMS3  73 16.04
+ TCGA-READ         CMS3  33 20.00
+ TCGA-COAD         CMS4 125 27.47
+ TCGA-READ         CMS4  54 32.73
+ TCGA-COAD unclassified  17  3.74
+ TCGA-READ unclassified  10  6.06
+    cohort tertile  cms  n    chisq df p_asymptotic p_simulated min_expected
+ TCGA-COAD      T1 CMS1 16 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T2 CMS1 22 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T3 CMS1 45 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T1 CMS2 81 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T2 CMS2 61 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T3 CMS2 15 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T1 CMS3 35 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T2 CMS3 29 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T3 CMS3  9 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T1 CMS4 15 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T2 CMS4 34 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-COAD      T3 CMS4 76 122.9298  6    3.949e-24   9.999e-05       24.167
+ TCGA-READ      T1 CMS1  3  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T2 CMS1  6  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T3 CMS1  7  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T1 CMS2 27  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T2 CMS2 19  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T3 CMS2  6  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T1 CMS3 16  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T2 CMS3  9  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T3 CMS3  8  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T1 CMS4  4  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T2 CMS4 19  38.8027  6    7.824e-07   9.999e-05        5.161
+ TCGA-READ      T3 CMS4 31  38.8027  6    7.824e-07   9.999e-05        5.161
+    cohort  stratum model   n events   epv              band fitted      beta
+ TCGA-COAD     CMS4    M1 125     32 32.00      fit_and_pool   TRUE -0.231816
+ TCGA-COAD     CMS4    M2 125     32  6.40 fit_pool_flag_LOO   TRUE -0.054235
+ TCGA-COAD     CMS4    M4 125     32  4.57        do_not_fit  FALSE        NA
+ TCGA-COAD non_CMS4    M1 330     70 70.00      fit_and_pool   TRUE -0.046026
+ TCGA-COAD non_CMS4    M2 330     70 14.00      fit_and_pool   TRUE -0.066902
+ TCGA-COAD non_CMS4    M4 330     70 10.00      fit_and_pool   TRUE -0.067355
+ TCGA-READ     CMS4    M1  54     14 14.00      fit_and_pool   TRUE -0.457968
+ TCGA-READ     CMS4    M2  54     14  2.80        do_not_fit  FALSE        NA
+ TCGA-READ     CMS4    M4  54     14  2.00        do_not_fit  FALSE        NA
+ TCGA-READ non_CMS4    M1 111     22 22.00      fit_and_pool   TRUE  0.034696
+ TCGA-READ non_CMS4    M2 111     22  4.40        do_not_fit  FALSE        NA
+ TCGA-READ non_CMS4    M4 111     22  3.14        do_not_fit  FALSE        NA
+       se     HR
+ 0.218280 0.7931
+ 0.230056 0.9472
+       NA     NA
+ 0.123030 0.9550
+ 0.124057 0.9353
+ 0.157762 0.9349
+ 0.351319 0.6326
+       NA     NA
+       NA     NA
+ 0.240933 1.0353
+       NA     NA
+       NA     NA
+    cohort model   n events beta_without_cms se_without beta_with_cms  se_with
+ TCGA-COAD    M2 455    102         0.004596   0.098124     -0.111941 0.114982
+ TCGA-COAD    M4 455    102        -0.071333   0.137779     -0.137093 0.146600
+ TCGA-READ    M2 165     36        -0.045714   0.157689            NA       NA
+ TCGA-READ    M4 165     36        -0.022076   0.221829            NA       NA
+ params_with_cms epv_with_cms     band_with_cms fitted_with_cms HR_without
+               9        11.33      fit_and_pool            TRUE     1.0046
+              11         9.27 fit_pool_flag_LOO            TRUE     0.9312
+               9         4.00        do_not_fit           FALSE     0.9553
+              11         3.27        do_not_fit           FALSE     0.9782
+ HR_with delta_beta                       cms_levels
+  0.8941  -0.116537 CMS1/CMS2/CMS3/CMS4/unclassified
+  0.8719  -0.065760 CMS1/CMS2/CMS3/CMS4/unclassified
+      NA         NA CMS1/CMS2/CMS3/CMS4/unclassified
+      NA         NA CMS1/CMS2/CMS3/CMS4/unclassified
+    cohort attenuation_without_cms attenuation_with_cms
+ TCGA-COAD                0.075929             0.025152
+ TCGA-READ               -0.023638                   NA
+    cohort   n n_CMS4 r_point_biserial mean_score_CMS4 mean_score_other
+ TCGA-COAD 455    125           0.4054          0.6580          -0.2492
+ TCGA-READ 165     54           0.4399          0.6288          -0.3059
+ r2_score_on_cms
+          0.2861
+          0.2381

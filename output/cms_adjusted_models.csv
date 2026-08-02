@@ -1,0 +1,5 @@
+"cohort","model","n","events","beta_without_cms","se_without","beta_with_cms","se_with","params_with_cms","epv_with_cms","band_with_cms","fitted_with_cms","HR_without","HR_with","delta_beta","cms_levels"
+"TCGA-COAD","M2",455,102,0.004596,0.098124,-0.111941,0.114982,9,11.33,"fit_and_pool",TRUE,1.0046,0.8941,-0.116537,"CMS1/CMS2/CMS3/CMS4/unclassified"
+"TCGA-COAD","M4",455,102,-0.071333,0.137779,-0.137093,0.1466,11,9.27,"fit_pool_flag_LOO",TRUE,0.9312,0.8719,-0.06576,"CMS1/CMS2/CMS3/CMS4/unclassified"
+"TCGA-READ","M2",165,36,-0.045714,0.157689,NA,NA,9,4,"do_not_fit",FALSE,0.9553,NA,NA,"CMS1/CMS2/CMS3/CMS4/unclassified"
+"TCGA-READ","M4",165,36,-0.022076,0.221829,NA,NA,11,3.27,"do_not_fit",FALSE,0.9782,NA,NA,"CMS1/CMS2/CMS3/CMS4/unclassified"

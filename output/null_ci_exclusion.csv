@@ -1,0 +1,4 @@
+"config","role","n","prop_null_CI_excludes_1"
+"registered_152|registered","primary_registered",10000,0.2808
+"tested_140|registered","size_sensitivity",10000,0.1745
+"tested_140|EXPLORATORY_POSTHOC","exploratory_posthoc",1000,0.972

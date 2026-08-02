@@ -1,0 +1,71 @@
+
+== B.m/B.o  null-signature benchmark and CMS orthogonality ==
+  ..  seed for the null draw = 20261731 (B.m: 20260731 + 1000, a separate stream from the bootstrap)
+  ok  B.m        null path bound to 07/08's own function objects (9 reused)
+  ok  B.m        observed targets read from 08: pooled M1 = 0.121174, attenuation_total = -0.024766
+  ..  B.m        observed attenuation re-pooled with the nulls' estimator: -0.022577 (08 reported -0.024766 with the paired bootstrap SE)
+  ok  B.m        genes in the tested signature                            = 140
+  ..  B.m        building per-cohort z-matrices and decile cells
+  ..  B.m        eligible pool per cohort: COAD 55534 | READ 53413 | STAD 57124 | ESCA 56920 | PAAD 54370 | LIHC 55306 | CHOL 49206
+  ..  B.m        z-precompute identity over 7 cohorts x 2 sizes x 25 sets: max |diff| = 4.663e-15
+  ok  B.m        z-precompute proven identical to the registered path
+  ok  B.m        genes in the locked panel                                = 152
+  ..  B.m        configurations: registered_152|registered  ;  tested_140|registered  ;  tested_140|EXPLORATORY_POSTHOC
+
+  ..  B.m        === registered_152|registered  (N = 10000) ===
+      COAD   10000 draws fitted in 44.3 s
+      ESTIMATED TOTAL: ~15.5 min (44.3 s x 7 cohorts x 3 configs, N-scaled)
+      READ   10000 draws fitted in 34.9 s
+      STAD   10000 draws fitted in 45.7 s
+      ESCA   10000 draws fitted in 33.2 s
+      PAAD   10000 draws fitted in 36.2 s
+      LIHC   10000 draws fitted in 39.9 s
+      CHOL   10000 draws fitted in 26.2 s
+
+  ..  B.m        === tested_140|registered  (N = 10000) ===
+      COAD   10000 draws fitted in 41.1 s
+      READ   10000 draws fitted in 31.4 s
+      STAD   10000 draws fitted in 42.4 s
+      ESCA   10000 draws fitted in 33.2 s
+      PAAD   10000 draws fitted in 37.6 s
+      LIHC   10000 draws fitted in 42.1 s
+      CHOL   10000 draws fitted in 26.3 s
+
+  ..  B.m        === tested_140|EXPLORATORY_POSTHOC  (N = 1000) ===
+      COAD   1000 draws fitted in 4.1 s
+      READ   1000 draws fitted in 3.1 s
+      STAD   1000 draws fitted in 4.2 s
+      ESCA   1000 draws fitted in 3.3 s
+      PAAD   1000 draws fitted in 4.0 s
+      LIHC   1000 draws fitted in 4.4 s
+      CHOL   1000 draws fitted in 2.6 s
+  ok  B.m        every configuration met the 0.25 SD matching tolerance on its matched variables
+
+-- null distributions --
+
+-- empirical p-values --
+
+-- null pooled-M1 CI excluding 1 --
+
+  ..  B.m        total elapsed: 27.3 min
+
+== B.o  CMS orthogonality (COAD, READ) ==
+  ok  B.o        classifier: CMScaller 2.0.1 (Eide et al. 2017), templates.CMS, single-sample NTP
+  ..  B.o        TCGA-COAD unclassified: 3.74% of the analysis frame, 3.74% of the full cohort
+  ..  B.o        TCGA-COAD unclassified: 3.74%
+  ..  B.o        TCGA-READ unclassified: 6.06% of the analysis frame, 6.06% of the full cohort
+  ..  B.o        TCGA-READ unclassified: 6.06%
+  ok  B.o        unclassified below the 10% ceiling in both cohorts
+
+-- score tertiles x CMS --
+
+-- stratified by CMS4 --
+
+-- CMS-adjusted models --
+
+-- attenuation with/without CMS --
+
+-- score vs CMS4 --
+
+B.m/B.o complete.
+There were 50 or more warnings (use warnings() to see the first 50)

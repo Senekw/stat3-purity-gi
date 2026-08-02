@@ -65,6 +65,66 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
+## 29. THE 09 RUN ORDER MISSTATED THREE B.m PARAMETERS; THE REGISTERED TEXT WAS FOLLOWED
+
+The Part B run order of 2026-08-02 specified three B.m parameters from memory that
+do not match the registered text. The author confirmed the same day that the
+registered text governs and the run order was NOT to be followed. A first draft of
+09 had been written to the run order and was discarded; its audit was cancelled
+mid-flight.
+
+| Parameter | Run order said | B.m registers | Used |
+|---|---|---|---|
+| N | ~1,000 | 10,000 per cohort | **10,000** |
+| Set size | 140 | 152, or the cohort's realised size | **152** |
+| Matching | mean expression x stromal correlation | decile of mean log2 expression x decile of expression variance, within cohort | **expression x variance** |
+
+**The realised-size clause is inert here, verified:** all 152 panel genes survive
+the annotation and zero-variance filters in all seven cohorts (152/152 each), so
+the realised size IS 152 everywhere. That clause concerns genes missing from a
+cohort, which is a different thing from the 140-gene post-exclusion list; the two
+are not conflated.
+
+Three configurations were run, each with an explicit declared role so that two
+full-N p-values could not arrive with equal standing:
+
+- `registered_152|registered` — **primary_registered**, N = 10,000
+- `tested_140|registered` — size_sensitivity, N = 10,000 (the signature 08 tested)
+- `tested_140|EXPLORATORY_POSTHOC` — exploratory_posthoc, N = 1,000, additionally
+  matched on stromal correlation. **Added after the primary result was seen**, at
+  the author's request. Labelled EXPLORATORY_POSTHOC in every output row.
+
+## 30. THE NULL COMPARISON WAS NOT LIKE-FOR-LIKE UNTIL CORRECTED
+
+Found by the Implementation Auditor before 09 ran. 08's pooled attenuation_total
+(-0.024766) was meta-analysed with a **paired bootstrap SE**; every null signature
+is pooled with **sqrt(se2^2 + se4^2)**, since no per-signature bootstrap is run.
+Those are different estimators: the naive form ignores the positive covariance
+between b2 and b4 and is **1.72x larger** on this data (mean 0.1835 vs 0.1069).
+Different weights give a different pooled POINT estimate, not merely a different
+interval, so comparing 08's value against a naive-pooled null distribution would
+not have been like-for-like.
+
+**Corrected:** p_atten is computed against the observed value re-pooled with the
+nulls' own estimator, **-0.022577**. 08's -0.024766 remains the reported estimate
+and is carried alongside. The difference is 0.0022 in log-HR units — small, but it
+is the decisive analysis and the two numbers are not interchangeable.
+
+## 31. AN AUDIT FINDING I CHECKED AND REJECTED — the matching gate is not vacuous
+
+The auditor reported (R9) that the tolerance gate could not fail, simulating a
+completely unmatched draw at median 0.103 SD against a 0.25 SD threshold. My own
+measurement on COAD contradicts this: **unmatched draws give median 1.62 SD**
+(p95 1.74, max 1.84), far above the gate, which therefore fires correctly.
+
+The underlying point was still worth acting on. A set-level difference of means
+over 152 genes is shrunk by averaging, so a **paired per-gene** statistic is more
+discriminating: matched draws give 0.32 SD against 1.84 SD unmatched, and a second
+gate at PAIRED_TOL = 0.75 SD now tests it. Both thresholds are unregistered and
+labelled as such in the source. The paired statistic immediately earned its place
+— it shows the exploratory scheme cuts stromal mismatch from 1.52 SD to 0.25 SD,
+a difference the set-level statistic could not see.
+
 ## 26. PARAMETER COUNTS KEPT FIXED, AGAINST AN AUDIT RECOMMENDATION
 
 The Implementation Auditor proposed deriving each model's EPV denominator from

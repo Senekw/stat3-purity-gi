@@ -1,0 +1,13 @@
+"cohort","stratum","model","n","events","epv","band","fitted","beta","se","HR"
+"TCGA-COAD","CMS4","M1",125,32,32,"fit_and_pool",TRUE,-0.231816,0.21828,0.7931
+"TCGA-COAD","CMS4","M2",125,32,6.4,"fit_pool_flag_LOO",TRUE,-0.054235,0.230056,0.9472
+"TCGA-COAD","CMS4","M4",125,32,4.57,"do_not_fit",FALSE,NA,NA,NA
+"TCGA-COAD","non_CMS4","M1",330,70,70,"fit_and_pool",TRUE,-0.046026,0.12303,0.955
+"TCGA-COAD","non_CMS4","M2",330,70,14,"fit_and_pool",TRUE,-0.066902,0.124057,0.9353
+"TCGA-COAD","non_CMS4","M4",330,70,10,"fit_and_pool",TRUE,-0.067355,0.157762,0.9349
+"TCGA-READ","CMS4","M1",54,14,14,"fit_and_pool",TRUE,-0.457968,0.351319,0.6326
+"TCGA-READ","CMS4","M2",54,14,2.8,"do_not_fit",FALSE,NA,NA,NA
+"TCGA-READ","CMS4","M4",54,14,2,"do_not_fit",FALSE,NA,NA,NA
+"TCGA-READ","non_CMS4","M1",111,22,22,"fit_and_pool",TRUE,0.034696,0.240933,1.0353
+"TCGA-READ","non_CMS4","M2",111,22,4.4,"do_not_fit",FALSE,NA,NA,NA
+"TCGA-READ","non_CMS4","M4",111,22,3.14,"do_not_fit",FALSE,NA,NA,NA

@@ -1,0 +1,3 @@
+"cohort","attenuation_without_cms","attenuation_with_cms"
+"TCGA-COAD",0.075929,0.025152
+"TCGA-READ",-0.023638,NA
