@@ -1,0 +1,26 @@
+
+== B.i  clinical assembly (no score, no purity, no model) ==
+  ok  B.i            CDR workbook reproduces the registered 2018 snapshot (7 cohorts)
+  ok  B.i            registered cohorts                                   = 7
+  ok  B.i            cohorts eligible for meta-analysis                   = 6
+  ok  B.i            cohorts assembled (CHOL flagged, not dropped)        = 7
+
+  ..  n across the six meta-eligible cohorts = 1758 (plan expects ~1,480-1,500 pre-purity)
+  ..  redacted: COAD 0 (0.0%) | READ 0 (0.0%) | STAD 0 (0.0%) | ESCA 0 (0.0%) | PAAD 0 (0.0%) | LIHC 1 (0.3%) | CHOL 0 (0.0%)
+
+-- per cohort --
+
+-- realised EPV (Amendment 8 bands) --
+
+-- disposition vs the provisional table --
+
+-- aliquot multiplicity among multi-aliquot patients --
+  COAD       2 aliquots: 3 patients | 3 aliquots: 10 patients
+  READ       none
+  STAD       none
+  ESCA       none
+  PAAD       none
+  LIHC       none
+  CHOL       none
+
+B.i complete. HARD STOP: no purity computed, no score constructed, no model fitted.

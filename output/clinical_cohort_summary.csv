@@ -1,0 +1,8 @@
+"cohort","endpoint_primary","endpoint_sens","n_final","events_primary","events_sens","use_sex","meta_eligible","n_stage_missing","n_redacted"
+"TCGA-COAD","OS","PFI",455,102,117,TRUE,TRUE,11,0
+"TCGA-READ","PFI","OS",165,36,25,TRUE,TRUE,9,0
+"TCGA-STAD","OS","PFI",406,157,130,TRUE,TRUE,24,0
+"TCGA-ESCA","OS","PFI",184,77,87,TRUE,TRUE,23,0
+"TCGA-PAAD","OS","PFI",178,93,104,TRUE,TRUE,3,0
+"TCGA-LIHC","OS","PFI",370,130,178,TRUE,TRUE,24,1
+"TCGA-CHOL","OS","PFI",35,18,20,TRUE,FALSE,0,0

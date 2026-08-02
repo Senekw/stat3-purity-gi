@@ -1,0 +1,53 @@
+    cohort endpoint_primary endpoint_sens n_final events_primary events_sens
+ TCGA-COAD               OS           PFI     455            102         117
+ TCGA-READ              PFI            OS     165             36          25
+ TCGA-STAD               OS           PFI     406            157         130
+ TCGA-ESCA               OS           PFI     184             77          87
+ TCGA-PAAD               OS           PFI     178             93         104
+ TCGA-LIHC               OS           PFI     370            130         178
+ TCGA-CHOL               OS           PFI      35             18          20
+ use_sex meta_eligible n_stage_missing n_redacted
+    TRUE          TRUE              11          0
+    TRUE          TRUE               9          0
+    TRUE          TRUE              24          0
+    TRUE          TRUE              23          0
+    TRUE          TRUE               3          0
+    TRUE          TRUE              24          1
+    TRUE         FALSE               0          0
+    cohort model params events    epv              band
+ TCGA-COAD    M1      1    102 102.00      fit_and_pool
+ TCGA-COAD    M2      5    102  20.40      fit_and_pool
+ TCGA-COAD    M3      6    102  17.00      fit_and_pool
+ TCGA-COAD    M4      7    102  14.57      fit_and_pool
+ TCGA-READ    M1      1     36  36.00      fit_and_pool
+ TCGA-READ    M2      5     36   7.20 fit_pool_flag_LOO
+ TCGA-READ    M3      6     36   6.00 fit_pool_flag_LOO
+ TCGA-READ    M4      7     36   5.14 fit_pool_flag_LOO
+ TCGA-STAD    M1      1    157 157.00      fit_and_pool
+ TCGA-STAD    M2      5    157  31.40      fit_and_pool
+ TCGA-STAD    M3      6    157  26.17      fit_and_pool
+ TCGA-STAD    M4      7    157  22.43      fit_and_pool
+ TCGA-ESCA    M1      1     77  77.00      fit_and_pool
+ TCGA-ESCA    M2      5     77  15.40      fit_and_pool
+ TCGA-ESCA    M3      6     77  12.83      fit_and_pool
+ TCGA-ESCA    M4      7     77  11.00      fit_and_pool
+ TCGA-PAAD    M1      1     93  93.00      fit_and_pool
+ TCGA-PAAD    M2      5     93  18.60      fit_and_pool
+ TCGA-PAAD    M3      6     93  15.50      fit_and_pool
+ TCGA-PAAD    M4      7     93  13.29      fit_and_pool
+ TCGA-LIHC    M1      1    130 130.00      fit_and_pool
+ TCGA-LIHC    M2      5    130  26.00      fit_and_pool
+ TCGA-LIHC    M3      6    130  21.67      fit_and_pool
+ TCGA-LIHC    M4      7    130  18.57      fit_and_pool
+ TCGA-CHOL    M1      1     18  18.00      fit_and_pool
+ TCGA-CHOL    M2      5     18   3.60        do_not_fit
+ TCGA-CHOL    M3      6     18   3.00        do_not_fit
+ TCGA-CHOL    M4      7     18   2.57        do_not_fit
+    cohort     provisional        realised differs
+ TCGA-COAD          fitted          fitted   FALSE
+ TCGA-READ         low_EPV         low_EPV   FALSE
+ TCGA-STAD          fitted          fitted   FALSE
+ TCGA-ESCA          fitted          fitted   FALSE
+ TCGA-PAAD          fitted          fitted   FALSE
+ TCGA-LIHC          fitted          fitted   FALSE
+ TCGA-CHOL cohort_excluded cohort_excluded   FALSE

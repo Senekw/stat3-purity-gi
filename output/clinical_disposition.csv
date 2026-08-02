@@ -1,0 +1,8 @@
+"cohort","provisional","realised","differs"
+"TCGA-COAD","fitted","fitted",FALSE
+"TCGA-READ","low_EPV","low_EPV",FALSE
+"TCGA-STAD","fitted","fitted",FALSE
+"TCGA-ESCA","fitted","fitted",FALSE
+"TCGA-PAAD","fitted","fitted",FALSE
+"TCGA-LIHC","fitted","fitted",FALSE
+"TCGA-CHOL","cohort_excluded","cohort_excluded",FALSE
