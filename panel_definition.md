@@ -586,3 +586,46 @@ alongside dominance for exactly this reason.
 
 Made blind: no score has been constructed, no survival model fitted, and no
 outcome data opened.
+
+### Amendment 15 — 2026-08-02
+
+Exclusion rule 3.3 is applied on its literal reading: any panel gene whose
+annotation places it on chrX or chrY is excluded, including pseudoautosomal (PAR)
+genes annotated chrX/chrY. The final gene list is 140.
+
+Seven panel genes qualify: three annotated chrX only (IL13RA1, IL2RG, TIMP1) and
+four annotated chrX/chrY. One of the four (CRLF2) is already excluded by rule 2,
+so the rules together exclude 12 genes and the final scoring set is 140.
+
+Reason: rule 3.3's registered text is categorical and names no exception. The
+alternative reading requires a biological argument that the registered rule does
+not make, and that argument does not hold uniformly across the genes at issue.
+PAR1 genes have a functional Y homolog and escape X-inactivation, so both sexes
+carry two active copies and expression is broadly dosage-balanced; PAR2 genes are
+not uniformly XCI-escaping and the Y copy is sometimes silenced. A single rule
+covering both cannot be justified on dosage grounds. Defining the Part B scoring
+set on a contested empirical claim about four genes is worse than applying the
+registered text as written.
+
+WITHDRAWN JUSTIFICATIONS, both recorded because both were unsound as stated. The
+initial justification for retaining PAR genes ("they escape X-inactivation and are
+present in two copies in both sexes") was asserted from memory and written into
+the lock script without verification. The audit objection that replaced it ("XCI
+escape is the mechanism that produces female-biased expression") is correct for
+non-PAR X-linked escapees but does not hold for PAR1, which has a Y homolog.
+Neither claim is relied on here.
+
+DIRECTION OF BIAS: this is CONSERVATIVE. The three additional excluded genes are
+non-epithelial, so retaining them would make the score a more stromal readout —
+the direction consistent with this study's hypothesis. Excluding them makes the
+hypothesis harder to support, not easier.
+
+Prespecified sensitivity: the score is also constructed over the 143-gene narrow
+list and every Part B model refitted on it. Both are reported. If the primary and
+sensitivity results differ materially, that is stated in the paper.
+
+k is unaffected. Under Amendment 14, k and its variants are computed over the
+locked 152-gene panel, not the scoring set.
+
+Made blind: no score has been constructed, no survival model fitted, and no
+outcome data opened.

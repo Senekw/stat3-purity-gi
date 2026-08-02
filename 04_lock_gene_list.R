@@ -29,12 +29,34 @@ if (!setequal(names(mx), g152))
 if (any(is.na(mx))) halt("panel gene(s) with no detection value anywhere: ",
                          paste(names(mx)[is.na(mx)], collapse=", "))
 if (!all(mx >= 0 & mx <= 1)) halt("detection values outside [0,1]; units are not proportions")
-## R2-A12: Amendment 12 drops six panel genes from GSE125449, so their max is
-## taken over TWO atlases while every other gene gets three.  Two of them (CRLF2,
-## LEP) are rule-2 exclusions, and a gene held to the threshold over fewer
-## atlases is likelier to fail it.  Recorded per gene, not left implicit.
+## R2-A12: rule 2's evidence base is NOT equal across genes, and TWO mechanisms
+## compound.  Amendment 12 drops six panel genes from GSE125449 outright, and the
+## per-atlas evidence floor (>=20 summed counts) then removes further atlases from
+## individual genes.  Measured on this run: 142 panel genes are evaluated against
+## all three atlases, 7 against two, and 3 against ONE.
+##   An earlier revision of this comment said the Amendment 12 genes "get two
+##   atlases while every other gene gets three".  Both halves are wrong. CRLF2 and
+##   LEP have ONE evaluable atlas, not two -- Amendment 12 removes GSE125449 and
+##   the floor removes Peng -- and three genes with only two atlases (DNTT, INHBE,
+##   OPRM1, PAX3) are not Amendment 12 genes at all.
+## This matters because a gene held to the 1% threshold over fewer atlases has
+## fewer chances to clear it. Recorded per gene in n_atlases_evaluable rather than
+## left implicit; asserted below so the disparity cannot drift unnoticed.
 n_atl <- tapply(d$atlas[!is.na(d$pct_cells_detected)], d$gene[!is.na(d$pct_cells_detected)],
                 function(a) length(unique(a)))
+if (!setequal(names(n_atl), g152))
+  halt("atlas-evaluability count does not cover the panel")
+## Pin the observed disparity: 142 genes on three atlases, 7 on two, 3 on one.
+## A change here means the deposits or the evidence floor have moved, and rule 2
+## would then be applied with different power than the locked list was built on.
+atl_tab <- table(factor(n_atl[g152], levels = 1:3))
+if (!identical(as.integer(atl_tab), c(3L, 7L, 142L)))
+  halt("rule-2 atlas coverage changed: ", paste(sprintf("%s atlas=%d", names(atl_tab), atl_tab), collapse=", "),
+       " (locked against 1 atlas=3, 2 atlases=7, 3 atlases=142). Re-check which genes ",
+       "lost coverage before relocking; rule 2's power is not uniform across genes.")
+if (!setequal(names(n_atl)[n_atl == 1L], c("CRLF2", "DNTT", "LEP")))
+  halt("the single-atlas gene set changed: ", paste(sort(names(n_atl)[n_atl == 1L]), collapse=", "),
+       " (locked against CRLF2, DNTT, LEP)")
 ex2 <- sort(names(mx)[mx < 0.01])
 best <- sapply(g152, function(g){ s <- d[d$gene==g & !is.na(d$pct_cells_detected),]
   if (!nrow(s)) return(NA_character_)
@@ -42,9 +64,14 @@ best <- sapply(g152, function(g){ s <- d[d$gene==g & !is.na(d$pct_cells_detected
 
 ## ---- rules 3.1 and 3.3: read GENE ANNOTATION ONLY from each cohort ----------
 ## COHORT-ID: assert cohort IDENTITY, not arity.  Rule 3.1 is defined against
-## "every TCGA cohort in the study" -- the seven named in Amendments 8 and 10.  A
-## stray or substituted *_se.rds would keep a count check true while evaluating
-## the rule against the wrong annotation set.
+## "every TCGA cohort in the study".  Those seven are registered in
+## analysis_plan.md -- its endpoint table lists all seven and its section on PFI
+## says "in six of the seven cohorts (COAD, READ, ESCA, PAAD, LIHC, CHOL)".
+## NOTE panel_definition.md names six of the seven (CHOL, COAD, ESCA, LIHC, READ,
+## STAD -- Amendment 7 turns on COAD and LIHC explicitly) but never mentions PAAD,
+## so the plan, not the panel document, is the authority for the full cohort set.
+## A stray or substituted *_se.rds would keep a
+## count check true while evaluating rule 3.1 against the wrong annotation set.
 COHORTS <- c("TCGA-CHOL","TCGA-COAD","TCGA-ESCA","TCGA-LIHC","TCGA-PAAD","TCGA-READ","TCGA-STAD")
 coh <- sub("_se\\.rds$","",basename(Sys.glob("data/tcga/*_se.rds")))
 if (!setequal(coh, COHORTS))
@@ -66,7 +93,16 @@ for (cc in coh) {
   ## is order-stable across cohorts; record multiplicity and assert it below.
   cur <- sapply(g152, function(g){v<-sort(unique(ch[names(ch)==g])); if(!length(v)) NA_character_ else paste(v,collapse="/")})
   nr  <- sapply(g152, function(g) sum(names(ch)==g))
-  if (is.null(chrom)) { chrom <- cur; nrow_annot <- nr }
+  if (is.null(chrom)) {
+    chrom <- cur; nrow_annot <- nr
+    ## PAR region assignment needs coordinates, not just chromosome names.  Taken
+    ## from the first cohort; the cross-cohort identity check below covers the
+    ## chromosome, and all seven derive from the same annotation release.
+    gr0        <- rowRanges(se)
+    gene_chr   <- as.character(GenomicRanges::seqnames(gr0))
+    gene_start <- setNames(GenomicRanges::start(gr0), sym)
+    gene_end   <- setNames(GenomicRanges::end(gr0),   sym)
+  }
   else {
     ## R31-DEAD: compare only over genes PRESENT in both cohorts.  Previously an
     ## absent gene made `cur` differ from `chrom` and the script halted with
@@ -99,35 +135,45 @@ if (any(is.na(chrom[setdiff(g152, ex31)])))
 ## from the _PAR_Y convention rather than read from the object, and is withdrawn.
 ## Whether rule 3.3 catches them is NOT settled by the registered text, and the
 ## two readings give different scoring sets (143 vs 140 genes):
-##   NARROW - exclude genes annotated ONLY on X or Y (PAR genes retained). 143.
-##   BROAD  - exclude anything with any row on a sex chromosome, on the rule's
-##            stated TEXT. 140.
+## AMENDMENT 15, 2026-08-02 -- DECIDED: the BROAD reading. Rule 3.3 is applied on
+## its literal text: any panel gene whose annotation places it on chrX or chrY is
+## excluded, PAR genes included. PRIMARY scoring set = 140. The 143-gene narrow
+## list is retained as a PRESPECIFIED SENSITIVITY set, written alongside.
 ##
-## AN EARLIER REVISION OF THIS COMMENT JUSTIFIED NARROW ON THE BIOLOGY, ARGUING
-## THAT PAR GENES "escape X-inactivation and are present in two copies in both
-## sexes, so cohort sex composition does not bias them". THAT ARGUMENT IS WRONG
-## AT THE OPERATIVE STEP and has been withdrawn. Escaping X-inactivation is
-## precisely the mechanism that PRODUCES sex-differential expression: an escapee
-## is transcribed from both X copies in XX individuals, so it tends to be
-## expressed HIGHER in females. Rule 3.3's stated reason therefore argues FOR
-## excluding PAR genes, not for retaining them. The claim was asserted from
-## memory and not checked; it should not have been written into a lock script.
+##   BROAD  (PRIMARY, Amendment 15) - any row on chrX or chrY. 7 genes qualify;
+##            CRLF2 is already a rule-2 exclusion, so 12 excluded, 140 retained.
+##   NARROW (SENSITIVITY)           - only genes annotated solely on X or Y. 143.
 ##
-## The question is consequently OPEN. This script implements NARROW only because
-## it is what Amendment 14's registered "143-gene final list" describes -- and
-## Amendment 14 was written before the PAR question was identified, so it records
-## the number without deciding the question. That is not an argument, and the
-## `PAR_UNDECIDED` flag below marks it as provisional.
+## Amendment 15's ground is that the registered text is categorical and names no
+## exception, and that the biological argument the alternative needs does not hold
+## uniformly: PAR1 genes have a functional Y homolog and are broadly
+## dosage-balanced, while PAR2 genes are not uniformly XCI-escaping.
+##   That PAR1/PAR2 split belongs to Amendment 15's NEGATIVE argument -- its reason
+##   for declining the biological route -- not to the decision itself. The decision
+##   rests on the registered text, which is categorical and excludes all four genes
+##   whether they span one region or two. The split is recomputed below because a
+##   claim in the amendment record should be checkable, NOT because the outcome
+##   depends on it: were all four PAR1, the broad reading would be unchanged.
 ##
-## DIRECTION OF BIAS: narrow retains CSF2RA, IL3RA and IL9R in the scoring set.
-## None is epithelial-dominant, so each adds a non-epithelial gene to the score
-## -- the direction that favours this study's "substantially stromal" thesis.
-## Narrow is therefore the hypothesis-friendly reading, and it is the one
-## implemented; that is a reason for a human to decide it explicitly, not for the
-## script to keep choosing silently. k is 43 under both readings, so no Part A
-## quantity depends on it; the Amendment 3 branch is BUILT under 152, 143 and 140
-## alike (30.3%, 30.1%, 30.7% of panel, all above the 20% floor).
-PAR_UNDECIDED <- TRUE   # cleared only by an amendment deciding rule 3.3's scope
+## TWO JUSTIFICATIONS WERE OFFERED AND BOTH WITHDRAWN; Amendment 15 relies on
+## neither, and neither is used here.
+##   (1) Mine, for retaining PAR genes: "they escape X-inactivation and are
+##       present in two copies in both sexes." Asserted from memory, not checked,
+##       and written into this script -- the error that made the audit necessary.
+##   (2) The audit's replacement: "XCI escape is the mechanism that PRODUCES
+##       female-biased expression." True of non-PAR X-linked escapees, but not of
+##       PAR1, which has a functional Y homolog.
+## Amendment 15 decides the question on the registered TEXT instead, which is
+## categorical. That is the ground implemented below.
+##
+## DIRECTION OF BIAS (Amendment 15): CONSERVATIVE. The three additional exclusions
+## -- CSF2RA, IL3RA, IL9R -- are all non-epithelial, so retaining them would make
+## the score a MORE stromal readout, the direction consistent with this study's
+## hypothesis. Excluding them makes the hypothesis harder to support. This is the
+## opposite of the earlier narrow reading, which was the hypothesis-friendly one.
+##
+## k is untouched either way (Amendment 14: k is computed over the locked 152),
+## and the Amendment 3 branch is BUILT under 152, 143 and 140 alike.
 PAR_GENES  <- c("CRLF2", "CSF2RA", "IL3RA", "IL9R")
 sex_any    <- sort(g152[grepl("chr[XY]", chrom)])
 sex_only   <- sort(g152[grepl("^(chr)?[XY]$", chrom)])
@@ -135,10 +181,11 @@ par_seen   <- sort(setdiff(sex_any, sex_only))
 if (!identical(par_seen, sort(PAR_GENES)))
   halt("the set of pseudoautosomal panel genes changed: observed ",
        paste(par_seen, collapse=", "), " vs the four this lock was built against (",
-       paste(sort(PAR_GENES), collapse=", "), "). NOTE this halt has TWO possible ",
-       "causes: the annotation changed, OR rule 3.3's scope was never decided on ",
-       "the merits (see PAR_UNDECIDED). Re-decide the interpretation in a dated ",
-       "amendment before relocking.")
+       paste(sort(PAR_GENES), collapse=", "), "). Rule 3.3's SCOPE is settled -- ",
+       "Amendment 15 applies the literal reading, PAR genes excluded -- so this ",
+       "halt means the ANNOTATION changed, not that the interpretation is open. ",
+       "Re-derive the 140/143 counts and record them in a dated amendment before ",
+       "relocking; do not simply widen this constant.")
 ## PAR-5: pin the chromosome string too, so a PAR gene reannotated to a single
 ## chromosome cannot pass the set check while changing what it means.
 if (!all(chrom[PAR_GENES] %in% c("chrX/chrY", "chrY/chrX")))
@@ -153,17 +200,73 @@ if (!identical(unname(nrow_annot), expect_rows))
        paste(sprintf("%s=%d", g152[nrow_annot != expect_rows], nrow_annot[nrow_annot != expect_rows]),
              collapse=", "), ". A symbol matching several loci has no defined ",
        "quantification rule in Part B.")
-ex33 <- sex_only                      # NARROW -- provisional, see PAR_UNDECIDED
+## PAR_REGION: assign each PAR gene to PAR1 or PAR2 from its own chrX coordinate,
+## recomputed at lock time.  The PAR boundaries are a property of the ASSEMBLY,
+## not of any gene, so they are stated here as GRCh38 intervals and the assignment
+## is derived -- never carried as a remembered list.  Amendment 15's reasoning
+## turns on these four genes spanning BOTH regions, so the claim is verified
+## rather than trusted.
+GRCh38_PAR1_X <- c(10001L,     2781479L)
+GRCh38_PAR2_X <- c(155701383L, 156030895L)
+## ASSEMBLY GUARD.  The PAR intervals above are GRCh38-specific, and these objects
+## carry NO usable assembly field -- seqlengths() is all NA and there is no genome
+## string, so nothing in the file states the build.  Applying GRCh38 intervals to a
+## GRCh37 annotation would misassign every PAR gene silently.  Pin it with a
+## coordinate that differs between builds: MYC is chr8:127,735,434-127,742,951 in
+## GRCh38 and chr8:128,748,315-128,753,680 in GRCh37, ~1 Mb apart.
+local({
+  i <- which(names(gene_start) == "MYC" & gene_chr == "chr8")
+  if (length(i) != 1L) halt("cannot pin the assembly: MYC is not uniquely annotated on chr8")
+  if (!(gene_start[i] == 127735434L && gene_end[i] == 127742951L))
+    halt("annotation is not GRCh38: MYC observed at chr8:", gene_start[i], "-", gene_end[i],
+         " but GRCh38 places it at chr8:127735434-127742951 (GRCh37: 128748315-128753680). ",
+         "The PAR intervals below are GRCh38-specific and would misassign PAR1/PAR2 ",
+         "on any other build. Do not lock against a different assembly.")
+})
+par_region <- vapply(PAR_GENES, function(g) {
+  i <- which(names(gene_start) == g & gene_chr == "chrX")
+  if (length(i) != 1L) return(NA_character_)
+  s <- gene_start[i]; e <- gene_end[i]
+  if (s >= GRCh38_PAR1_X[1] && e <= GRCh38_PAR1_X[2]) "PAR1"
+  else if (s >= GRCh38_PAR2_X[1] && e <= GRCh38_PAR2_X[2]) "PAR2"
+  else NA_character_
+}, character(1))
+if (any(is.na(par_region)))
+  halt("a pseudoautosomal gene's chrX coordinates fall outside both GRCh38 PAR ",
+       "intervals: ", paste(names(par_region)[is.na(par_region)], collapse=", "),
+       ". The assembly may not be GRCh38; do not lock against a different one.")
+## Amendment 15 states three PAR1 and one PAR2. Asserted, not assumed.
+if (!identical(sort(names(par_region)[par_region == "PAR1"]), sort(c("CRLF2","CSF2RA","IL3RA"))) ||
+    !identical(names(par_region)[par_region == "PAR2"], "IL9R"))
+  halt("PAR region assignment disagrees with Amendment 15 (which records CRLF2, ",
+       "CSF2RA, IL3RA as PAR1 and IL9R as PAR2): observed ",
+       paste(sprintf("%s=%s", names(par_region), par_region), collapse=", "))
+
+ex33 <- sex_any                       # BROAD -- Amendment 15, the literal reading
+ex33_narrow <- sex_only               # retained for the sensitivity list
 
 ## ---- assemble, in the registered order 1 -> 2 -> 3 --------------------------
 excl <- unique(c(ex31, ex2, ex33))
 final <- setdiff(g152, excl)
 reason <- function(g) paste(c(if(g %in% ex31)"3.1_absent_from_a_TCGA_cohort_annotation",
                               if(g %in% ex2) "2_undetectable_under_1pct_in_every_compartment",
-                              if(g %in% ex33)"3.3_sex_chromosome"), collapse="+")
+                              if(g %in% ex33) if (g %in% PAR_GENES)
+                                 "3.3_sex_chromosome_pseudoautosomal" else "3.3_sex_chromosome"),
+                            collapse="+")
 
 ## ---- assertions against the Part A / Amendment 14 record --------------------
-stopifnot(length(ex31)==0L, length(ex2)==6L, length(ex33)==3L, length(final)==143L)
+## Amendment 15: 7 genes qualify under rule 3.3 (3 chrX-only + 4 PAR); CRLF2 is
+## ALSO a rule-2 exclusion, so the union is 12, not 13, and the primary set is 140.
+stopifnot(length(ex31)==0L, length(ex2)==6L, length(ex33)==7L,
+          length(excl)==12L, length(final)==140L)
+if (!identical(sort(intersect(ex2, ex33)), "CRLF2"))
+  halt("Amendment 15 records CRLF2 as the single gene caught by both rule 2 and ",
+       "rule 3.3; observed overlap: ",
+       if (length(intersect(ex2, ex33))) paste(sort(intersect(ex2, ex33)), collapse=", ") else "(none)")
+## The sensitivity set is the narrow reading: 143.
+final_narrow <- setdiff(g152, unique(c(ex31, ex2, ex33_narrow)))
+stopifnot(length(final_narrow)==143L, all(final %in% final_narrow),
+          setequal(setdiff(final_narrow, final), c("CSF2RA","IL3RA","IL9R")))
 ## ORIGIN6: assert which origin genes are IN the panel rather than hardcoding the
 ## conclusion.  Amendment 2 removed BCL2, MMP9 and HGF, so only three can appear
 ## in `excl` -- but if the panel were rebuilt and BCL2 requalified, a guard naming
@@ -176,7 +279,27 @@ if (length(intersect(excl, ORIGIN6)))
   halt("an origin-six gene was excluded: ", paste(sort(intersect(excl, ORIGIN6)), collapse=", "))
 
 dm <- read.csv("output/compartment_dominance_matrix.csv", stringsAsFactors=FALSE)
-p  <- dm[dm$in_panel, ]
+## K-DENOM-NA: which(), for the same reason as R2-NAINDEX above -- a bare logical
+## with an NA injects an all-NA row rather than dropping it.  It happened to be
+## caught downstream by the n_atlas guard, but with a message pointing at the
+## wrong cause.
+p  <- dm[which(dm$in_panel), ]
+## NA dominance is EXPECTED and correct: a gene below the >=20-count evidence
+## floor has no fraction, so A.d gives it no dominance call. What must hold is the
+## CORRESPONDENCE -- NA exactly where the gene is not evaluable, never where it
+## is. An NA on an evaluable gene would be a lost call that sum(na.rm=TRUE) would
+## silently score as non-dominant, deflating k. (An earlier revision of this guard
+## forbade NA outright and halted on the real data; that was my error, not the
+## data's.)
+if (any(is.na(p$dominant) & p$evaluable))
+  halt("dominance matrix has NA dominance calls on EVALUABLE genes: ",
+       paste(utils::head(p$gene[is.na(p$dominant) & p$evaluable], 5), collapse=", "),
+       ". A missing call on an evaluable gene would be summed as non-dominant.")
+if (any(!is.na(p$dominant) & !p$evaluable))
+  halt("dominance matrix has a dominance call on a NON-evaluable gene: ",
+       paste(utils::head(p$gene[!is.na(p$dominant) & !p$evaluable], 5), collapse=", "))
+if (!all(table(p$gene) == 3L))
+  halt("dominance matrix is not exactly one row per gene per atlas")
 ## K-DENOM: the k assertion re-derives from a separate committed Part A input, so
 ## it is not circular -- but it says nothing about the DENOMINATOR.  Pin it: the
 ## dominance matrix must cover exactly the panel, over exactly three atlases, with
@@ -186,10 +309,25 @@ if (n_atlas != 3L) halt("dominance matrix covers ", n_atlas, " atlases, expected
 nd <- tapply(p$dominant, p$gene, function(x) sum(x, na.rm=TRUE))
 if (!setequal(names(nd), g152))
   halt("dominance matrix in_panel rows do not cover the locked panel")
-k152 <- sum(nd >= 2); k143 <- sum(nd[names(nd) %in% final] >= 2)
-a152 <- sum(nd == n_atlas);  a143 <- sum(nd[names(nd) %in% final] == n_atlas)
-if (k152 != 46L || k143 != 43L || a152 != 24L || a143 != 23L)
-  halt("Amendment 14 records k=46/43 and k_all3=24/23; observed ",
+## K-DENOM-140: `final` is the 140-gene PRIMARY list, so a variable named k143
+## computed over it was a mislabel -- it was being asserted against 43, the value
+## Amendment 14 registers for the 143-gene list. The assertion passed only because
+## the two coincide (the three extra genes are non-dominant). Both are now
+## computed over their own denominators and their coincidence is asserted rather
+## than relied on.
+k152 <- sum(nd >= 2);       a152 <- sum(nd == n_atlas)
+k140 <- sum(nd[names(nd) %in% final] >= 2)
+a140 <- sum(nd[names(nd) %in% final] == n_atlas)
+k143 <- sum(nd[names(nd) %in% final_narrow] >= 2)
+a143 <- sum(nd[names(nd) %in% final_narrow] == n_atlas)
+if (k140 != k143 || a140 != a143)
+  halt("k differs between the primary 140 and sensitivity 143 lists (k140=", k140,
+       ", k143=", k143, "; k_all3 ", a140, " vs ", a143, "). Amendment 15 records ",
+       "the three PAR genes it removes as non-dominant, so the counts must agree; ",
+       "if they do not, that claim is false and the amendment needs revisiting.")
+if (k152 != 46L || k143 != 43L || k140 != 43L || a152 != 24L || a143 != 23L || a140 != 23L)
+  halt("Amendment 14 records k=46 over the panel and 43 over the final list, ",
+       "k_all3=24 and 23; Amendment 15 leaves both unchanged at 140. observed ",
        k152,"/",k143," and ",a152,"/",a143)
 
 ## ---- write --------------------------------------------------------------
@@ -205,7 +343,36 @@ fl <- data.frame(gene=final, in_locked_panel_152=TRUE,
                  n_atlases_evaluable=unname(n_atl[final]),
                  n_annotation_rows=unname(nrow_annot[final]),
                  stringsAsFactors=FALSE)
-write.csv(fl, file.path(OUT,"final_gene_list.csv"), row.names=FALSE)
+## OUT-PRIMARY-NOCOL / LIST-IDENTITY: the two lists are built by ONE function so
+## they are column-identical by construction.  Previously the primary lacked
+## in_primary_140, and in R `d$in_primary_140` on a frame without that column
+## returns NULL while `d[d$in_primary_140, ]` returns ZERO ROWS with no error --
+## a Part B script filtering the wrong file would silently score nothing.
+## Each frame also carries list_id and n_genes, so a reader can assert WHICH list
+## it holds from the data rather than trusting a filename that has already changed
+## meaning once (final_gene_list.csv held 143 before Amendment 15 and holds 140 now).
+make_list <- function(genes, id) data.frame(
+  list_id             = id,
+  n_genes             = length(genes),
+  gene                = genes,
+  in_locked_panel_152 = TRUE,
+  origin_six          = genes %in% ORIGIN6,
+  chromosome          = unname(chrom[genes]),
+  pseudoautosomal     = genes %in% PAR_GENES,
+  par_region          = unname(ifelse(genes %in% names(par_region), par_region[genes], NA_character_)),
+  in_primary_140      = genes %in% final,
+  max_detection_pct   = round(100*unname(mx[genes]),4),
+  n_atlases_evaluable = unname(n_atl[genes]),
+  n_annotation_rows   = unname(nrow_annot[genes]),
+  stringsAsFactors    = FALSE)
+
+fl    <- make_list(final,        "primary_140")
+fl143 <- make_list(final_narrow, "sensitivity_143")
+stopifnot(identical(names(fl), names(fl143)),
+          sum(fl$in_primary_140) == 140L, sum(fl143$in_primary_140) == 140L)
+write.csv(fl,    file.path(OUT,"final_gene_list_140.csv"), row.names=FALSE)  # PRIMARY
+write.csv(fl,    file.path(OUT,"final_gene_list.csv"),     row.names=FALSE)  # alias -> primary
+write.csv(fl143, file.path(OUT,"final_gene_list_143.csv"), row.names=FALSE)  # SENSITIVITY
 ex <- data.frame(gene=excl, excluded_by_rule=sapply(excl, reason),
                  chromosome=unname(chrom[excl]),
                  pseudoautosomal=excl %in% PAR_GENES,

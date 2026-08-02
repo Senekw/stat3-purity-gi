@@ -2,6 +2,69 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 21. RESOLVED — Amendment 15 settles rule 3.3 on the broad reading; primary list is 140
+
+**Supersedes §17, which recorded this as open.** Amendment 15 (2026-08-02) applies
+rule 3.3 on its literal text: any panel gene annotated on chrX or chrY is
+excluded, PAR genes included. **Primary scoring set = 140**; the 143-gene narrow
+list is retained as a prespecified sensitivity set and both are written to disk.
+
+### What I verified rather than accepted
+
+Amendment 15's reasoning turns on the four PAR genes spanning *both* PAR regions,
+so a single dosage argument cannot cover them. I recomputed the assignment from
+the annotation's own chrX coordinates against the GRCh38 PAR intervals rather
+than relying on the amendment or on memory:
+
+| Gene | chrX coordinates | Region |
+|---|---|---|
+| CRLF2 | 1,187,549–1,212,723 | **PAR1** |
+| CSF2RA | 1,268,800–1,310,381 | **PAR1** |
+| IL3RA | 1,336,616–1,382,689 | **PAR1** |
+| IL9R | 155,997,581–156,010,817 | **PAR2** |
+
+(GRCh38 PAR1 chrX:10,001–2,781,479; PAR2 chrX:155,701,383–156,030,895. Each gene
+also carries a `_PAR_Y` row at the corresponding chrY coordinate.) **Three PAR1,
+one PAR2 — the mixture Amendment 15 describes.** The lock script now recomputes
+this at run time and halts if the assignment or the assembly changes.
+
+### Both of the earlier justifications were unsound, and neither is used
+
+Amendment 15 records this explicitly, and it is worth restating because the
+sequence is the point:
+
+1. **Mine** (for retaining PAR genes): *"they escape X-inactivation and are
+   present in two copies in both sexes."* Asserted from memory, unchecked,
+   written into the lock script.
+2. **The audit's replacement**: *"XCI escape is the mechanism that produces
+   female-biased expression."* Correct for non-PAR X-linked escapees — but not
+   for PAR1, which has a functional Y homolog.
+
+So the objection that corrected me was itself not uniformly right, and the
+resolution rests on **neither**: Amendment 15 decides on the registered text,
+which is categorical and names no exception. Defining a scoring set on a
+contested empirical claim about four genes would have been the worse failure.
+
+### Direction of bias — now conservative
+
+The three additional exclusions (CSF2RA, IL3RA, IL9R) are all non-epithelial.
+Retaining them would make the score a *more stromal* readout, the direction
+consistent with this study's thesis; excluding them makes the hypothesis **harder**
+to support. The reading that was implemented before (narrow/143) was the
+hypothesis-friendly one. This reverses that.
+
+### One correction to the arithmetic as commonly stated
+
+The three rules are **not disjoint** under the broad reading. Rule 2 catches 6
+genes and rule 3.3 catches 7, but **CRLF2 is caught by both**, so the union is
+**12**, not 13, and the primary list is 140. The retained and excluded sets do
+partition the 152 exactly (140 + 12), and `reason()` records both rules for
+CRLF2 rather than letting the first one silence the second. Under the earlier
+narrow reading the rules *were* disjoint — that property was specific to it.
+
+k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
+branch is BUILT under 152, 143 and 140 alike.
+
 ## 20. AMENDMENT 14's STATED REASON IS PARTLY FALSE — conclusion holds on other grounds
 
 **The decision Amendment 14 makes is sound. One clause of its justification is
@@ -117,6 +180,11 @@ GI tumour tissue. That is a cleaner statement of the deposit-provenance caution
 than "pathway membership" would have been, and it belongs in the discussion.
 
 ## 17. UNREGISTERED INTERPRETIVE CHOICE — rule 3.3 and the pseudoautosomal genes
+
+> **SUPERSEDED by §21.** Amendment 15 (2026-08-02) decided this on the broad
+> reading: primary scoring set 140, with 143 retained as a prespecified
+> sensitivity set. This section is kept as the record of how the question was
+> found and what was wrong with my first answer to it — not as current guidance.
 
 **Surfaced while locking the list. It does not change any reported Part A number,
 but it does change the scoring set, so it is recorded rather than absorbed.**
