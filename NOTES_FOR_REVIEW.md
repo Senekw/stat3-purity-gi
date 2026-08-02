@@ -9,22 +9,23 @@ factually wrong, and it is the clause carrying the argument.** Registered text i
 not edited; the correction is recorded here.
 
 Amendment 14's reason paragraph says the 143-gene final list *"is derived from
-the compartment output and did not exist when k was defined."* Both clauses fail
-on inspection:
+the compartment output and did not exist when k was defined."* The **second
+clause is false**; the first is broadly right but overstated:
 
 | Claim | Check | Verdict |
 |---|---|---|
-| "derived from the compartment output" | Rules **3.1 and 3.3** read TCGA gene annotation only — wholly independent of Part A. Only **rule 2** touches Part A output. | **Two-thirds false.** The list is mostly *not* derived from the compartment output; 3 of the 9 exclusions come from annotation alone. |
+| "derived from the compartment output" | **6 of the 9** exclusions come from rule 2, which reads `detection_rate_by_compartment.csv` — Part A output. The other **3** (IL13RA1, IL2RG, TIMP1) come from rule 3.3, TCGA annotation only, independent of Part A. | **Overstated, not false.** A majority of exclusions *are* compartment-derived, so the clause is broadly right; it is only imprecise in implying the list is *wholly* so. This is the weaker of the two objections. |
 | "did not exist when k was defined" | Section 3's exclusion rules are present in the **first commit**, `361d287` ("Starting state"), verbatim as applied. | **False.** The rules predate k's definition; only their *evaluation* is recent. |
 
 **Why the conclusion survives anyway.** The literal reading holds on its own:
 Amendment 3 defines k over *"panel genes"*, and the panel is the 152 locked at
 `ac9c5e0`. k is a property of the panel by definition; the 143-gene list is the
 **scoring set**, a different object serving a different purpose in Part B. That
-argument needs neither false clause.
+argument needs neither the false chronology clause nor the overstated one.
 
-**Why it matters even though the answer is unchanged.** The false clauses make
-the decision look forced by chronology when it is actually a definitional choice
+**Why it matters even though the answer is unchanged.** The chronology clause is
+the load-bearing one, and it is false: it makes the decision look forced by
+sequence when it is actually a definitional choice
 — and a definitional choice deserves the scrutiny Amendment 14's own disclosure
 paragraph invites. The disclosure itself is unusually good and stands: it states
 the choice is not blind, that both values were computed first, that the option
