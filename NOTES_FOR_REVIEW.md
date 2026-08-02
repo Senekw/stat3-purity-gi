@@ -2,6 +2,49 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 16. DISCREPANCY IN REGISTERED TEXT — Amendment 13's stated deviation is 4x low
+
+**The amendment's procedure and its registered tolerance both stand. One prose
+figure inside it is contradicted by the full run, and I have not edited it.**
+
+Amendment 13, assertion (iii), as registered:
+
+> every recovered value lies within 0.1 of an integer BEFORE rounding.
+> **Maximum observed deviation is 2.9e-3**, consistent with float32 storage.
+
+The full Part A run, over all 139,415,620 non-zero entries:
+
+```
+(iii) max deviation from integer before rounding = 1.170e-02  (tol 0.1)
+```
+
+**1.17e-2 is roughly 4x the 2.9e-3 the amendment records.** The 2.9e-3 figure
+appears to derive from a 400-cell sample taken while the recovery was being
+designed, before it was run over the whole matrix.
+
+**Nothing about the procedure changes.** The registered *tolerance* is 0.1, and
+1.17e-2 sits an order of magnitude inside it — and far below the 0.5 at which
+rounding could recover a wrong integer. Assertion (iii) passed on its own terms.
+Recovery remains exact: assertion (ii) is 0.000e+00, i.e. recovered per-cell sums
+equal the deposited `n_counts` bit for bit.
+
+**Why this is recorded rather than fixed.** Amendment text is registered and goes
+in verbatim; I do not edit it, including to correct an observation, because the
+value of a preregistration is that its text is what it was when written. The
+correction belongs here and in the paper's methods, not in the amendment.
+
+**It already caused one concrete error.** I took 2.9e-3 from this amendment as
+the basis for a tightened pre-rounding guard at `dev_iii < 1e-2` (audit finding
+F03). That guard halted a run which had already passed Amendment 13's own
+criterion — the observed 1.17e-2 exceeds 1e-2. The guard has been removed and
+only the registered 0.1 gate remains. A figure in registered prose is not a
+specification, and should not be promoted to a threshold; the tolerance the
+amendment actually sets is the specification.
+
+**If a stricter bound is wanted**, it should be registered as a new dated
+amendment based on the full-corpus measurement (1.17e-2), not back-fitted to a
+sample figure after the data have been seen.
+
 ## 15. REPORTING LIMITATION — GSE178341 has no endothelial compartment
 
 **Not an amendment. The code matches the registration; this is a limitation in

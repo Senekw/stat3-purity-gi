@@ -488,3 +488,61 @@ reduction affected, and the six names above are reported explicitly.
 
 Made blind: no compartment fraction for the 152-gene panel had been computed. The
 only content inspected was gene row names and set dimensions.
+
+### Amendment 13 — 2026-08-01
+
+For the Peng pancreatic atlas, raw counts are recovered by inverting the
+deposited normalisation rather than read directly, because the deposit contains
+no count layer.
+
+Finding: the Besca-reprocessed release (Zenodo 10.5281/zenodo.3969339) carries
+raw/X as log1p of CP10K-normalised expression — all 139,415,620 non-zero entries
+are fractional, and sum(expm1(raw/X)) is exactly 10000 per cell. X is a
+2,033-gene HVG subset, also normalised. There is no /layers group and no count
+matrix anywhere in the file. A.d's raw-count requirement therefore cannot be
+satisfied by reading a layer.
+
+Recovery procedure, applied to Peng only:
+
+    counts = round( expm1(raw/X) * n_counts / 1e4 )
+
+This is NOT an approximation. The transform is losslessly invertible, and the
+following assertions establish that the recovered values are the deposited counts
+exactly rather than estimates of them. All are computed over ALL non-zero entries,
+not a sample, and each halts on failure:
+
+  (i)   per-cell sum of expm1(raw/X) equals 10000 within 1e-6 relative tolerance,
+        confirming the CP10K normalisation
+  (ii)  per-cell sum of the recovered values equals obs$n_counts within 1e-6
+        relative tolerance, confirming n_counts is the library size over the same
+        gene set as raw/X and not a different one
+  (iii) every recovered value lies within 0.1 of an integer BEFORE rounding.
+        Maximum observed deviation is 2.9e-3, consistent with float32 storage. A
+        tolerance of 0.1 is two orders of magnitude above that and far below the
+        0.5 at which rounding could recover a wrong integer.
+
+Given (iii), round() returns the exact original integer for every entry, so the
+recovered matrix is bit-equivalent to the counts Besca held before normalising.
+
+A.d's integrality check is NOT relaxed. assert_raw_counts() runs unchanged on the
+recovered matrix and must pass on genuine integers. The guard keeps full strength;
+only the source of the matrix changes.
+
+Rejected alternatives: re-deriving counts and annotations from GSA CRA001160 raw
+sequence would make pancreatic the only tissue whose entire pipeline is this
+project's own construction, the asymmetry Amendments 9 and 10 were written to
+avoid. Dropping Peng would leave two atlases and make Amendment 5's two-of-three
+requirement equivalent to unanimity, a far stricter bar adopted for a data-access
+reason rather than a principled one.
+
+DIRECTION OF BIAS: none. Assertion (iii) establishes exact recovery rather than
+approximation, so the compartment fractions computed from the recovered matrix
+are identical to those that would be computed from the deposited counts if they
+existed. Unlike Amendments 9, 10 and 12, this one does not change k in either
+direction.
+
+Limitation to report: the original BIGD deposit underlying the Besca release may
+contain the count matrix directly. It was not used, because joining a separately
+processed matrix to Besca's annotations by barcode introduces a matching risk
+larger than the recovery this amendment avoids. The recovery is verified exact,
+so nothing is lost by not pursuing it.
