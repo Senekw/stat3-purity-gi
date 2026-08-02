@@ -355,6 +355,22 @@ intersection (COAD+STAD+ESCA+PAAD+LIHC, n = 1,590): M2 = 0.0826 (95% CI -0.0066
 to 0.1718), M4 = 0.1013 (-0.0337 to 0.2364). Without this the variant's apparent
 M2-to-M4 change would partly reflect READ leaving, not adjustment.
 
+## 25. CORRECTIONS TO MY OWN REPORTING
+
+Recorded because a reader comparing the transcript, the commits and the outputs
+would otherwise find discrepancies. PROJECT_SUMMARY.md cites this section; it was
+cited before it was written, which is itself an instance of the class.
+
+| Claim I made | Correction | Where |
+|---|---|---|
+| 05's unit tests: "21 passed" | **23** PASS, 0 FAIL, counted from a rerun | chat only |
+| HGF's GSE125449 f(0.30) = 0.011 | **0.104**; I duplicated the GSE178341 value in one chat cell. `origin_six_compartment.csv` was always correct | chat only |
+| "GENCODE v36" as the annotation release | **Withdrawn.** Inferred from the `_PAR_Y` naming convention, not read. The objects record "Data Release 45.0" and no GENCODE version anywhere. Assembly is GRCh38, established by matching MYC's coordinates | 04, NOTES 17 |
+| A three-cohort spot check described as covering the realised data | It covered three cohorts, not seven; the full-corpus figure is 1.17e-2 | 06 comment |
+| "4 readmitted genes are sex-chromosome-only" | **5** — IL9R omitted | 07 comment |
+| "the band sweep was run" asserted in a durable artefact | The sweep HAD run (archive confirms `for (n in 1:400)`, 0 violations), but I wrote the claim without checking. The fault was asserting it, not the claim | REVIEW artefact |
+| Amendment 16 "42 lines in, 42 lines out" | Correct as stated — but `git` reports **43 insertions**, the extra line being the blank separator before the heading. The byte comparison was on the 42 content lines and passed | chat only |
+
 ## 24. RESOLVED — the instructed `final_140` label was erroneous; the artefact is correct
 
 The Part B run order asked to assert `list_id == "final_140"`. **The instructing

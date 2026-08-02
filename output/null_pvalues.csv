@@ -1,10 +1,10 @@
-"config","role","statistic","observed","N_requested","n_pooled","p_two_sided_PRIMARY","hits_two","p_one_sided_directional","directional_tail","hits_one","p_granularity"
-"registered_152|registered","primary_registered","p_crude_M1",0.121174,10000,10000,0.395260473952605,3952,0.395260473952605,"upper",3952,9.99900009999e-05
-"registered_152|registered","primary_registered","p_adjusted_M2",0.122869,10000,10000,0.473052694730527,4730,0.473052694730527,"upper",4730,9.99900009999e-05
-"registered_152|registered","primary_registered","p_atten",-0.0225765539255203,10000,10000,0.115688431156884,1156,9.99900009999e-05,"lower",0,9.99900009999e-05
-"tested_140|registered","size_sensitivity","p_crude_M1",0.121174,10000,10000,0.265173482651735,2651,0.265173482651735,"upper",2651,9.99900009999e-05
-"tested_140|registered","size_sensitivity","p_adjusted_M2",0.122869,10000,10000,0.360663933606639,3606,0.360663933606639,"upper",3606,9.99900009999e-05
-"tested_140|registered","size_sensitivity","p_atten",-0.0225765539255203,10000,10000,0.126587341265873,1265,9.99900009999e-05,"lower",0,9.99900009999e-05
-"tested_140|EXPLORATORY_POSTHOC","exploratory_posthoc","p_crude_M1",0.121174,1000,1000,0.721278721278721,721,0.721278721278721,"upper",721,0.000999000999000999
-"tested_140|EXPLORATORY_POSTHOC","exploratory_posthoc","p_adjusted_M2",0.122869,1000,1000,0.855144855144855,855,0.855144855144855,"upper",855,0.000999000999000999
-"tested_140|EXPLORATORY_POSTHOC","exploratory_posthoc","p_atten",-0.0225765539255203,1000,1000,0.022977022977023,22,0.022977022977023,"lower",22,0.000999000999000999
+"config","role","statistic","observed_comparison_target","observed_reported_08","comparison_estimator","N_requested","n_pooled","p_two_sided_PRIMARY","hits_two","p_one_sided_directional","directional_tail","hits_one","p_granularity"
+"registered_152|registered","primary_registered","p_crude_M1",0.121174,0.121174,"same",10000,10000,0.395260473952605,3952,0.395260473952605,"upper",3952,9.99900009999e-05
+"registered_152|registered","primary_registered","p_adjusted_M2",0.122869,0.122869,"same",10000,10000,0.473052694730527,4730,0.473052694730527,"upper",4730,9.99900009999e-05
+"registered_152|registered","primary_registered","p_atten",-0.0225765539255203,-0.024766,"re-pooled with sqrt(se2^2+se4^2), per B1",10000,10000,0.115688431156884,1156,9.99900009999e-05,"lower",0,9.99900009999e-05
+"tested_140|registered","size_sensitivity","p_crude_M1",0.121174,0.121174,"same",10000,10000,0.265173482651735,2651,0.265173482651735,"upper",2651,9.99900009999e-05
+"tested_140|registered","size_sensitivity","p_adjusted_M2",0.122869,0.122869,"same",10000,10000,0.360663933606639,3606,0.360663933606639,"upper",3606,9.99900009999e-05
+"tested_140|registered","size_sensitivity","p_atten",-0.0225765539255203,-0.024766,"re-pooled with sqrt(se2^2+se4^2), per B1",10000,10000,0.126587341265873,1265,9.99900009999e-05,"lower",0,9.99900009999e-05
+"tested_140|EXPLORATORY_POSTHOC","exploratory_posthoc","p_crude_M1",0.121174,0.121174,"same",1000,1000,0.721278721278721,721,0.721278721278721,"upper",721,0.000999000999000999
+"tested_140|EXPLORATORY_POSTHOC","exploratory_posthoc","p_adjusted_M2",0.122869,0.122869,"same",1000,1000,0.855144855144855,855,0.855144855144855,"upper",855,0.000999000999000999
+"tested_140|EXPLORATORY_POSTHOC","exploratory_posthoc","p_atten",-0.0225765539255203,-0.024766,"re-pooled with sqrt(se2^2+se4^2), per B1",1000,1000,0.022977022977023,22,0.022977022977023,"lower",22,0.000999000999000999

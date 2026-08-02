@@ -808,10 +808,12 @@ under Amendment 12's dual-grouping requirement
 
 ## R.4 Reviewer findings still open
 
-24 unresolved at the close of 09: 1 fail/medium, 5 warn/medium, 18 warn/low. Every
-one with substantive content is recorded in `NOTES_FOR_REVIEW.md` §14, §25 and
-§29–32; the remainder are anchored to sub-agent frames or predate an exhausted
-review budget and cannot be cleared from this session. `NOTES_FOR_REVIEW.md` is
+31 unresolved at the close of 10: 1 fail/medium, 7 warn/medium, 23 warn/low.
+(An earlier draft of this section gave the split as 5 medium / 18 low at a count
+of 24; the total was right but the split was not traced — corrected here and
+recorded in `NOTES_FOR_REVIEW.md` §25.) Every finding with substantive content is
+recorded in §14, §25 and §29–37; the remainder are anchored to sub-agent frames or
+predate an exhausted review budget and cannot be cleared from this session. `NOTES_FOR_REVIEW.md` is
 the durable record, not the findings panel.
 
 ---

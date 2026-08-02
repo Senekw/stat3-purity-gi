@@ -18,46 +18,66 @@
    1000  0.095349570  0.11996827  0.12726335  0.127563266  0.135024319
    1000  0.105109435  0.12685218  0.13466963  0.134515100  0.142203306
    1000 -0.036531086 -0.01411926 -0.00928306 -0.009601332 -0.005322377
-         max  observed observed_percentile
- 0.168141723  0.121174               60.48
- 0.178048839  0.122869               52.70
- 0.036919954 -0.024766                0.00
- 0.163874255  0.121174               73.49
- 0.168053846  0.122869               63.94
- 0.037114655 -0.024766                0.00
- 0.158608672  0.121174               27.90
- 0.165810873  0.122869               14.50
- 0.009674945 -0.024766                1.20
-                         config                role     statistic    observed
-      registered_152|registered  primary_registered    p_crude_M1  0.12117400
-      registered_152|registered  primary_registered p_adjusted_M2  0.12286900
-      registered_152|registered  primary_registered       p_atten -0.02257655
-          tested_140|registered    size_sensitivity    p_crude_M1  0.12117400
-          tested_140|registered    size_sensitivity p_adjusted_M2  0.12286900
-          tested_140|registered    size_sensitivity       p_atten -0.02257655
- tested_140|EXPLORATORY_POSTHOC exploratory_posthoc    p_crude_M1  0.12117400
- tested_140|EXPLORATORY_POSTHOC exploratory_posthoc p_adjusted_M2  0.12286900
- tested_140|EXPLORATORY_POSTHOC exploratory_posthoc       p_atten -0.02257655
- N_requested n_pooled p_two_sided_PRIMARY hits_two p_one_sided_directional
-       10000    10000          0.39526047     3952              0.39526047
-       10000    10000          0.47305269     4730              0.47305269
-       10000    10000          0.11568843     1156              0.00009999
-       10000    10000          0.26517348     2651              0.26517348
-       10000    10000          0.36066393     3606              0.36066393
-       10000    10000          0.12658734     1265              0.00009999
-        1000     1000          0.72127872      721              0.72127872
-        1000     1000          0.85514486      855              0.85514486
-        1000     1000          0.02297702       22              0.02297702
- directional_tail hits_one p_granularity
-            upper     3952   0.000099990
-            upper     4730   0.000099990
-            lower        0   0.000099990
-            upper     2651   0.000099990
-            upper     3606   0.000099990
-            lower        0   0.000099990
-            upper      721   0.000999001
-            upper      855   0.000999001
-            lower       22   0.000999001
+         max observed_reported_08 observed_percentile
+ 0.168141723             0.121174               60.48
+ 0.178048839             0.122869               52.70
+ 0.036919954            -0.024766                0.00
+ 0.163874255             0.121174               73.49
+ 0.168053846             0.122869               63.94
+ 0.037114655            -0.024766                0.00
+ 0.158608672             0.121174               27.90
+ 0.165810873             0.122869               14.50
+ 0.009674945            -0.024766                1.20
+                         config                role     statistic
+      registered_152|registered  primary_registered    p_crude_M1
+      registered_152|registered  primary_registered p_adjusted_M2
+      registered_152|registered  primary_registered       p_atten
+          tested_140|registered    size_sensitivity    p_crude_M1
+          tested_140|registered    size_sensitivity p_adjusted_M2
+          tested_140|registered    size_sensitivity       p_atten
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc    p_crude_M1
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc p_adjusted_M2
+ tested_140|EXPLORATORY_POSTHOC exploratory_posthoc       p_atten
+ observed_comparison_target observed_reported_08
+                 0.12117400             0.121174
+                 0.12286900             0.122869
+                -0.02257655            -0.024766
+                 0.12117400             0.121174
+                 0.12286900             0.122869
+                -0.02257655            -0.024766
+                 0.12117400             0.121174
+                 0.12286900             0.122869
+                -0.02257655            -0.024766
+                     comparison_estimator N_requested n_pooled
+                                     same       10000    10000
+                                     same       10000    10000
+ re-pooled with sqrt(se2^2+se4^2), per B1       10000    10000
+                                     same       10000    10000
+                                     same       10000    10000
+ re-pooled with sqrt(se2^2+se4^2), per B1       10000    10000
+                                     same        1000     1000
+                                     same        1000     1000
+ re-pooled with sqrt(se2^2+se4^2), per B1        1000     1000
+ p_two_sided_PRIMARY hits_two p_one_sided_directional directional_tail hits_one
+          0.39526047     3952              0.39526047            upper     3952
+          0.47305269     4730              0.47305269            upper     4730
+          0.11568843     1156              0.00009999            lower        0
+          0.26517348     2651              0.26517348            upper     2651
+          0.36066393     3606              0.36066393            upper     3606
+          0.12658734     1265              0.00009999            lower        0
+          0.72127872      721              0.72127872            upper      721
+          0.85514486      855              0.85514486            upper      855
+          0.02297702       22              0.02297702            lower       22
+ p_granularity
+   0.000099990
+   0.000099990
+   0.000099990
+   0.000099990
+   0.000099990
+   0.000099990
+   0.000999001
+   0.000999001
+   0.000999001
                          config                role     n
       registered_152|registered  primary_registered 10000
           tested_140|registered    size_sensitivity 10000

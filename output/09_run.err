@@ -13,23 +13,23 @@
   ..  B.m        configurations: registered_152|registered  ;  tested_140|registered  ;  tested_140|EXPLORATORY_POSTHOC
 
   ..  B.m        === registered_152|registered  (N = 10000) ===
-      COAD   10000 draws fitted in 41.2 s
-      ESTIMATED TOTAL: ~14.4 min (41.2 s x 7 cohorts x 3 configs, N-scaled)
-      READ   10000 draws fitted in 31.4 s
-      STAD   10000 draws fitted in 42.3 s
-      ESCA   10000 draws fitted in 33.1 s
-      PAAD   10000 draws fitted in 38.5 s
-      LIHC   10000 draws fitted in 46.0 s
-      CHOL   10000 draws fitted in 32.4 s
+      COAD   10000 draws fitted in 40.9 s
+      ESTIMATED TOTAL: ~14.3 min (40.9 s x 7 cohorts x 3 configs, N-scaled)
+      READ   10000 draws fitted in 31.3 s
+      STAD   10000 draws fitted in 42.1 s
+      ESCA   10000 draws fitted in 33.0 s
+      PAAD   10000 draws fitted in 36.0 s
+      LIHC   10000 draws fitted in 39.7 s
+      CHOL   10000 draws fitted in 26.1 s
 
   ..  B.m        === tested_140|registered  (N = 10000) ===
-      COAD   10000 draws fitted in 41.4 s
-      READ   10000 draws fitted in 31.5 s
-      STAD   10000 draws fitted in 43.4 s
-      ESCA   10000 draws fitted in 33.4 s
-      PAAD   10000 draws fitted in 36.2 s
-      LIHC   10000 draws fitted in 40.0 s
-      CHOL   10000 draws fitted in 26.3 s
+      COAD   10000 draws fitted in 41.1 s
+      READ   10000 draws fitted in 31.3 s
+      STAD   10000 draws fitted in 41.9 s
+      ESCA   10000 draws fitted in 33.2 s
+      PAAD   10000 draws fitted in 36.0 s
+      LIHC   10000 draws fitted in 39.7 s
+      CHOL   10000 draws fitted in 26.1 s
 
   ..  B.m        === tested_140|EXPLORATORY_POSTHOC  (N = 1000) ===
       COAD   1000 draws fitted in 4.3 s
@@ -47,7 +47,7 @@
 
 -- null pooled-M1 CI excluding 1 --
 
-  ..  B.m        total elapsed: 27.3 min
+  ..  B.m        total elapsed: 26.6 min
 
 == B.o  CMS orthogonality (COAD, READ) ==
   ok  B.o        classifier: CMScaller 2.0.1 (Eide et al. 2017), templates.CMS, single-sample NTP

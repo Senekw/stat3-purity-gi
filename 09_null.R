@@ -593,19 +593,23 @@ if (sys.nframe() == 0L) {
                  statistic = "pooled_M1_logHR", n_null = sum(is.finite(P$m1)),
                  min = q5(P$m1)[1], q25 = q5(P$m1)[2], median = q5(P$m1)[3],
                  mean = mean(P$m1, na.rm = TRUE), q75 = q5(P$m1)[4], max = q5(P$m1)[5],
-                 observed = obs_m1, observed_percentile = pctile(P$m1, obs_m1),
+                 observed_reported_08 = obs_m1, observed_percentile = pctile(P$m1, obs_m1),
                  stringsAsFactors = FALSE),
       data.frame(config = key, role = RES[[key]]$cfg$role,
                  statistic = "pooled_M2_logHR", n_null = sum(is.finite(P$m2)),
                  min = q5(P$m2)[1], q25 = q5(P$m2)[2], median = q5(P$m2)[3],
                  mean = mean(P$m2, na.rm = TRUE), q75 = q5(P$m2)[4], max = q5(P$m2)[5],
-                 observed = obs_m2, observed_percentile = pctile(P$m2, obs_m2),
+                 observed_reported_08 = obs_m2, observed_percentile = pctile(P$m2, obs_m2),
                  stringsAsFactors = FALSE),
       data.frame(config = key, role = RES[[key]]$cfg$role,
                  statistic = "pooled_attenuation_total", n_null = sum(is.finite(P$att)),
                  min = q5(P$att)[1], q25 = q5(P$att)[2], median = q5(P$att)[3],
                  mean = mean(P$att, na.rm = TRUE), q75 = q5(P$att)[4], max = q5(P$att)[5],
-                 observed = obs_att, observed_percentile = pctile(P$att, obs_att),
+                 # the DISTRIBUTION is summarised against 08's reported value;
+                 # the p-value uses the re-pooled target. Named apart so the two
+                 # cannot be read as the same quantity.
+                 observed_reported_08 = obs_att,
+                 observed_percentile = pctile(P$att, obs_att),
                  stringsAsFactors = FALSE))
   }))
 
@@ -617,7 +621,16 @@ if (sys.nframe() == 0L) {
     pat <- p_emp(P$att, obs_att_naive, "two",   N); pal <- p_emp(P$att, obs_att_naive, "lower", N)
     data.frame(config = key, role = RES[[key]]$cfg$role,
                statistic = c("p_crude_M1", "p_adjusted_M2", "p_atten"),
-               observed = c(obs_m1, obs_m2, obs_att_naive),
+               # DISAMBIGUATED: this is the value the null distribution is
+               # compared AGAINST, which for p_atten is the observed attenuation
+               # RE-POOLED with the nulls' own estimator (B1). It is deliberately
+               # NOT 08's reported -0.024766, which is carried beside it. The two
+               # files previously both used a bare `observed` for the two
+               # different quantities.
+               observed_comparison_target = c(obs_m1, obs_m2, obs_att_naive),
+               observed_reported_08 = c(obs_m1, obs_m2, obs_att),
+               comparison_estimator = c("same", "same",
+                                        "re-pooled with sqrt(se2^2+se4^2), per B1"),
                N_requested = N,
                n_pooled = c(p1t$n, p2t$n, pat$n),
                p_two_sided_PRIMARY = c(p1t$p, p2t$p, pat$p),

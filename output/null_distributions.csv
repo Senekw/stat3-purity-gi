@@ -1,4 +1,4 @@
-"config","role","statistic","n_null","min","q25","median","mean","q75","max","observed","observed_percentile"
+"config","role","statistic","n_null","min","q25","median","mean","q75","max","observed_reported_08","observed_percentile"
 "registered_152|registered","primary_registered","pooled_M1_logHR",10000,0.0649875688330634,0.107915232744991,0.117486105042139,0.117481399565264,0.126995996681366,0.16814172302198,0.121174,60.48
 "registered_152|registered","primary_registered","pooled_M2_logHR",10000,0.0692529045784865,0.112146920357766,0.12173409810273,0.121937827006119,0.131689419000318,0.178048839284784,0.122869,52.7
 "registered_152|registered","primary_registered","pooled_attenuation_total",10000,-0.00799975899219531,0.0111518245130493,0.0153179251743266,0.0152437568319828,0.0195222215443887,0.0369199540652639,-0.024766,0
