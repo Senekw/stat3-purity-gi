@@ -369,6 +369,7 @@ cited before it was written, which is itself an instance of the class.
 | A three-cohort spot check described as covering the realised data | It covered three cohorts, not seven; the full-corpus figure is 1.17e-2 | 06 comment |
 | "4 readmitted genes are sex-chromosome-only" | **5** — IL9R omitted | 07 comment |
 | "the band sweep was run" asserted in a durable artefact | The sweep HAD run (archive confirms `for (n in 1:400)`, 0 violations), but I wrote the claim without checking. The fault was asserting it, not the claim | REVIEW artefact |
+| GSE39582 "172 MB" vs DATA_NEEDED's "164 MB" | **Same file**, 172,157,430 bytes = 164 MiB = 172 MB. Not an error, but reporting one artefact in two unit systems reads as two artefacts. DATA_NEEDED now states MiB with the byte count | chat / DATA_NEEDED.md |
 | Amendment 16 "42 lines in, 42 lines out" | Correct as stated — but `git` reports **43 insertions**, the extra line being the blank separator before the heading. The byte comparison was on the 42 content lines and passed | chat only |
 
 ## 24. RESOLVED — the instructed `final_140` label was erroneous; the artefact is correct

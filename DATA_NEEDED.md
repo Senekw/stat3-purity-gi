@@ -2,7 +2,9 @@
 
 Everything below was verified against the live repositories on 2026-08-02 by
 listing directories and reading series-matrix headers. Sizes and file names are
-**as reported by the server**, not recalled. Where something could not be verified
+**as reported by the server**, not recalled. Sizes are in **MiB** (1024^2), the
+unit GEO's directory index uses — the same file is 172 MB in decimal units, and
+reporting one number in each is how a single artefact comes to look like two. Where something could not be verified
 because a repository is unreachable from this sandbox or requires an account, that
 is stated as such rather than guessed.
 
@@ -70,7 +72,7 @@ subtypes". **Verified on the GEO FTP server, 2026-08-02.**
 
 | File | Size | URL |
 |---|---|---|
-| `GSE39582_series_matrix.txt.gz` | **164 MB** | `https://ftp.ncbi.nlm.nih.gov/geo/series/GSE39nnn/GSE39582/matrix/GSE39582_series_matrix.txt.gz` |
+| `GSE39582_series_matrix.txt.gz` | **164 MiB** (172,157,430 bytes) | `https://ftp.ncbi.nlm.nih.gov/geo/series/GSE39nnn/GSE39582/matrix/GSE39582_series_matrix.txt.gz` |
 | `GSE39582_RAW.tar` (CEL files, only if re-normalising) | **4.4 GB** | `https://ftp.ncbi.nlm.nih.gov/geo/series/GSE39nnn/GSE39582/suppl/GSE39582_RAW.tar` |
 | `filelist.txt` | 39 KB | same `suppl/` directory |
 
@@ -176,7 +178,7 @@ expression, which would make the retained probe differ between cohorts.
 | Cohort | Role | Data reachable now | Blocking issue |
 |---|---|---|---|
 | FU-iCCA | **PRIMARY** | no | NODE account; possible author authorisation; file list must be read in a browser; pY705 presence unconfirmed |
-| GSE39582 | secondary | **yes, fully** | none — 164 MB public download, all covariates present |
+| GSE39582 | secondary | **yes, fully** | none — 164 MiB public download, all covariates present |
 | GSE62254 | secondary | expression yes, clinical **no** | survival must come from the Cristescu 2015 supplement |
 | ICGC PACA-AU/CA | secondary | no | likely controlled-access (DACO); host unconfirmed; expression unit may not be TPM |
 
