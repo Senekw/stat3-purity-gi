@@ -33,3 +33,4 @@ MANIFEST.txt
 data/
 null_ckpt_*.rds
 figures/*.csv
+Rplots.pdf
