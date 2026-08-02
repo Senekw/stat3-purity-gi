@@ -1,0 +1,26 @@
+   cohort registered n_levels r2_score_on_cit beta_M4_without_cit
+ GSE39582      FALSE        6          0.2503           -0.107981
+ beta_M4_with_cit  se_with params_with_cit epv_with_cit band_with_cit
+        -0.041127 0.115495              12        15.67  fit_and_pool
+ fitted_with_cit
+            TRUE
+   cohort model   n events params    epv         band fitted      beta       se
+ GSE39582    M1 561    188      1 188.00 fit_and_pool   TRUE -0.039900 0.075759
+ GSE39582    M2 561    188      5  37.60 fit_and_pool   TRUE -0.008495 0.073889
+ GSE39582    M3 561    188      6  31.33 fit_and_pool   TRUE -0.133234 0.106959
+ GSE39582    M4 561    188      7  26.86 fit_and_pool   TRUE -0.107981 0.111987
+     HR  HR_lo  HR_hi      p
+ 0.9609 0.8283 1.1147 0.5984
+ 0.9915 0.8579 1.1461 0.9085
+ 0.8753 0.7097 1.0794 0.2129
+ 0.8976 0.7207 1.1180 0.3349
+   cohort   beta_M2   beta_M3   beta_M4 attenuation_total att_total_lo
+ GSE39582 -0.008495 -0.133234 -0.107981          0.099486    -0.076406
+ att_total_hi att_total_se attenuation_purity att_purity_lo att_purity_hi
+      0.27973     0.089696           0.124739     -0.033399      0.291413
+ att_purity_se attenuation_stroma att_stroma_lo att_stroma_hi att_stroma_se
+      0.083595          -0.025254     -0.099468      0.047841      0.037545
+ prop_attenuated n_tumours n_complete_case n_purity_na boot_ok boot_failed
+        -11.7109       562             561           0    2000           0
+ boot_nuisance_unstable pooled_with_discovery
+                     32                 FALSE

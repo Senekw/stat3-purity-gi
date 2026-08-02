@@ -1,0 +1,46 @@
+
+== B.val  Amendment 16 SECONDARY: GSE39582 (colorectal) ==
+   GSE39582 ONLY. FU-iCCA / GSE62254 / ICGC not attempted (DATA_NEEDED.md).
+   NOT pooled with the TCGA discovery cohorts (Amendment 16).
+  ok  B.val        series matrix md5 9192d6561b8724caab6a5554c076eab6 verified
+  ok  B.val        15 functions match their committed definitions in 06/07/08 (body comparison, negative control passed)
+  ok  B.val        samples in the GSE39582 series matrix                = 585
+  ok  B.val        probes on GPL570                                     = 54675
+  ok  B.val        expression is log2 scale (range -0.40 to 16.11)
+  !!  B.val        1 scoring gene(s) have NO single-symbol probe on GPL570 and are recovered from shared probes:
+                     KRT17  <- JUP /// KRT17
+  ok  B.val        scoring genes needing probe rescue                   = 1
+  ..  B.val        probes: 54675 total, 2796 multi-symbol (2 rescued), 42988 retained
+  ..  B.val        probes: 54675 total, 2796 multi-symbol (0 rescued), 42986 retained
+  ..  B.val        gene-level matrix: 21656 symbols x 585 samples
+  ..  B.val        stage values mapped to `missing`: '0' (n=4)
+  ok  B.val        non-tumour samples dropped                           = 19
+  ok  B.val        tumour samples                                       = 566
+  ..  B.val        43 truncated at 10 y, 3 events censored by it
+  ..  B.val        4 dropped for missing or non-positive follow-up
+  ..  B.val          note: an earlier run order said list_id == 'final_140'; the canonical artefact value is 'primary_140' (identity enforced by symbol digest)
+  ok  B.val        gene list 'primary_140' verified                       = 140
+  ok  B.val        gene list 'sensitivity_143' verified                   = 143
+  ok  B.val        genes in the primary list                            = 140
+  ok  B.val        genes in the sensitivity list                        = 143
+  ok  B.val        all 140 primary-list genes present after collapse
+  ok  B.val        no zero-variance scoring genes
+  ..  B.val        r(score with rescue, score without KRT17) = 0.9997
+  ..  B.val        score: mean 1.719e-15, SD 1.000000 | r(140,143) = 0.9989
+  ok  B.val        package TumorPurity == registered conversion (max diff 1.11e-15)
+  ..  B.val        ESTIMATE scored 10036 genes
+  ok  B.val        purity finite for every sample (conversion fold not active)
+  ..  B.val        ESTIMATEScore -2572.0 to 4618.5 | purity 0.284 to 0.974
+  ..  B.val        sex counts FEMALE:253 MALE:309 -> use_sex = TRUE
+  ..  B.val        complete-case set: n = 561, events = 188
+  ..  B.val        EPV bands: M1=fit_and_pool(188.0) M2=fit_and_pool(37.6) M3=fit_and_pool(31.3) M4=fit_and_pool(26.9)
+  ..  B.val        bootstrap: 2000 of 2000 usable, 0 failed, 32 nuisance-unstable
+
+-- score tertiles x cit.molecularsubtype (ADDITIONAL, not registered) --
+
+-- per model --
+
+-- attenuation --
+
+B.val complete. NOT pooled with discovery.
+There were 50 or more warnings (use warnings() to see the first 50)

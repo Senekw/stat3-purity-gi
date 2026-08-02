@@ -65,6 +65,84 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
+## 35. KRT17 IS NOT MEASURABLE AS A DISTINCT GENE ON GPL570 — decision needed
+
+Found independently by me and by the Implementation Auditor (V1, blocking) while
+preparing the GSE39582 validation.
+
+KRT17 is in BOTH scoring lists. Its ONLY two GPL570 probes, 205157_s_at and
+212236_x_at, are each annotated **"JUP /// KRT17"** — there is no KRT17-specific
+probe on the platform. (241828_x_at is KRT17P5, a pseudogene, a different symbol.)
+
+This is not an incidental gene. KRT17 is one of the 24 genes epithelial-dominant
+in ALL THREE discovery atlases, with f(0.30) of 0.986 / 0.982 / 0.883 — among the
+strongest epithelial markers in the panel. It entered via criterion B.
+
+**What was done, and what remains open.** Dropping multi-symbol probes — the rule
+that keeps a probe's signal from being counted under two genes — deletes KRT17 and
+halts the script. Three options exist and only two are defensible:
+
+| Option | Effect | Cost |
+|---|---|---|
+| **Rescue from shared probes** (implemented) | list stays 140 | KRT17's values are a JUP+KRT17 composite, inseparable on this platform |
+| Drop KRT17, score on 139 | no contamination | the validation scores a different gene set from discovery |
+| Assign shared probes to both symbols | keeps both | double-counts one signal into two genes; rejected |
+
+I implemented the rescue AND ran the drop as a sensitivity, so the cost is
+measured rather than argued: **r(rescue, drop) = 0.9997**, and the M4 log-HR moves
+from -0.1080 to -0.1172. The choice is immaterial to every reported number here.
+**It is recorded rather than settled** because it would matter in a cohort where
+JUP and KRT17 diverge, and because scoring 140 genes where one is a composite is
+not the same object as the discovery score. A dated amendment should fix the rule
+for any future array-based cohort.
+
+## 36. THE GSE39582 VALIDATION IS NOT A TEST OF THE PRIMARY VALIDATION QUESTION
+
+Amendment 16 designates FU-iCCA phosphoproteomic concordance (STAT3 pY705) the
+PRIMARY validation analysis, on the stated ground that the original six-gene score
+was validated against RPPA in the same dataset its genes came from. That analysis
+is NOT run: NODE access is unresolved (NOTES 34, DATA_NEEDED.md).
+
+GSE39582 is a SECONDARY survival replication. It cannot speak to whether the score
+tracks STAT3 phosphorylation, and nothing in output/validation_gse39582_* should be
+read as if it did.
+
+## 37. AUDIT PASS 8 (script 10) — three blocking defects, all mine, all pre-run
+
+`fix_before_running`, 12 findings, 3 blocking. All three were confirmed by my own
+execution before I acted on them:
+
+- **V1 KRT17** — see NOTES 35. The script would have halted.
+- **V2 formula corruption.** `deparse()` wraps at width.cutoff = 60 and M4's
+  formula is 80 characters, so `deparse(base$formula)` returned a LENGTH-2 vector;
+  `paste(x, "+ cit")` appended elementwise and `as.formula()` kept only the first
+  element. **`stromal_score` silently vanished** — the CIT-augmented model would
+  have been M3 + cit, written to disk as `beta_M4_with_cit`. Verified directly:
+  the reconstructed formula contains no `stromal_score`. Fixed by collapsing the
+  RHS (the idiom 08's own `ph_sensitivity` already uses) and asserting the
+  realised term set.
+- **V3 purity fold masking.** On affymetrix the package emits its OWN TumorPurity,
+  and its domain rule is not the registered one: `estimateScore` sets NA only
+  where cos(theta) < 0, while 06 sets NA outside theta in [0, pi/2]. Below
+  ESTIMATEScore -4121.5 the package returns a number where the registered
+  conversion returns NA — the fold in NOTES 21. My comparison used
+  `na.rm = TRUE`, which drops exactly the disagreeing samples, so the assertion
+  could not fire on the only case it existed to catch, and the package's fold
+  would have silently replaced the registered one. Verified at -6000, -5000 and
+  -4121.5. Fixed: the comparison is now NA-aware and halts on any domain
+  disagreement, and the REGISTERED conversion is what is carried forward.
+
+Also fixed: **V4** — I used `time > 0` where 05 uses `>= 0`, an unregistered
+exclusion of 6 patients and 4 events. **V5** — I computed the EPV band, wrote it,
+and never consulted it, reinstating a defect 08 records as found and fixed; the
+rule is now enforced before fitting. **V6** — `ph_check`, `vif_m4` and
+`ph_sensitivity` are committed reusable functions in 08 and I had re-implemented
+two of them inline with weaker guards; now bound and body-asserted (15 functions
+reused, up from 12). **V8** — two of my three alignment guards compared values to
+themselves. **V10** — my log text said NA-purity patients "drop from M3/M4", which
+describes the differential attrition the single complete-case set exists to
+prevent; they drop from all four.
+
 ## 34. AMENDMENT 16 — script 10 specified; DATA_NEEDED.md records two access blockers
 
 Amendment 16 supplies the external-validation section analysis_plan.md v1.5

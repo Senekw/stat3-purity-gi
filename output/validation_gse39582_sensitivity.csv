@@ -1,0 +1,9 @@
+"cohort","variant","model","fitted","beta","se","HR"
+"GSE39582","score_143_sensitivity","M1",TRUE,-0.041507,0.075733,0.9593
+"GSE39582","score_143_sensitivity","M2",TRUE,-0.0091,0.073955,0.9909
+"GSE39582","score_143_sensitivity","M3",TRUE,-0.137216,0.107754,0.8718
+"GSE39582","score_143_sensitivity","M4",TRUE,-0.112005,0.112831,0.894
+"GSE39582","drop_KRT17","M1",TRUE,-0.044654,0.075771,0.9563
+"GSE39582","drop_KRT17","M2",TRUE,-0.012517,0.073935,0.9876
+"GSE39582","drop_KRT17","M3",TRUE,-0.142046,0.107017,0.8676
+"GSE39582","drop_KRT17","M4",TRUE,-0.11719,0.112304,0.8894

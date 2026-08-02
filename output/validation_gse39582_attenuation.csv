@@ -1,0 +1,2 @@
+"cohort","beta_M2","beta_M3","beta_M4","attenuation_total","att_total_lo","att_total_hi","att_total_se","attenuation_purity","att_purity_lo","att_purity_hi","att_purity_se","attenuation_stroma","att_stroma_lo","att_stroma_hi","att_stroma_se","prop_attenuated","n_tumours","n_complete_case","n_purity_na","boot_ok","boot_failed","boot_nuisance_unstable","pooled_with_discovery"
+"GSE39582",-0.008495,-0.133234,-0.107981,0.099486,-0.076406,0.27973,0.089696,0.124739,-0.033399,0.291413,0.083595,-0.025254,-0.099468,0.047841,0.037545,-11.7109,562,561,0,2000,0,32,FALSE

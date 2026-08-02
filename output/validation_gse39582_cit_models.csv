@@ -1,0 +1,2 @@
+"cohort","registered","n_levels","r2_score_on_cit","beta_M4_without_cit","beta_M4_with_cit","se_with","params_with_cit","epv_with_cit","band_with_cit","fitted_with_cit"
+"GSE39582",FALSE,6,0.2503,-0.107981,-0.041127,0.115495,12,15.67,"fit_and_pool",TRUE

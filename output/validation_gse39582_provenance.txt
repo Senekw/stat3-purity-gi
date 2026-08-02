@@ -1,0 +1,38 @@
+GSE39582 external validation -- provenance
+run_date: 2026-08-02
+amendment: 16 (SECONDARY). PRIMARY (FU-iCCA pY705) NOT run -- access blocked.
+pooled_with_discovery: FALSE
+
+INPUTS
+  series_matrix: data/validation/GSE39582/GSE39582_series_matrix.txt.gz  md5 9192d6561b8724caab6a5554c076eab6
+  platform:      data/validation/GSE39582/GPL570_platform.txt (GPL570)
+  gene lists:    data/panel/final_gene_list_140.csv (primary), data/panel/final_gene_list_143.csv (sensitivity)
+
+PROBE COLLAPSE (re-implemented; 07's reader sums TPM before log2 and this
+deposit is already log2 RMA, so that reader is inapplicable, not merely unused)
+  rule: drop multi-symbol probes, then MEDIAN across a gene's probes
+  cohort-independent: verified, max |half-cohort - full-cohort| = 0.000e+00
+  max-mean-probe (rejected) differs by up to 3.756 across 51 genes
+  probes: 54675 total -> 21656 symbols
+  probe rescue: KRT17 (no single-symbol probe on GPL570)
+  r(score with rescue, score without) = 0.9997
+
+ENDPOINT
+  OS from os.event / os.delay..months., converted 365.25/12 days per month.
+  Amendment 7's OS/PFI rule is defined on TCGA-CDR Table 3, which has no row
+  for this cohort; Amendment 16 fixes the estimand without naming an endpoint.
+  administrative censoring at 3650 days (10 y), identical to 05
+
+PURITY
+  ESTIMATE-derived (Amendment 16). platform = affymetrix: GSE39582 is the
+  conversion's NATIVE calibration, unlike the four TCGA cohorts that used it.
+  The REGISTERED conversion is carried forward; the package's TumorPurity is
+  asserted equal to it, including agreement on the valid domain.
+
+COUNTS
+  samples 585 -> tumours 562 -> complete cases 561, events 188
+  purity NA: 0
+
+NOT REGISTERED: the cit.molecularsubtype orthogonality check is ADDITIONAL.
+B.o names CMScaller and the Guinney CMS consensus; CIT is Marisa et al.'s own
+classification. It gates nothing.
