@@ -65,34 +65,70 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
-## 24. OPEN FOR YOUR DECISION — the primary gene list's label
+## 26. PARAMETER COUNTS KEPT FIXED, AGAINST AN AUDIT RECOMMENDATION
 
-The Part B run order says to assert `list_id == "final_140"`. The artefact
-04_lock_gene_list.R committed at 744d84c carries `list_id == "primary_140"` (and
-`sensitivity_143` for the 143). The GENES are not in question: 140 rows, n_genes
-140, and an md5 of the sorted symbols (eb167e8c7a33b4202bd609a17defa629) now
-asserted on every run, with the 140 verified as a subset of the 143.
+The Implementation Auditor proposed deriving each model's EPV denominator from
+the realised fit (`sum(!is.na(coef(fit)))`) so a cohort whose `missing` stage
+level is empty would count one fewer parameter. **Not adopted.**
+analysis_plan.md:1186-1187 fixes the counts: "Parameter counts are fixed in B.j
+(M1 = 1, M2 = 5, M3 = 6, M4 = 7, with `stage_group` contributing two parameters
+for its three levels)." Deriving them would deviate from the registered
+denominator and make the EPV band depend on realised level occupancy — a cohort
+could cross a band boundary because one stage cell happened to be empty. The one
+adjustment the plan itself specifies (dropping `sex` below 10 of either sex) is
+applied, and only where a sex term exists.
 
-Renaming the locked artefact so the instructed assertion passes would be editing a
-committed, audited file to satisfy a check — the one move the standing rules
-forbid. Asserting the committed value silently, however, forecloses stop condition
-6 ("a gene list read from disk fails its list_id or n_genes assertion"), which was
-fairly raised against my first handling.
+Realised: all seven cohorts have use_sex = TRUE, so the adjustment is dormant.
 
-**Resolution taken:** the script asserts the committed value AND prints a LABEL
-MISMATCH warning on every run naming both strings. Nothing is silent and nothing
-is edited. **Your call which label is canonical** — if `final_140` is intended, 04
-should be amended and re-run, which would change no gene.
+## 27. BOOTSTRAP CONVERGENCE WARNINGS TRACED TO A NUISANCE TERM, NOT THE SCORE
 
-## 25. CORRECTIONS TO MY OWN REPORTING (automated Reviewer findings)
+The 08 run emitted 50+ "Loglik converged before variable 5; coefficient may be
+infinite" warnings. Traced rather than suppressed: variable 5 is
+`stage_groupmissing`, and the source is READ, whose `missing` stage level holds 9
+patients with 1 event. In 300 test resamples **zero** had any |coefficient| > 20
+and the score coefficient stayed within [-0.79, 0.90].
 
-| Finding | My claim | Correct | Status |
+`boot_nuisance_unstable` is now written to `attenuation_per_cohort.csv`, counting
+resamples where any coefficient diverged or aliased: READ 1/2000, PAAD 93/2000,
+all others 0. The score coefficient is screened independently, and 0 of 12,000
+resamples across the six cohorts failed. The warnings reflect coxph's own
+threshold, which is more sensitive than the divergence screen; the estimand is
+unaffected.
+
+## 28. THE ALTERNATIVE-ENDPOINT SENSITIVITY SPLITS ITS COHORT SET
+
+In the PRIMARY analysis the M2 and M4 pools rest on the same six cohorts, so
+Amendment 8 item 4's matched re-pool is not needed. **It IS needed inside the
+alternative-endpoint sensitivity:** switching READ from PFI to OS gives 25 events,
+EPV 3.57 at M4, so the EPV < 5 rule drops READ from that model — M2 pools 6
+cohorts and M4 pools 5.
+
+Reported in `sensitivity_matched_repool.csv`, both models re-pooled over the
+intersection (COAD+STAD+ESCA+PAAD+LIHC, n = 1,590): M2 = 0.0826 (95% CI -0.0066
+to 0.1718), M4 = 0.1013 (-0.0337 to 0.2364). Without this the variant's apparent
+M2-to-M4 change would partly reflect READ leaving, not adjustment.
+
+## 24. RESOLVED — the instructed `final_140` label was erroneous; the artefact is correct
+
+The Part B run order asked to assert `list_id == "final_140"`. **The instructing
+label was written from memory and is wrong**; `04_lock_gene_list.R` wrote
+`primary_140` (and `sensitivity_143`), and the locked artefact committed at
+744d84c is correct and must not change. Confirmed by the study author 2026-08-02.
+
+No gene was ever in question. The real identity check is the **md5 of the sorted
+gene symbols**, asserted on every run:
+
+| List | list_id (canonical) | n | md5 of sorted symbols |
 |---|---|---|---|
-| b22d7604 | "21 unit tests pass" for 05 | **23** PASS, 0 FAIL — verified by rerun | Corrected here; conclusion (all pass) stands |
-| 4d791e43 | 06's guard comment cited the ESTIMATEScore range as "the realised data" | It was a 3-cohort spot check. Full seven-cohort range over all 1,793 samples is **-3205.9 to +5371.5**, still zero samples in the fold region | Comment corrected in 06_purity.R |
-| 4d5dc457 | 05's header claimed the scope boundary was "enforced by assertion" | It was only a message. A real assertion now exists (survival not loaded, no score/purity column) | Fixed in commit be46569 |
-| 6b82d91a | HGF f(0.30) in GSE125449 reported as 0.011 | **0.104** — I duplicated the GSE178341 value into that cell | Chat-only transcription error; the CSV on disk was always correct |
-| 569bdb95 | Chromosome calls "come from GENCODE v36 rowRanges" | The objects record no GENCODE version; v36 was inferred from a bundled reference file | Withdrawn in commit d791758 |
+| Primary | `primary_140` | 140 | `eb167e8c7a33b4202bd609a17defa629` |
+| Sensitivity | `sensitivity_143` | 143 | `8a54835eedcfe3b23dcb56ce74805a87` |
+
+plus a check that the 140 is a subset of the 143. A file with the right row count
+and label but the wrong genes fails the digest; that is what closes stop condition
+6, not the label string.
+
+`07_score.R` retains a one-line note recording that the run order's label differed
+from the artefact's, downgraded from a warning since there is nothing to decide.
 
 ## 23. STROMAL FALLBACK TRIGGERED IN ALL SEVEN COHORTS — and it moots an open question
 

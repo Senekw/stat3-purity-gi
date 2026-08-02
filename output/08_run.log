@@ -1,0 +1,214 @@
+
+== B.j/B.k/B.l  survival, attenuation, meta-analysis ==
+  ok  B.j        joined rows == clinical rows                             = 1793
+  ok  B.j        every model the EPV rule says to fit converged
+  ..  B.k        paired bootstrap, B = 2000, seed 20260731
+  ok  B.l        primary attenuation pool formed over k = 6 cohorts (COAD+READ+STAD+ESCA+PAAD+LIHC)
+  ok  B.l        contributing cohort set is identical for M2 and M4 (6 cohorts); no matched re-pool needed
+  ..  B.l        sensitivity refit: alt_endpoint
+  ..  B.l        sensitivity refit: estimate_purity
+  ..  B.l        sensitivity refit: score_143
+  ..  B.l        sensitivity refit: no_redacted
+  !!  B.l        alt_endpoint: M2 and M4 pools differ (M2 k=6, M4 k=5); matched re-pool over k=5
+
+-- per cohort, per model --
+    cohort model   n events params    epv              band use_sex fitted
+ TCGA-COAD    M1 455    102      1 102.00      fit_and_pool    TRUE   TRUE
+ TCGA-COAD    M2 455    102      5  20.40      fit_and_pool    TRUE   TRUE
+ TCGA-COAD    M3 455    102      6  17.00      fit_and_pool    TRUE   TRUE
+ TCGA-COAD    M4 455    102      7  14.57      fit_and_pool    TRUE   TRUE
+ TCGA-READ    M1 165     36      1  36.00      fit_and_pool    TRUE   TRUE
+ TCGA-READ    M2 165     36      5   7.20 fit_pool_flag_LOO    TRUE   TRUE
+ TCGA-READ    M3 165     36      6   6.00 fit_pool_flag_LOO    TRUE   TRUE
+ TCGA-READ    M4 165     36      7   5.14 fit_pool_flag_LOO    TRUE   TRUE
+ TCGA-STAD    M1 403    157      1 157.00      fit_and_pool    TRUE   TRUE
+ TCGA-STAD    M2 403    157      5  31.40      fit_and_pool    TRUE   TRUE
+ TCGA-STAD    M3 403    157      6  26.17      fit_and_pool    TRUE   TRUE
+ TCGA-STAD    M4 403    157      7  22.43      fit_and_pool    TRUE   TRUE
+ TCGA-ESCA    M1 184     77      1  77.00      fit_and_pool    TRUE   TRUE
+ TCGA-ESCA    M2 184     77      5  15.40      fit_and_pool    TRUE   TRUE
+ TCGA-ESCA    M3 184     77      6  12.83      fit_and_pool    TRUE   TRUE
+ TCGA-ESCA    M4 184     77      7  11.00      fit_and_pool    TRUE   TRUE
+ TCGA-PAAD    M1 178     93      1  93.00      fit_and_pool    TRUE   TRUE
+ TCGA-PAAD    M2 178     93      5  18.60      fit_and_pool    TRUE   TRUE
+ TCGA-PAAD    M3 178     93      6  15.50      fit_and_pool    TRUE   TRUE
+ TCGA-PAAD    M4 178     93      7  13.29      fit_and_pool    TRUE   TRUE
+ TCGA-LIHC    M1 370    130      1 130.00      fit_and_pool    TRUE   TRUE
+ TCGA-LIHC    M2 370    130      5  26.00      fit_and_pool    TRUE   TRUE
+ TCGA-LIHC    M3 370    130      6  21.67      fit_and_pool    TRUE   TRUE
+ TCGA-LIHC    M4 370    130      7  18.57      fit_and_pool    TRUE   TRUE
+ TCGA-CHOL    M1  35     18      1  18.00      fit_and_pool    TRUE   TRUE
+ TCGA-CHOL    M2  35     18      5   3.60        do_not_fit    TRUE  FALSE
+ TCGA-CHOL    M3  35     18      6   3.00        do_not_fit    TRUE  FALSE
+ TCGA-CHOL    M4  35     18      7   2.57        do_not_fit    TRUE  FALSE
+      beta       se     HR  HR_lo  HR_hi         p meta_eligible
+  0.005159 0.094338 1.0052 0.8355 1.2093 0.9564000          TRUE
+  0.004596 0.098124 1.0046 0.8288 1.2176 0.9626000          TRUE
+ -0.019686 0.118769 0.9805 0.7769 1.2375 0.8684000          TRUE
+ -0.071333 0.137779 0.9312 0.7108 1.2198 0.6046000          TRUE
+ -0.035099 0.166886 0.9655 0.6961 1.3391 0.8334000          TRUE
+ -0.045714 0.157689 0.9553 0.7013 1.3013 0.7719000          TRUE
+  0.016465 0.187710 1.0166 0.7037 1.4687 0.9301000          TRUE
+ -0.022076 0.221829 0.9782 0.6333 1.5109 0.9207000          TRUE
+  0.113122 0.083450 1.1198 0.9508 1.3187 0.1752000          TRUE
+  0.075526 0.085496 1.0785 0.9121 1.2752 0.3770000          TRUE
+  0.012236 0.092029 1.0123 0.8452 1.2124 0.8942000          TRUE
+  0.008397 0.092021 1.0084 0.8420 1.2077 0.9273000          TRUE
+  0.054184 0.115658 1.0557 0.8416 1.3243 0.6394000          TRUE
+  0.146456 0.118195 1.1577 0.9183 1.4595 0.2153000          TRUE
+  0.211618 0.136952 1.2357 0.9448 1.6161 0.1223000          TRUE
+  0.207848 0.139230 1.2310 0.9370 1.6173 0.1355000          TRUE
+  0.276873 0.117908 1.3190 1.0468 1.6619 0.0188600          TRUE
+  0.275399 0.121129 1.3171 1.0387 1.6700 0.0229900          TRUE
+  0.457845 0.169187 1.5807 1.1346 2.2022 0.0068070          TRUE
+  0.411072 0.173273 1.5084 1.0741 2.1185 0.0176700          TRUE
+  0.233098 0.088456 1.2625 1.0615 1.5015 0.0084090          TRUE
+  0.233928 0.090408 1.2636 1.0584 1.5085 0.0096680          TRUE
+  0.321546 0.104778 1.3793 1.1232 1.6937 0.0021490          TRUE
+  0.362574 0.106751 1.4370 1.1657 1.7715 0.0006827          TRUE
+ -0.160616 0.216782 0.8516 0.5568 1.3025 0.4587000         FALSE
+        NA       NA     NA     NA     NA        NA         FALSE
+        NA       NA     NA     NA     NA        NA         FALSE
+        NA       NA     NA     NA     NA        NA         FALSE
+
+-- attenuation --
+    cohort   n events   beta_M1   beta_M2   beta_M3   beta_M4 attenuation_total
+ TCGA-COAD 455    102  0.005159  0.004596 -0.019686 -0.071333          0.075929
+ TCGA-READ 165     36 -0.035099 -0.045714  0.016465 -0.022076         -0.023638
+ TCGA-STAD 403    157  0.113122  0.075526  0.012236  0.008397          0.067129
+ TCGA-ESCA 184     77  0.054184  0.146456  0.211618  0.207848         -0.061391
+ TCGA-PAAD 178     93  0.276873  0.275399  0.457845  0.411072         -0.135673
+ TCGA-LIHC 370    130  0.233098  0.233928  0.321546  0.362574         -0.128646
+ att_total_lo att_total_hi attenuation_purity att_purity_lo att_purity_hi
+    -0.151851     0.296691           0.024282     -0.123385      0.171837
+    -0.436278     0.345326          -0.062179     -0.346393      0.125595
+    -0.008879     0.165328           0.063290     -0.007254      0.155852
+    -0.232708     0.063092          -0.065162     -0.235438      0.065996
+    -0.506520     0.106478          -0.182446     -0.533470      0.029305
+    -0.277465    -0.036705          -0.087618     -0.216786      0.002401
+ attenuation_stroma att_stroma_lo att_stroma_hi att_total_norm_lo
+           0.051647     -0.114266      0.212465         -0.144062
+           0.038541     -0.254223      0.384108         -0.402641
+           0.003839     -0.025711      0.040835         -0.017923
+           0.003771     -0.071794      0.052675         -0.208703
+           0.046773     -0.031885      0.139841         -0.439835
+          -0.041028     -0.117241     -0.001692         -0.250033
+ att_total_norm_hi prop_attenuated  prop_lo prop_hi boot_ok boot_failed
+          0.295920              NA -23.8997  0.9271    2000           0
+          0.355365          0.5171 -16.6559  0.8462    2000           0
+          0.152181          0.8888 -12.0112  0.9423    2000           0
+          0.085921         -0.4192  -5.3482  0.5844    2000           0
+          0.168490         -0.4926  -2.6777  0.4054    2000           0
+         -0.007260         -0.5499  -2.8434 -0.1257    2000           0
+ boot_nuisance_unstable att_total_se att_purity_se att_stroma_se meta_eligible
+                      0     0.112240      0.074195      0.082236          TRUE
+                      1     0.193369      0.115642      0.159051          TRUE
+                      0     0.043394      0.039889      0.016568          TRUE
+                      0     0.075159      0.077424      0.028699          TRUE
+                     93     0.155185      0.144761      0.043627          TRUE
+                      0     0.061932      0.056689      0.030259          TRUE
+
+-- meta-analysis --
+ analysis k                       cohorts n_total      est  se_hksj     ci_lo
+       M1 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 0.121174 0.047054  0.000219
+       M2 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 0.122869 0.047778  0.000051
+       M3 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 0.157205 0.077243 -0.041353
+       M4 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 0.152248 0.083330 -0.061959
+    ci_hi       p     HR  HR_lo  HR_hi ci_lo_wald ci_hi_wald   fe_est fe_ci_lo
+ 0.242130 0.04972 1.1288 1.0002 1.2740   0.029600   0.212748 0.122397 0.040040
+ 0.245687 0.04994 1.1307 1.0001 1.2785   0.029952   0.215786 0.123111 0.038998
+ 0.355764 0.09746 1.1702 0.9595 1.4273   0.005949   0.308461 0.143900 0.045494
+ 0.366454 0.12730 1.1644 0.9399 1.4426  -0.014222   0.318717 0.145752 0.042985
+ fe_ci_hi     tau2    I2       Q Q_df     Q_p     pi_lo    pi_hi
+ 0.204755 0.002212 16.83  6.0779    5 0.29870 -0.049837 0.292186
+ 0.207224 0.002178 16.09  6.0369    5 0.30260 -0.048824 0.294562
+ 0.242307 0.018588 53.99 10.9672    5 0.05204 -0.245597 0.560008
+ 0.248518 0.023679 57.45 11.9518    5 0.03545 -0.297589 0.602084
+
+-- attenuation, meta-analysed (PRIMARY) --
+          analysis k                       cohorts n_total       est  se_hksj
+ attenuation_total 6 COAD+READ+STAD+ESCA+PAAD+LIHC    1755 -0.024766 0.039101
+     ci_lo    ci_hi      p     HR  HR_lo  HR_hi ci_lo_wald ci_hi_wald    fe_est
+ -0.125279 0.075747 0.5543 0.9755 0.8823 1.0787  -0.116342    0.06681 -0.008059
+  fe_ci_lo fe_ci_hi     tau2    I2      Q Q_df    Q_p     pi_lo    pi_hi
+ -0.066717 0.050599 0.005195 44.35 8.5395    5 0.1289 -0.235553 0.186022
+
+-- PH tests --
+    cohort model    p_score     p_global violated_score violated_global
+ TCGA-COAD    M1 0.34412543 3.441254e-01          FALSE           FALSE
+ TCGA-COAD    M2 0.41461222 4.226819e-02          FALSE            TRUE
+ TCGA-COAD    M3 0.43679719 5.472001e-02          FALSE           FALSE
+ TCGA-COAD    M4 0.41913989 7.286934e-03          FALSE            TRUE
+ TCGA-READ    M1 0.83152590 8.315259e-01          FALSE           FALSE
+ TCGA-READ    M2 0.75441197 5.880607e-01          FALSE           FALSE
+ TCGA-READ    M3 0.78381771 6.639901e-01          FALSE           FALSE
+ TCGA-READ    M4 0.79133668 7.276129e-01          FALSE           FALSE
+ TCGA-STAD    M1 0.07789279 7.789279e-02          FALSE           FALSE
+ TCGA-STAD    M2 0.06424356 3.983960e-01          FALSE           FALSE
+ TCGA-STAD    M3 0.05864044 2.086310e-01          FALSE           FALSE
+ TCGA-STAD    M4 0.04539325 2.120532e-01           TRUE           FALSE
+ TCGA-ESCA    M1 0.75652487 7.565249e-01          FALSE           FALSE
+ TCGA-ESCA    M2 0.37780675 9.746922e-02          FALSE           FALSE
+ TCGA-ESCA    M3 0.35575990 9.044758e-02          FALSE           FALSE
+ TCGA-ESCA    M4 0.35573806 1.215944e-01          FALSE           FALSE
+ TCGA-PAAD    M1 0.48262396 4.826240e-01          FALSE           FALSE
+ TCGA-PAAD    M2 0.67190022 5.817389e-01          FALSE           FALSE
+ TCGA-PAAD    M3 0.61281714 4.982999e-02          FALSE            TRUE
+ TCGA-PAAD    M4 0.58395052 8.253631e-02          FALSE           FALSE
+ TCGA-LIHC    M1 0.04888829 4.888829e-02           TRUE            TRUE
+ TCGA-LIHC    M2 0.12182221 2.078722e-03          FALSE            TRUE
+ TCGA-LIHC    M3 0.11550337 3.041309e-04          FALSE            TRUE
+ TCGA-LIHC    M4 0.11123087 9.209206e-05          FALSE            TRUE
+ TCGA-CHOL    M1 0.71584527 7.158453e-01          FALSE           FALSE
+
+-- VIF (M4) --
+    cohort          term   GVIF Df GVIF_adj
+ TCGA-COAD         score 2.0241  1   1.4227
+ TCGA-COAD           age 1.0764  1   1.0375
+ TCGA-COAD           sex 1.0661  1   1.0325
+ TCGA-COAD   stage_group 1.0735  2   1.0179
+ TCGA-COAD        purity 2.0018  1   1.4149
+ TCGA-COAD stromal_score 2.6100  1   1.6156
+ TCGA-READ         score 2.1016  1   1.4497
+ TCGA-READ           age 1.0448  1   1.0222
+ TCGA-READ           sex 1.1781  1   1.0854
+ TCGA-READ   stage_group 1.0890  2   1.0215
+ TCGA-READ        purity 2.0720  1   1.4395
+ TCGA-READ stromal_score 2.7767  1   1.6663
+ TCGA-STAD         score 1.1743  1   1.0837
+ TCGA-STAD           age 1.0363  1   1.0180
+ TCGA-STAD           sex 1.0176  1   1.0088
+ TCGA-STAD   stage_group 1.0686  2   1.0167
+ TCGA-STAD        purity 5.2137  1   2.2834
+ TCGA-STAD stromal_score 5.0891  1   2.2559
+ TCGA-ESCA         score 1.5136  1   1.2303
+ TCGA-ESCA           age 1.0683  1   1.0336
+ TCGA-ESCA           sex 1.0672  1   1.0330
+ TCGA-ESCA   stage_group 1.1580  2   1.0374
+ TCGA-ESCA        purity 7.9567  1   2.8208
+ TCGA-ESCA stromal_score 8.0262  1   2.8330
+ TCGA-PAAD         score 1.7985  1   1.3411
+ TCGA-PAAD           age 1.0091  1   1.0045
+ TCGA-PAAD           sex 1.0090  1   1.0045
+ TCGA-PAAD   stage_group 1.0137  2   1.0034
+ TCGA-PAAD        purity 7.2387  1   2.6905
+ TCGA-PAAD stromal_score 7.2281  1   2.6885
+ TCGA-LIHC         score 1.3918  1   1.1797
+ TCGA-LIHC           age 1.1587  1   1.0764
+ TCGA-LIHC           sex 1.0960  1   1.0469
+ TCGA-LIHC   stage_group 1.0964  2   1.0233
+ TCGA-LIHC        purity 1.7739  1   1.3319
+ TCGA-LIHC stromal_score 1.6807  1   1.2964
+
+-- score/stromal/purity correlations --
+    cohort r_estimate_stromal r_panel_subscore r_score_purity
+ TCGA-COAD             0.6662           0.9820        -0.4838
+ TCGA-READ             0.6217           0.9809        -0.4557
+ TCGA-STAD             0.4132           0.9647        -0.4269
+ TCGA-ESCA             0.4341           0.9623        -0.3983
+ TCGA-PAAD             0.6339           0.9782        -0.6034
+ TCGA-LIHC             0.3990           0.9860        -0.4334
+ TCGA-CHOL             0.6000           0.9567        -0.4385
+
+B.j/B.k/B.l complete.
+There were 50 or more warnings (use warnings() to see the first 50)

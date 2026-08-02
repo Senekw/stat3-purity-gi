@@ -1,0 +1,8 @@
+"cohort","r_estimate_stromal","r_panel_subscore","r_score_purity"
+"TCGA-COAD",0.6662,0.982,-0.4838
+"TCGA-READ",0.6217,0.9809,-0.4557
+"TCGA-STAD",0.4132,0.9647,-0.4269
+"TCGA-ESCA",0.4341,0.9623,-0.3983
+"TCGA-PAAD",0.6339,0.9782,-0.6034
+"TCGA-LIHC",0.399,0.986,-0.4334
+"TCGA-CHOL",0.6,0.9567,-0.4385

@@ -83,19 +83,16 @@ read_gene_list <- function(spec, section = "B.h") {
   if (!identical(unique(d$list_id), spec$list_id))
     halt(section, spec$path, ": list_id is '", paste(unique(d$list_id), collapse = ","),
          "', expected '", spec$list_id, "'")
-  # The run order names a THIRD string for the primary list. Where the instructed
-  # label and the committed label disagree, neither is silently preferred: the
-  # mismatch is surfaced every run. It is not a halt, because the artefact is
-  # verified by content digest below and the genes are not in question -- but stop
-  # condition 6 is about list identity, so the disagreement must never be silent.
+  # The Part B run order named a different string for the primary list
+  # ("final_140"). That instructed label was erroneous -- written from memory --
+  # and the locked artefact is canonical (confirmed 2026-08-02). Recorded as a
+  # one-line note, not a warning: there is nothing to decide. Identity is enforced
+  # by the sorted-symbol digest below, which is what stop condition 6 rests on.
   if (!is.null(spec$instructed_list_id) &&
       !identical(spec$instructed_list_id, spec$list_id))
-    message("  !!  ", section, "          LABEL MISMATCH on ", basename(spec$path),
-            ": the run order says list_id == '", spec$instructed_list_id,
-            "', the artefact committed by 04 (744d84c) says '", spec$list_id,
-            "'. Asserting the COMMITTED value; the locked artefact is not edited. ",
-            "Gene content is verified by digest, so this is a naming disagreement ",
-            "for the reviewer to settle, not a data mismatch.")
+    message("  ..  ", section, "          note: an earlier run order said list_id == '",
+            spec$instructed_list_id, "'; the canonical artefact value is '",
+            spec$list_id, "' (identity enforced by symbol digest)")
   if (!identical(unique(as.integer(d$n_genes)), spec$n))
     halt(section, spec$path, ": n_genes is ", paste(unique(d$n_genes), collapse = ","),
          ", expected ", spec$n)
