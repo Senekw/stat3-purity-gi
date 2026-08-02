@@ -1,0 +1,7 @@
+run_date: 2026-08-01
+plan_version: 1.5
+atlases: GSE125449, GSE178341, Peng
+panel_genes: 152
+bootstrap: B=2000 unit=patient seed_base=20260731
+k=46 k_all3=24 k_evalall=43 k_50=96
+branch: epithelial subscore BUILT; subscore survival models run as SECONDARY

@@ -17,13 +17,30 @@ suppressPackageStartupMessages({
 })
 options(stringsAsFactors = FALSE, warn = 1)
 
-for (p in c("Matrix", "rhdf5", "withr")) {
+for (p in c("Matrix", "rhdf5", "withr", "tools")) {   # F12: tools is load-bearing (md5)
   if (!requireNamespace(p, quietly = TRUE))
     stop("HALT [deps]: package '", p, "' is required and not installed.", call. = FALSE)
 }
 
 halt <- function(section, ...) {
   stop(paste0("HALT [", section, "]: ", paste0(c(...), collapse = "")), call. = FALSE)
+}
+
+# F13: every loader returns a matrix and a cells frame that must stay aligned --
+# columns of X are the cells, in the same order.  Each loader builds that
+# correspondence differently (GSE125449 by composite name, GSE178341 by name from
+# a deposit-wide vector, Peng positionally from a logical), so the invariant is
+# asserted once, here, rather than trusted three times.
+assert_cells_aligned <- function(X, cells, sec) {
+  if (anyDuplicated(colnames(X)))
+    halt(sec, "duplicate cell ids in X: ",
+         paste(utils::head(unique(colnames(X)[duplicated(colnames(X))]), 5), collapse = ", "))
+  assert_n(ncol(X), nrow(cells), sec, "matrix columns == cells rows")
+  if (!identical(colnames(X), cells$cell_id))
+    halt(sec, "X columns and cells$cell_id are not aligned. Every downstream ",
+         "quantity indexes cells positionally against X; a misalignment would ",
+         "attribute one cell's counts to another compartment or patient.")
+  invisible(TRUE)
 }
 
 # assert_n: the plan's named assertion helper.  Reports BOTH numbers, always --
@@ -199,10 +216,11 @@ if (!setequal(ORIGIN_NONQUAL, c("BCL2", "MMP9", "HGF")))
 # The three extra genes are reported with fractions but must never enter k, k_50,
 # k_all3, k_evalall, the dominance matrix or the evaluability distribution.
 # assert_inferential_set() below enforces that at every point where it matters.
+# F18: no duplicate check here.  ORIGIN_NONQUAL is setdiff(ORIGIN_SIX,
+# PANEL_GENES) and PANEL_GENES is asserted unique above, so REPORT_GENES cannot
+# contain a duplicate by construction -- a guard on it would read as protection
+# while being unreachable.  The length assertion below is the real check.
 REPORT_GENES <- c(PANEL_GENES, ORIGIN_NONQUAL)
-if (anyDuplicated(REPORT_GENES))
-  halt("panel", "a non-qualifying origin gene is also in the locked panel: ",
-       paste(intersect(PANEL_GENES, ORIGIN_NONQUAL), collapse = ", "))
 assert_n(length(REPORT_GENES), 155L, "panel", "reporting genes (152 panel + 3 non-qualifying)")
 
 # The inferential firewall.  Called on every gene-indexed object that feeds a k
@@ -354,6 +372,15 @@ verify_amendment11_bias <- function(ct0, ct1) {
   bad0 <- setdiff(unique(ct0), names(MAP_Peng_ct0_epi_only))
   if (length(bad0))
     halt("A.c", "Peng celltype0 has unmapped label(s): ", paste(sort(bad0), collapse = ", "))
+  # F14: check celltype1 coverage too.  Without this, an unmapped ct1 label makes
+  # MAP_Peng[ct1] return NA, epi_ct1 carries NA, identical() is FALSE, and the run
+  # halts with "AMENDMENT 11 BIAS CLAIM FALSIFIED" -- blaming the amendment for
+  # what is really an incomplete map.
+  bad1 <- setdiff(unique(ct1), names(MAP_Peng))
+  if (length(bad1))
+    halt("A.c", "Peng celltype1 has unmapped label(s): ", paste(sort(bad1), collapse = ", "),
+         ". Extend MAP_Peng as a dated amendment; this is a map-completeness ",
+         "problem, not a falsification of Amendment 11.")
   epi_ct0 <- unname(MAP_Peng_ct0_epi_only[ct0]) == "epithelial"
   epi_ct1 <- unname(MAP_Peng[ct1]) == "epithelial"
   if (!identical(epi_ct0, epi_ct1))
@@ -442,8 +469,16 @@ load_GSE125449 <- function() {
                     header = FALSE)
     b <- read.delim(gzfile(need_file(file.path(dir, sprintf("GSE125449_%s_barcodes.tsv.gz", s)), sec)),
                     header = FALSE)
-    rownames(m) <- g[[ncol(g)]]      # symbol column
-    colnames(m) <- b[[1]]
+    rownames(m) <- g[[ncol(g)]]            # symbol column
+    # F01: Set1 and Set2 are independent 10x runs drawing from the same barcode
+    # whitelist.  Bare barcodes as column names would let cbind produce duplicate
+    # colnames, and name-based column selection returns the FIRST match for every
+    # request -- each colliding Set2 cell would silently receive a Set1 cell's
+    # expression profile while keeping its own Sample and Type.  Measured on this
+    # deposit the collision count is 0 (the sets carry distinct -1/-2 GEM-well
+    # suffixes), so this is a latent defect, not an active one; the composite key
+    # makes it unreachable regardless of how a future deposit is barcoded.
+    colnames(m) <- paste0(s, "|", b[[1]])
     m
   })
   names(mats) <- sets
@@ -457,11 +492,23 @@ load_GSE125449 <- function() {
   assert_n(nrow(mats$Set1), 20124L, sec, "Set1 gene rows as deposited")
   assert_n(nrow(mats$Set2), 19572L, sec, "Set2 gene rows as deposited")
 
+  # F02: the duplicate-symbol check must run on the SOURCE row names, not on the
+  # intersection.  base::intersect() calls unique() on both arguments, so
+  # anyDuplicated(intersect(...)) is structurally always 0 and the guard that used
+  # to sit here could never fire.  The hazard is real but lives one line earlier:
+  # CellRanger symbol columns repeat symbols, and name-based row selection would
+  # silently take only the first.  Checked per set, restricted to the reporting
+  # genes -- a duplicate elsewhere in the transcriptome cannot affect this analysis.
+  for (s in sets) {
+    rn  <- rownames(mats[[s]])
+    dup <- unique(rn[duplicated(rn) & rn %in% REPORT_GENES])
+    if (length(dup))
+      halt(sec, s, " has duplicate row(s) for reporting gene symbol(s): ",
+           paste(utils::head(sort(dup), 10), collapse = ", "),
+           ". Name-based row selection would take only the first and undercount the ",
+           "rest. Decide the aggregation rule as a dated amendment; do not sum silently.")
+  }
   common <- intersect(rownames(mats$Set1), rownames(mats$Set2))
-  if (anyDuplicated(common))
-    halt(sec, "duplicate gene symbols in the Set1/Set2 intersection: ",
-         paste(utils::head(unique(common[duplicated(common)]), 10), collapse = ", "),
-         ". Name-based row selection would take only the first.")
   assert_n(length(common), 18367L, sec, "genes in the Set1/Set2 intersection (Amendment 12)")
 
   # The six panel genes Amendment 12 names must be exactly the ones lost, so a
@@ -474,18 +521,37 @@ load_GSE125449 <- function() {
          "excluded by the intersection, but the observed set is ",
          if (length(lost)) paste(lost, collapse = ", ") else "(none)",
          ". The deposit's gene universes have changed; re-check coverage before proceeding.")
-  if (length(intersect(lost, ORIGIN_SIX)))
+  # F04: test the origin-six claim over the REPORTING set, not the panel.  `lost`
+  # above is derived from intersect(PANEL_GENES, ...) and BCL2/MMP9/HGF are by
+  # definition not in PANEL_GENES, so the previous form of this guard could only
+  # ever have caught SOCS3, MYC or IL6 -- half the claim its own message makes.
+  lost_report <- sort(setdiff(intersect(REPORT_GENES, in_either), common))
+  if (length(intersect(lost_report, ORIGIN_SIX)))
     halt(sec, "an origin-six gene is excluded by the Amendment 12 intersection: ",
-         paste(intersect(lost, ORIGIN_SIX), collapse = ", "),
+         paste(sort(intersect(lost_report, ORIGIN_SIX)), collapse = ", "),
          ". Amendment 12 states no origin-six gene is affected.")
   assert_n(sum(PANEL_GENES %in% common), 143L, sec, "panel genes retained in GSE125449 (Amendment 12)")
+  assert_n(sum(REPORT_GENES %in% common), 146L, sec, "reporting genes retained in GSE125449")
   message("  ok  A.a/GSE125449   Amendment 12 intersection: excluded ",
           paste(lost, collapse = ", "), " (panel coverage 143/152)")
 
   X <- cbind(mats$Set1[common, , drop = FALSE], mats$Set2[common, , drop = FALSE])
-  meta$cell_id <- meta$`Cell Barcode`
+  if (anyDuplicated(colnames(X)))
+    halt(sec, "duplicate cell ids after cbind: ",
+         paste(utils::head(unique(colnames(X)[duplicated(colnames(X))]), 5), collapse = ", "),
+         ". Name-based column selection would return the first match for every ",
+         "request, assigning one cell's counts to another.")
+
+  # composite key, matching the set-prefixed colnames above (F01)
+  meta$cell_id <- paste0(meta$set, "|", meta$`Cell Barcode`)
+  if (anyDuplicated(meta$cell_id))
+    halt(sec, "duplicate set|barcode in the per-cell metadata: ",
+         paste(utils::head(unique(meta$cell_id[duplicated(meta$cell_id)]), 5), collapse = ", "))
   keep <- meta$cell_id %in% colnames(X)
   if (!any(keep)) halt(sec, "no metadata barcode matches a matrix column")
+  # assert the JOIN is complete, not merely non-empty: a silent drop here would
+  # shrink the cell set without any count changing visibly.
+  assert_n(sum(keep), nrow(meta), sec, "metadata cells found in the matrix")
   meta <- meta[keep, , drop = FALSE]
   X    <- X[, meta$cell_id, drop = FALSE]
 
@@ -495,9 +561,14 @@ load_GSE125449 <- function() {
     cell_id     = meta$cell_id,
     patient_id  = meta$Sample,                       # sample == patient here
     compartment = map_labels(meta$Type, MAP_GSE125449, "GSE125449"),
+    # retained for Amendment 4's malignant-restricted sensitivity (F07): this is
+    # the only atlas whose labels separate CNV-called malignant cells from other
+    # epithelium, so the raw label is needed downstream
+    cell_type_raw = as.character(meta$Type),
     stringsAsFactors = FALSE
   )
   assert_n(length(unique(cells$patient_id)), 19L, sec, "bootstrap units (patients)")
+  assert_cells_aligned(X, cells, sec)
   list(X = X, cells = cells, atlas = "GSE125449", tissue = "liver_biliary")
 }
 
@@ -604,6 +675,7 @@ load_GSE178341 <- function() {
     compartment = map_labels(lab, MAP_GSE178341, "GSE178341"),
     stringsAsFactors = FALSE
   )
+  assert_cells_aligned(X, cells, sec)
   list(X = X, cells = cells, atlas = "GSE178341", tissue = "colorectal")
 }
 
@@ -714,42 +786,28 @@ read_h5_counts_subset <- function(path, sec, genes, chunk_cells = 20000L) {
   M
 }
 
-read_h5_counts <- function(path, sec) {
-  ls_h5 <- rhdf5::h5ls(path, recursive = TRUE)
-  grp   <- if ("matrix" %in% ls_h5$name) "matrix" else ls_h5$group[[2]]
-  gx    <- function(n) rhdf5::h5read(path, paste0(grp, "/", n))
-  need  <- c("data", "indices", "indptr", "shape", "barcodes")
-  have  <- ls_h5$name[ls_h5$group == paste0("/", grp)]
-  if (!all(need %in% have))
-    halt(sec, "HDF5 group '", grp, "' lacks CSC fields; found: ", paste(have, collapse = ", "))
-  shp <- as.integer(gx("shape"))
-  fg  <- ls_h5[ls_h5$group == paste0("/", grp, "/features"), "name"]
-  gsym <- if (length(fg)) as.character(gx("features/name")) else as.character(gx("genes"))
-  # index1 = FALSE declares `i` 0-based; the CSC `indices` field IS 0-based, so it
-  # is passed through unmodified.  A previous version added 1L here as well, which
-  # corrects the same offset twice and shifts every gene down one row -- silently
-  # whenever the last feature is undetected, so each gene would carry its
-  # PREDECESSOR's counts.  Asserted rather than trusted:
-  idx0 <- as.integer(gx("indices"))
-  if (length(idx0) && (min(idx0) < 0L || max(idx0) > shp[1] - 1L))
-    halt(sec, "CSC row indices are not 0-based within [0, nrow-1]: observed range [",
-         min(idx0), ", ", max(idx0), "] against nrow = ", shp[1],
-         ". Do not add an offset here; establish the file's indexing convention first.")
-  M <- Matrix::sparseMatrix(i = idx0,
-                            p = as.integer(gx("indptr")),
-                            x = as.numeric(gx("data")),
-                            dims = shp, index1 = FALSE)
-  rownames(M) <- gsym
-  colnames(M) <- as.character(gx("barcodes"))
-  assert_raw_counts(M, sec, paste0(grp, "/data"))
-  M
-}
+# G08: read_h5_counts() -- the whole-matrix 10x HDF5 reader -- was REMOVED here.
+# It had no call sites once GSE178341 moved to read_h5_counts_subset(), and it
+# could not be used on this data anyway: materialising all 43,113 x 370,115
+# columns exhausts 16 GB before any analysis starts, which is why the subset
+# reader exists. A superseded reader kept "just in case" is a hazard, not a
+# safety net -- someone reaches for the familiar name and reintroduces the
+# memory failure. The 0-based-index note that lived in its body is preserved in
+# read_h5_counts_subset(), which does the same sparseMatrix construction.
 
 # h5ad categorical -> character, for the Besca-style layout used by Peng.
 h5ad_factor <- function(path, col) {
   codes <- rhdf5::h5read(path, paste0("obs/", col))
   cats  <- try(rhdf5::h5read(path, paste0("obs/__categories/", col)), silent = TRUE)
-  if (inherits(cats, "try-error")) return(as.character(codes))
+  # F16: halt rather than silently returning integer codes as strings.  On the
+  # AnnData >= 0.8 layout (obs/<col>/categories + obs/<col>/codes) the old
+  # fallback would have decoded CONDITION to "0"/"1", making trimws(cond) == "T"
+  # uniformly FALSE -- the tumour filter would select nothing and the failure
+  # would surface far downstream as an unrelated count assertion.
+  if (inherits(cats, "try-error"))
+    halt("A.a/Peng", "obs/__categories/", col, " not found; this h5ad is not the ",
+         "legacy Besca categorical layout the loader assumes. Handle the ",
+         "AnnData >= 0.8 obs/<col>/categories layout explicitly before proceeding.")
   as.character(cats)[as.integer(codes) + 1L]
 }
 
@@ -765,13 +823,15 @@ load_Peng <- function() {
   sec <- "A.a/Peng"
   fp  <- need_file(file.path(RAW, "StdWf1_PRJCA001063_CRC_besca2.annotated.h5ad"), sec)
 
-  if (requireNamespace("tools", quietly = TRUE)) {
-    md5 <- unname(tools::md5sum(fp))
-    if (!identical(md5, PENG_MD5))
-      halt(sec, "md5 mismatch: expected ", PENG_MD5, ", observed ", md5,
-           ". This is not the registered Besca release.")
-    message("  ok  A.a/Peng        md5 ", PENG_MD5, " verified")
-  }
+  # F12: unconditional.  This was wrapped in requireNamespace("tools"), so on a
+  # machine without `tools` the identity check on the one atlas whose counts are
+  # RECONSTRUCTED rather than read would have been skipped silently.  `tools` is
+  # now in the dependency loop at the top, so absence halts there.
+  md5 <- unname(tools::md5sum(fp))
+  if (!identical(md5, PENG_MD5))
+    halt(sec, "md5 mismatch: expected ", PENG_MD5, ", observed ", md5,
+         ". This is not the registered Besca release.")
+  message("  ok  A.a/Peng        md5 ", PENG_MD5, " verified")
 
   obs <- rhdf5::h5ls(fp, recursive = TRUE)
   present <- paste0(sub("^/", "", obs$group), "/", obs$name)
@@ -819,6 +879,7 @@ load_Peng <- function() {
     compartment = comp[keep],
     stringsAsFactors = FALSE
   )
+  assert_cells_aligned(X, cells, sec)
   list(X = X, cells = cells, atlas = "Peng", tissue = "pancreatic")
 }
 
@@ -853,7 +914,7 @@ read_h5ad_counts <- function(path, sec) {
   gsym <- as.character(rhdf5::h5read(path, paste0(vg, "/index")))
   bc   <- as.character(rhdf5::h5read(path, "obs/index"))
   # index1 = FALSE declares `j` 0-based; the CSR `indices` field IS 0-based and is
-  # passed through unmodified.  See the note in read_h5_counts: adding 1L here
+  # passed through unmodified.  See the note in read_h5_counts_subset: adding 1L here
   # corrects the same offset twice and silently shifts every gene by one column
   # pre-transpose.
   idx0 <- as.integer(rhdf5::h5read(path, paste0(src, "/indices")))
@@ -903,6 +964,20 @@ read_h5ad_counts <- function(path, sec) {
          "tolerance. Rounding could return a wrong integer, so recovery is not exact ",
          "and the matrix must not be used.")
 
+  # F03: assert_raw_counts() below runs AFTER the rounding, so on this matrix its
+  # integrality test is a tautology and cannot fail.  The load-bearing check is
+  # assertion (iii) above, on the PRE-rounded values -- that is what establishes
+  # round() returns the original integer rather than manufacturing one.
+  #
+  # NO SECOND, TIGHTER BOUND IS IMPOSED HERE.  An earlier revision added one at
+  # 1e-2, citing "observed max 2.9e-3" -- but that figure came from a 400-cell
+  # sample taken before the recovery was implemented.  The full-corpus maximum
+  # over all 139,415,620 entries is 1.17e-2, which that bound would have FAILED,
+  # halting a pipeline that had already passed Amendment 13's own criterion.
+  # Amendment 13 sets the tolerance at 0.1 and is the registered authority; the
+  # measured 1.17e-2 sits an order of magnitude inside it and far below the 0.5
+  # at which rounding could recover a wrong integer.  Tightening a registered
+  # tolerance after seeing the data is exactly what preregistration forbids.
   R@x <- round(R@x)
 
   # (ii) per-cell sum of recovered counts == obs/n_counts
@@ -938,9 +1013,15 @@ read_h5ad_counts <- function(path, sec) {
 # to equal RNA content -- the error that made the HPA pilot measure the wrong
 # quantity (feasibility_assessment.md addendum).
 
-pseudobulk_raw <- function(X, cells, genes) {
+pseudobulk_raw <- function(X, cells, genes, detection = FALSE) {
   S <- matrix(0, nrow = length(genes), ncol = length(COMPARTMENTS),
               dimnames = list(genes, COMPARTMENTS))
+  # F17: fraction of cells in each compartment with >=1 count for each gene.
+  # Prespecification exclusion rule 2 is defined on this quantity, and B.h assigns
+  # its computation to Part A.  Computed only when asked: inside the 2000-resample
+  # bootstrap it is never needed, and the `> 0` pass is not free.
+  D <- if (detection) matrix(NA_real_, nrow = length(genes), ncol = length(COMPARTMENTS),
+                             dimnames = list(genes, COMPARTMENTS)) else NULL
   n_cells <- setNames(integer(length(COMPARTMENTS)), COMPARTMENTS)
   have <- intersect(genes, rownames(X))
 
@@ -963,10 +1044,13 @@ pseudobulk_raw <- function(X, cells, genes) {
     n_cells[cc] <- length(idx)
     if (!length(idx) || !length(have)) next
     S[have, cc] <- as.numeric(Matrix::rowSums(X[have, idx, drop = FALSE]))  # RAW
+    if (detection)
+      D[have, cc] <- as.numeric(Matrix::rowSums(X[have, idx, drop = FALSE] > 0)) / length(idx)
   }
   # Genes absent from this atlas are NA, never 0 (A.d).
   S[setdiff(genes, have), ] <- NA_real_
-  list(counts = S, n_cells = n_cells)
+  if (detection) D[setdiff(genes, have), ] <- NA_real_
+  list(counts = S, n_cells = n_cells, detection = D)
 }
 
 EVIDENCE_MIN <- 20L   # prespecified; genes below this are insufficient-evidence
@@ -1032,15 +1116,20 @@ dominance_from_F <- function(F, evidence_ok) {
 B_RESAMPLES <- 2000L
 SEED_BASE   <- 20260731L
 
-one_atlas_stats <- function(X, cells, genes) {
-  pb <- pseudobulk_raw(X, cells, genes)
+one_atlas_stats <- function(X, cells, genes, detection = FALSE) {
+  pb <- pseudobulk_raw(X, cells, genes, detection = detection)
   tot <- rowSums(pb$counts, na.rm = TRUE)
   # by name, not position: the previous `pb$counts[, 1]` silently depended on
   # COMPARTMENTS[1] being "epithelial"
   evidence_ok <- !is.na(pb$counts[, "epithelial"]) & tot >= EVIDENCE_MIN
   F  <- sweep_f(pb$counts, pb$n_cells)
   rownames(F) <- genes
-  list(pb = pb, F = F, evidence_ok = evidence_ok,
+  # F17: the RAW compartment share A.d defines, S / rowSums(S).  Distinct from
+  # f(pi), which reweights compartments by an assumed purity; this is the
+  # unweighted share of each gene's pseudobulk signal contributed by each
+  # compartment, and it is what prespecification exclusion rule 2 refers to.
+  frac <- pb$counts / rowSums(pb$counts, na.rm = FALSE)
+  list(pb = pb, F = F, evidence_ok = evidence_ok, frac = frac,
        dom = dominance_from_F(F, evidence_ok),
        dom50 = { d <- F[, which.min(abs(PI_GRID - 0.50))] > 0.50
                  d[!evidence_ok] <- NA; d })
@@ -1070,11 +1159,43 @@ bootstrap_atlas <- function(X, cells, genes, atlas_index, B = B_RESAMPLES) {
       list(f30 = st$F[, 1], dom = st$dom, dom50 = st$dom50)
     })
   })
+  f30_mat    <- vapply(reps, `[[`, numeric(length(genes)), "f30")
+  dom_reps   <- vapply(reps, `[[`, logical(length(genes)), "dom")
+  dom50_reps <- vapply(reps, `[[`, logical(length(genes)), "dom50")
+  rownames(f30_mat) <- rownames(dom_reps) <- rownames(dom50_reps) <- genes
+
+  # F06: per-gene per-atlas dominance RATE -- the proportion of resamples in which
+  # the gene was epithelial-dominant, with its percentile interval.  The
+  # replicates were already being computed and stored; previously they were
+  # consumed only for the aggregate k intervals, so no per-gene stability measure
+  # reached the output at all.
+  dom_rate   <- rowMeans(dom_reps,   na.rm = TRUE)
+  dom50_rate <- rowMeans(dom50_reps, na.rm = TRUE)
+  ci <- function(M) t(apply(M, 1, function(r)
+    if (all(is.na(r))) c(NA_real_, NA_real_) else quantile(r, c(0.025, 0.975), na.rm = TRUE)))
+  dr_ci <- ci(dom_reps)
+
   list(
-    f30_lo = apply(vapply(reps, `[[`, numeric(length(genes)), "f30"), 1, quantile, 0.025, na.rm = TRUE),
-    f30_hi = apply(vapply(reps, `[[`, numeric(length(genes)), "f30"), 1, quantile, 0.975, na.rm = TRUE),
-    dom_reps   = vapply(reps, `[[`, logical(length(genes)), "dom"),
-    dom50_reps = vapply(reps, `[[`, logical(length(genes)), "dom50")
+    f30_lo = apply(f30_mat, 1, quantile, 0.025, na.rm = TRUE),
+    f30_hi = apply(f30_mat, 1, quantile, 0.975, na.rm = TRUE),
+    dom_rate      = dom_rate,
+    dom50_rate    = dom50_rate,
+    dom_rate_lo   = dr_ci[, 1],
+    dom_rate_hi   = dr_ci[, 2],
+    # G04: the DENOMINATOR behind each rate.  evidence_ok is recomputed inside
+    # every resample, so a gene near the 20-count floor is evaluable in some draws
+    # and NA in others; rowMeans(na.rm = TRUE) then divides by a per-gene count
+    # that varies.  Reporting the rate without its denominator would let a gene
+    # dominant in 50 of 50 evaluable draws read identically to one dominant in
+    # 2000 of 2000.
+    dom_n_eval   = rowSums(!is.na(dom_reps)),
+    dom50_n_eval = rowSums(!is.na(dom50_reps)),
+    # G02: retain the per-resample f(0.30) matrix.  Without it the saved object
+    # cannot support a later interval recomputation, which is the stated purpose
+    # of persisting the replicates at all.
+    f30_reps   = f30_mat,
+    dom_reps   = dom_reps,
+    dom50_reps = dom50_reps
   )
 }
 
@@ -1180,7 +1301,7 @@ message("\n== A.d/A.e  pseudobulk and purity sweep ==")
 # non-qualifying origin genes get compartment fractions (S1).  Everything
 # inferential is restricted back to the 152-gene panel immediately below.
 stats <- lapply(names(dat), function(a) {
-  st <- one_atlas_stats(dat[[a]]$X, dat[[a]]$cells, REPORT_GENES)
+  st <- one_atlas_stats(dat[[a]]$X, dat[[a]]$cells, REPORT_GENES, detection = TRUE)
   assert_monotone(st$F, a)
   message(sprintf("  ..  %-12s evaluable genes = %d / %d panel (+%d / %d non-qualifying)",
                   a, sum(st$evidence_ok[PANEL_GENES]), length(PANEL_GENES),
@@ -1202,16 +1323,83 @@ if (any(ORIGIN_NONQUAL %in% rownames(dominance)))
        paste(intersect(ORIGIN_NONQUAL, rownames(dominance)), collapse = ", "))
 
 message("\n== A.g  k and variants ==")
+# Reproducibility gate.  The guard repairs applied after the first complete run
+# (F01-F04, F18, plus F12-F16) were all intended to change NO number: they close
+# latent hazards, replace checks that could never fire, and make skippable
+# verifications unconditional.  This asserts that intent against the realised
+# values rather than assuming it.  A mismatch means a repair altered a result and
+# must be reported before anything downstream is read.
+K_EXPECTED <- c(k = 46L, k_all3 = 24L, k_evalall = 43L, k_50 = 96L)
 K   <- compute_k(dominance)
 K50 <- compute_k(dominance_50)
 message(sprintf("  k = %d | k_all3 = %d | k_evalall = %d | k_50 = %d",
                 K$k, K$k_all3, K$k_evalall, K50$k))
+local({
+  obs <- c(k = K$k, k_all3 = K$k_all3, k_evalall = K$k_evalall, k_50 = K50$k)
+  if (!identical(as.integer(obs), as.integer(K_EXPECTED)))
+    halt("A.g", "POINT ESTIMATES CHANGED after the post-audit guard repairs. ",
+         "observed ", paste(names(obs), obs, sep = "=", collapse = " "),
+         " vs expected ", paste(names(K_EXPECTED), K_EXPECTED, sep = "=", collapse = " "),
+         ". Every repair in that set was intended to be number-neutral, so a ",
+         "difference is a finding: report it before reading anything downstream. ",
+         "Do not update K_EXPECTED to match.")
+
+  # G06: the four counts above are aggregates -- two genes could swap dominance
+  # and leave every one of them unchanged.  The claim being asserted is that no
+  # NUMBER changed, so compare the underlying matrices, not their sums.  Recorded
+  # as a per-gene-per-atlas signature over both dominance matrices.
+  sig <- paste(sum(dominance, na.rm = TRUE), sum(!is.na(dominance)),
+               paste(which(!is.na(dominance) & dominance), collapse = ","),
+               sum(dominance_50, na.rm = TRUE), sum(!is.na(dominance_50)),
+               paste(which(!is.na(dominance_50) & dominance_50), collapse = ","),
+               sep = "|")
+  sig_file <- file.path(OUTDIR, "dominance_signature.txt")
+  if (file.exists(sig_file)) {
+    prev <- readLines(sig_file, warn = FALSE)[1]
+    if (!identical(prev, sig))
+      halt("A.g", "The DOMINANCE MATRIX changed even though k, k_all3, k_evalall ",
+           "and k_50 are unchanged -- individual gene calls have moved while the ",
+           "aggregates coincide. This is exactly what the aggregate gate cannot ",
+           "see. Compare output/dominance_signature.txt against the previous run ",
+           "and report before proceeding. Do not delete the signature file.")
+    message("  ok  A.g  dominance matrix identical to the previous run (per-gene signature match)")
+  } else {
+    message("  ..  A.g  no previous dominance signature on disk; recording one for future runs")
+  }
+  writeLines(sig, sig_file)
+  message("  ok  A.g  point estimates reproduce the pre-repair run exactly (k=46, k_all3=24, k_evalall=43, k_50=96)")
+})
 message("  Amendment 3 branch (on primary k): ", branch_of_k(K$k))
 
 message("\n== A.f  patient-level bootstrap (B = ", B_RESAMPLES, ", unit = patient) ==")
 boots <- lapply(seq_along(dat), function(i)
   bootstrap_atlas(dat[[i]]$X, dat[[i]]$cells, REPORT_GENES, atlas_index = i))
 names(boots) <- names(dat)
+
+# Persist the resample objects.  The bootstrap is the expensive step (~2 h at
+# B=2000 over three atlases); saving the replicate matrices means a later
+# reporting addition can be derived without re-running it.  Seed and B are stored
+# alongside so a reload can be checked against the run that produced it.
+# G02: the object must carry everything a later reporting addition needs, or the
+# 2 h it exists to avoid gets spent anyway.  boots[[a]] now includes f30_reps
+# (per-resample f(0.30)), dom_reps and dom50_reps, so any interval or rate can be
+# recomputed; the scalars below let a reload be checked against the run that
+# produced it rather than assumed compatible.
+saveRDS(list(boots        = boots,
+             seed_base    = SEED_BASE,
+             B            = B_RESAMPLES,
+             genes        = REPORT_GENES,
+             panel        = PANEL_GENES,
+             atlases      = names(dat),
+             pi_grid      = PI_GRID,
+             evidence_min = EVIDENCE_MIN,
+             n_patients   = vapply(dat, function(d) length(unique(d$cells$patient_id)), integer(1)),
+             script_md5   = unname(tools::md5sum("03_compartments.R")),
+             run_date     = Sys.Date(),
+             R_version    = R.version.string),
+        file.path(OUTDIR, "bootstrap_replicates.rds"))
+message("  ..  saved output/bootstrap_replicates.rds (B = ", B_RESAMPLES,
+        ", seed_base = ", SEED_BASE, ")")
 
 # Amendment 6 requires k_50 to be reported WITH its bootstrap interval, on the
 # same footing as k.  bootstrap_atlas already returns dom50_reps -- the pi = 0.50
@@ -1250,14 +1438,133 @@ dom_long <- do.call(rbind, lapply(names(stats), function(a) data.frame(
   evaluable   = stats[[a]]$evidence_ok,
   dominant    = stats[[a]]$dom,
   dominant_50 = stats[[a]]$dom50,
+  # F06: per-gene per-atlas bootstrap stability of the dominance call
+  dom_rate    = boots[[a]]$dom_rate,
+  dom_rate_lo = boots[[a]]$dom_rate_lo,
+  dom_rate_hi = boots[[a]]$dom_rate_hi,
+  dom_n_eval  = boots[[a]]$dom_n_eval,      # G04: denominator behind dom_rate
+  dom50_rate  = boots[[a]]$dom50_rate,
   origin_six  = REPORT_GENES %in% ORIGIN_SIX,
   in_panel    = REPORT_GENES %in% PANEL_GENES,
+  # F05: values for the non-qualifying three are RETAINED, not blanked.
+  # Amendment 2's disclosure requires readers to see whether excluding MMP9 and
+  # HGF was consequential; suppressing their fractions would destroy exactly the
+  # evidence the amendment exists to expose.  `qualifying` marks which rows were
+  # eligible for a k variant.
   qualifying  = REPORT_GENES %in% PANEL_GENES,
   stringsAsFactors = FALSE)))
 assert_n(sum(!dom_long$in_panel), 3L * length(stats), "S1",
          "non-qualifying rows present in the reported table")
 
 write.csv(dom_long, file.path(OUTDIR, "compartment_dominance_matrix.csv"), row.names = FALSE)
+
+# Header note travels with the file rather than living only in a commit message.
+writeLines(c(
+  "# compartment_dominance_matrix.csv -- readme",
+  "#",
+  "# 155 reporting genes x 3 atlases = 465 rows.",
+  "#",
+  "# qualifying / in_panel = FALSE marks BCL2, MMP9 and HGF: the labelled",
+  "# non-qualifying subset (prespecification section 4, Amendment 2). Their",
+  "# compartment fractions and dominance calls ARE reported, deliberately -- they",
+  "# let a reader judge whether excluding MMP9 and HGF was consequential. They",
+  "# enter NO k variant: k, k_50, k_all3 and k_evalall are computed over exactly",
+  "# the 152 locked panel genes, enforced by assert_inferential_set().",
+  "#",
+  "# dominant     : f(pi) > 0.50 at EVERY point of the 41-point grid pi in [0.30, 0.70]",
+  "# dominant_50  : f(0.50) > 0.50 only (Amendment 6)",
+  "# evaluable    : >= 20 summed counts in that atlas (below this, no fraction is given)",
+  "#",
+  "# dom_rate     : proportion of the 2000 patient-level resamples in which the gene",
+  "#                was epithelial-dominant. A stability measure, not a probability.",
+  "# dom_n_eval   : the DENOMINATOR behind dom_rate -- how many of the 2000 resamples",
+  "#                the gene was evaluable in. evidence_ok is recomputed inside every",
+  "#                resample, so a gene near the 20-count floor is evaluable in only",
+  "#                some draws. Read dom_rate WITH this column: 1.00 from 50 draws is",
+  "#                not the same evidence as 1.00 from 2000.",
+  "# dom_rate_lo/hi: A.f's percentile bootstrap CI (2.5/97.5) on the dominance",
+  "#                INDICATOR. This is the registered statistic and is reported as",
+  "#                specified, but note it is degenerate by construction: the",
+  "#                indicator is 0/1, so for any gene dominant in more than 97.5% or",
+  "#                fewer than 2.5% of resamples the interval collapses to [1,1] or",
+  "#                [0,0]. dom_rate and dom_n_eval carry the usable information.",
+  "# dom50_rate   : as dom_rate, at pi = 0.50 only (Amendment 6)",
+  "#",
+  "# ENDOTHELIAL COMPARTMENT, GSE178341: that atlas's clTopLevel vocabulary is",
+  "# B | Epi | Mast | Myeloid | Plasma | Strom | TNKILC -- it has NO endothelial",
+  "# label, and its endothelial cells sit inside Strom. Amendment 4 maps each",
+  "# atlas's OWN level-1 labels, so the code matches the registration and no",
+  "# amendment is required. The estimand is unaffected: subdividing non-epithelial",
+  "# mass changes neither the numerator nor the denominator of f(pi). It is a",
+  "# REPORTING limitation only -- per-compartment breakdowns are not comparable",
+  "# across atlases for the endothelial and fibroblast_stromal rows."
+), file.path(OUTDIR, "compartment_dominance_matrix.readme.txt"))
+
+# --- F17: compartment fraction S/rowSums(S), and per-compartment detection rate
+# Both over the 155 reporting genes. Prespecification exclusion rule 2 is defined
+# on the detection rate, and B.h assigns its computation to Part A.
+frac_long <- do.call(rbind, lapply(names(stats), function(a) {
+  fr <- stats[[a]]$frac
+  data.frame(gene = rep(rownames(fr), ncol(fr)),
+             atlas = a,
+             tissue = atlases$tissue[atlases$atlas == a],
+             compartment = rep(colnames(fr), each = nrow(fr)),
+             fraction = as.numeric(fr),
+             n_cells = rep(stats[[a]]$pb$n_cells[colnames(fr)], each = nrow(fr)),
+             qualifying = rep(rownames(fr) %in% PANEL_GENES, ncol(fr)),
+             stringsAsFactors = FALSE)
+}))
+write.csv(frac_long, file.path(OUTDIR, "compartment_fractions.csv"), row.names = FALSE)
+
+det_long <- do.call(rbind, lapply(names(stats), function(a) {
+  D <- stats[[a]]$pb$detection
+  if (is.null(D)) halt("A.d", a, ": detection rate was not computed")
+  data.frame(gene = rep(rownames(D), ncol(D)),
+             atlas = a,
+             tissue = atlases$tissue[atlases$atlas == a],
+             compartment = rep(colnames(D), each = nrow(D)),
+             pct_cells_detected = as.numeric(D),
+             n_cells = rep(stats[[a]]$pb$n_cells[colnames(D)], each = nrow(D)),
+             qualifying = rep(rownames(D) %in% PANEL_GENES, ncol(D)),
+             stringsAsFactors = FALSE)
+}))
+write.csv(det_long, file.path(OUTDIR, "detection_rate_by_compartment.csv"), row.names = FALSE)
+message(sprintf("  ..  wrote compartment_fractions.csv (%d rows) and detection_rate_by_compartment.csv (%d rows)",
+                nrow(frac_long), nrow(det_long)))
+
+# G07: the endothelial caveat governs THESE two files most of all -- they are the
+# per-compartment breakdown -- so it travels with them rather than only with the
+# dominance matrix.
+writeLines(c(
+  "# compartment_fractions.csv and detection_rate_by_compartment.csv -- readme",
+  "#",
+  "# Both cover the 155 reporting genes x 3 atlases x 6 compartments (2,790 rows).",
+  "# qualifying = FALSE marks BCL2, MMP9, HGF: reported, but in no k variant.",
+  "#",
+  "# fraction           : S[g,c] / sum_c S[g,c] -- the RAW share of a gene's",
+  "#                      pseudobulk signal contributed by compartment c. This is",
+  "#                      NOT f(pi): no purity reweighting is applied. A.d defines",
+  "#                      this quantity and prespecification exclusion rule 2 is",
+  "#                      stated on it.",
+  "# pct_cells_detected : fraction of cells in compartment c with >= 1 count for",
+  "#                      gene g. Independent of expression magnitude.",
+  "# n_cells            : cells in that compartment in that atlas.",
+  "#",
+  "# COMPARTMENTS ABSENT FROM AN ATLAS. A fraction of 0 with n_cells = 0 means the",
+  "# compartment DOES NOT EXIST in that atlas's annotation -- not that it",
+  "# contributes nothing. GSE178341 is the case that matters: its clTopLevel",
+  "# vocabulary (B | Epi | Mast | Myeloid | Plasma | Strom | TNKILC) has no",
+  "# endothelial label, so its endothelial cells sit inside Strom and are counted",
+  "# as fibroblast_stromal. Amendment 4 maps each atlas's OWN level-1 labels, so",
+  "# this matches the registration and no amendment is required; the estimand is",
+  "# unaffected because subdividing non-epithelial mass changes neither the",
+  "# numerator nor the denominator of f(pi).",
+  "#",
+  "# CONSEQUENCE: the endothelial and fibroblast_stromal rows are NOT comparable",
+  "# across atlases. 'Endothelial contribution is lower in colorectal' would be an",
+  "# artefact of annotation granularity. Epithelial, myeloid and lymphoid rows are",
+  "# comparable; 'other' is atlas-specific by construction."
+), file.path(OUTDIR, "compartment_fractions.readme.txt"))
 
 evaluability <- table(factor(K$n_eval, levels = 3:0))
 write.csv(data.frame(atlases_evaluable = names(evaluability),
@@ -1282,7 +1589,40 @@ if (anyNA(k_tab$ci_lo) || anyNA(k_tab$ci_hi))
   halt("A.g", "k_estimates has a missing interval bound for: ",
        paste(k_tab$quantity[is.na(k_tab$ci_lo) | is.na(k_tab$ci_hi)], collapse = ", "),
        ". Amendment 6 requires k_50 to be reported with its bootstrap interval.")
+
+# --- F09: the two prespecified disclosures, COMPUTED rather than left to a human
+# reading a CSV.  Both are decided by the numbers, so deferring them to after the
+# numbers are seen is exactly the discretion preregistration removes.
+branch_lo <- branch_of_k(floor(k_ci[1, "k"]))
+branch_hi <- branch_of_k(ceiling(k_ci[2, "k"]))
+k_ci_spans_branch <- !identical(branch_lo, branch_hi)
+k50_branch_differs <- !identical(branch_of_k(K$k), branch_of_k(K50$k))
+k_tab$branch <- c(branch_of_k(K$k), NA, NA, branch_of_k(K50$k))
 write.csv(k_tab, file.path(OUTDIR, "k_estimates.csv"), row.names = FALSE)
+
+writeLines(c(
+  "# Amendment 6 disclosures, computed from the run (F09)",
+  "",
+  paste0("k                    : ", K$k, "  (95% CI ", k_ci[1, "k"], " - ", k_ci[2, "k"], ")"),
+  paste0("branch at k          : ", branch_of_k(K$k)),
+  paste0("branch at CI lower   : ", branch_lo),
+  paste0("branch at CI upper   : ", branch_hi),
+  paste0("k_ci_spans_branch    : ", k_ci_spans_branch),
+  if (k_ci_spans_branch)
+    "  -> DISCLOSURE REQUIRED: k's interval crosses an Amendment 3 band boundary; the branch is not robust to sampling variation and must be reported as such."
+  else
+    "  -> no disclosure required on this ground: the whole interval selects one branch.",
+  "",
+  paste0("k_50                 : ", K50$k, "  (95% CI ", k_ci[1, "k_50"], " - ", k_ci[2, "k_50"], ")"),
+  paste0("branch at k_50       : ", branch_of_k(K50$k)),
+  paste0("k50_branch_differs   : ", k50_branch_differs),
+  if (k50_branch_differs)
+    "  -> DISCLOSURE REQUIRED: the full-band rule and the pi=0.50 rule select DIFFERENT Amendment 3 branches. Amendment 6 records that the full-band rule is the stricter one and leans toward this study's thesis; the divergence must be reported."
+  else
+    "  -> no disclosure required on this ground: both rules select the same branch."
+), file.path(OUTDIR, "amendment6_disclosures.txt"))
+message("  ..  Amendment 6: k_ci_spans_branch = ", k_ci_spans_branch,
+        " | k50_branch_differs = ", k50_branch_differs)
 
 # Origin six as a labelled subset (prespecification section 4): SOCS3/MYC/IL6
 # qualify, BCL2/MMP9/HGF do not.  All six appear, with `qualifying` and a reason;
@@ -1299,6 +1639,123 @@ if (!setequal(unique(origin_tab$gene[!origin_tab$qualifying]), ORIGIN_NONQUAL))
        paste(sort(unique(origin_tab$gene[!origin_tab$qualifying])), collapse = ", "),
        "; expected BCL2, MMP9, HGF.")
 write.csv(origin_tab, file.path(OUTDIR, "origin_six_compartment.csv"), row.names = FALSE)
+
+# --- F07: Amendment 4's malignant-restricted sensitivity, GSE125449 only
+# Amendment 4 changed the estimand from malignant-epithelial to lineage-level
+# epithelial, and names a sensitivity analysis restricting epithelial to
+# CNV-called malignant cells.  GSE125449 is the ONLY atlas that can support it:
+# Ma's `Type` column carries inferCNV-derived calls, so `Malignant cell` and
+# `HPC-like` are separable.  Pelka's clTopLevel `Epi` and Peng's celltype1 carry
+# no malignant/normal split, so this is a single-atlas sensitivity and cannot be
+# replicated -- stated in the output, not left for a reader to infer.
+# POINT ESTIMATES ONLY: no bootstrap, so no interval is reported.
+local({
+  a  <- "GSE125449"
+  d  <- dat[[a]]
+  hp <- d$cells$compartment == "epithelial" & d$cells$cell_type_raw == "HPC-like"
+  if (!any(hp)) halt("A.g/sensitivity", a, ": no HPC-like cells found; the raw label ",
+                     "column is missing or has changed, so the sensitivity cannot be computed.")
+  cells_m <- d$cells
+  cells_m$compartment[hp] <- "other"     # malignant-restricted epithelial
+  st_m <- one_atlas_stats(d$X, cells_m, REPORT_GENES)
+  st_0 <- stats[[a]]
+
+  out <- data.frame(
+    gene              = REPORT_GENES,
+    qualifying        = REPORT_GENES %in% PANEL_GENES,
+    f30_lineage       = st_0$F[, 1],
+    f30_malignant     = st_m$F[, 1],
+    delta_f30         = st_m$F[, 1] - st_0$F[, 1],
+    dominant_lineage  = st_0$dom,
+    dominant_malignant= st_m$dom,
+    evaluable_lineage = st_0$evidence_ok,
+    evaluable_malig   = st_m$evidence_ok,
+    stringsAsFactors  = FALSE)
+  out$call_changed <- !is.na(out$dominant_lineage) & !is.na(out$dominant_malignant) &
+                       out$dominant_lineage != out$dominant_malignant
+  write.csv(out, file.path(OUTDIR, "gse125449_malignant_sensitivity.csv"), row.names = FALSE)
+
+  p <- out[out$qualifying, ]
+  writeLines(c(
+    "# Amendment 4 sensitivity: malignant-restricted epithelial, GSE125449 only",
+    "#",
+    "# Primary estimand (Amendment 4) is LINEAGE-level epithelial: Malignant cell +",
+    "# HPC-like. This sensitivity restricts epithelial to CNV-called Malignant cell",
+    "# and reassigns HPC-like to `other`.",
+    "#",
+    "# SINGLE-ATLAS LIMITATION: only GSE125449 deposits malignancy calls (Ma,",
+    "# inferCNV: score > 80th pct AND corr > 0.4). GSE178341's clTopLevel `Epi` and",
+    "# Peng's celltype1 carry no malignant/normal split, so this cannot be",
+    "# replicated in the other two atlases and no k variant is recomputed from it.",
+    "# It bears on ONE of the three atlases feeding the two-of-three rule.",
+    "#",
+    "# POINT ESTIMATES ONLY -- no bootstrap, no intervals.",
+    "#",
+    "# DISPOSITION OF NON-MALIGNANT EPITHELIUM (G05). Amendment 4 fixes the",
+    "# numerator -- epithelial becomes CNV-called Malignant cell only -- but does",
+    "# not say what becomes of the non-malignant epithelium. Two implementations",
+    "# satisfy its wording and give different denominators: reassign HPC-like to a",
+    "# non-epithelial compartment (done here: they move to `other`, so they stay in",
+    "# the denominator), or drop those cells entirely (which would shrink it).",
+    "# Retention is the conservative choice for this study's thesis: it keeps",
+    "# non-malignant transcripts in the denominator and so cannot inflate the",
+    "# epithelial fraction. Recorded because the amendment is silent, not because",
+    "# the choice is forced.",
+    "#",
+    paste0("HPC-like cells reassigned : ", sum(hp)),
+    paste0("epithelial cells, lineage : ", sum(d$cells$compartment == "epithelial")),
+    paste0("epithelial cells, malignant-restricted: ", sum(cells_m$compartment == "epithelial")),
+    paste0("panel genes evaluable in both: ", sum(p$evaluable_lineage & p$evaluable_malig)),
+    paste0("panel genes dominant, lineage: ", sum(p$dominant_lineage, na.rm = TRUE)),
+    paste0("panel genes dominant, malignant-restricted: ", sum(p$dominant_malignant, na.rm = TRUE)),
+    paste0("panel genes whose dominance call CHANGED: ", sum(p$call_changed, na.rm = TRUE)),
+    paste0("median delta f(0.30), panel: ",
+           format(median(p$delta_f30, na.rm = TRUE), digits = 4))
+  ), file.path(OUTDIR, "gse125449_malignant_sensitivity.readme.txt"))
+  message(sprintf("  ..  A.4 sensitivity (GSE125449 only): %d HPC-like reassigned, %d/%d panel dominance calls changed",
+                  sum(hp), sum(p$call_changed, na.rm = TRUE), sum(p$evaluable_lineage & p$evaluable_malig)))
+})
+
+# --- F19: GSE125449 dual compartment grouping
+# The pilot used a five-compartment scheme with TEC in fibroblast_stromal;
+# Amendment 4's six-compartment scheme puts TEC in endothelial.  f(pi) is
+# unchanged by the regrouping -- it moves cells between two NON-epithelial
+# compartments, so neither the numerator nor the denominator moves, the same
+# algebra as Amendment 11.  Reported so pilot and Part A numbers are comparable.
+local({
+  a <- "GSE125449"
+  cl <- dat[[a]]$cells
+  six  <- table(factor(cl$compartment, levels = COMPARTMENTS))
+  five <- six
+  five["fibroblast_stromal"] <- five["fibroblast_stromal"] + five["endothelial"]
+  five["endothelial"] <- 0L
+  write.csv(data.frame(
+    compartment          = COMPARTMENTS,
+    n_cells_six_amdt4    = as.integer(six),
+    n_cells_five_pilot   = as.integer(five),
+    note                 = ifelse(COMPARTMENTS == "endothelial",
+                            "TEC: endothelial under Amendment 4; folded into fibroblast_stromal in the pilot's 5-compartment scheme",
+                            "")),
+    file.path(OUTDIR, "gse125449_compartment_counts_dual.csv"), row.names = FALSE)
+
+  # G03: cell counts alone do not let a reader reconcile a PILOT STROMAL FRACTION
+  # with a Part A one -- the incomparability is in the fraction, because TEC's
+  # transcripts moved out of the stromal denominator.  The folded share is a pure
+  # column sum of the six-compartment fractions and is REPORTING ONLY: f(pi) is
+  # untouched, since regrouping two non-epithelial compartments changes neither
+  # its numerator nor its denominator.
+  fr <- stats[[a]]$frac
+  write.csv(data.frame(
+    gene                       = rownames(fr),
+    qualifying                 = rownames(fr) %in% PANEL_GENES,
+    frac_epithelial            = fr[, "epithelial"],
+    frac_stromal_six_amdt4     = fr[, "fibroblast_stromal"],
+    frac_endothelial_six_amdt4 = fr[, "endothelial"],
+    frac_stromal_five_pilot    = fr[, "fibroblast_stromal"] + fr[, "endothelial"],
+    stringsAsFactors = FALSE),
+    file.path(OUTDIR, "gse125449_stromal_fraction_dual.csv"), row.names = FALSE)
+  message("  ..  wrote gse125449_stromal_fraction_dual.csv (pilot-comparable stromal share)")
+})
 
 writeLines(c(
   paste0("run_date: ", Sys.Date()),

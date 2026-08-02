@@ -1,0 +1,70 @@
+  ok  A.a                          atlases in the registered set                  = 3
+  ok  panel                        locked panel genes                             = 152
+  ok  panel                        unique locked gene symbols                     = 152
+  ok  panel                        reporting genes (152 panel + 3 non-qualifying) = 155
+  ok  A.g                          evidence patterns enumerated                   = 27
+  ok  A.g  ordering k_all3 <= k_evalall <= k verified over 27 patterns (4 distinct triples)
+  ok  A.c  map regression guard passed ('Malignant cell' -> epithelial)
+  ok  A.g  Amendment 3 bands verified as proportions (n=152: DESCRIPTIVE k<8, EXPLORATORY 8-30, BUILT k>=31; 5% bound and absolute floor coincide at 8)
+
+== A.a/A.b  loading the three registered atlases ==
+  ok  A.a/GSE125449                samples (all tumour, no filter)                = 19
+  ok  A.a/GSE125449                Set1 gene rows as deposited                    = 20124
+  ok  A.a/GSE125449                Set2 gene rows as deposited                    = 19572
+  ok  A.a/GSE125449                genes in the Set1/Set2 intersection (Amendment 12) = 18367
+  ok  A.a/GSE125449                panel genes retained in GSE125449 (Amendment 12) = 143
+  ok  A.a/GSE125449                reporting genes retained in GSE125449          = 146
+  ok  A.a/GSE125449   Amendment 12 intersection: excluded CCL7, CRLF2, CSF2, IL9R, ITGB3, LEP (panel coverage 143/152)
+  ok  A.a/GSE125449                metadata cells found in the matrix             = 9946
+  ok  A.a  GSE125449    tissue 'liver_biliary' verified against atlas content
+  ok  A.a/GSE125449                bootstrap units (patients)                     = 19
+  ok  A.a/GSE125449                matrix columns == cells rows                   = 9946
+  ok  A.a/GSE178341                cells in metatable                             = 370115
+  ok  A.a/GSE178341                cells in cluster file                          = 370115
+  ok  A.a/GSE178341                GEO GSM channels, specimen_type == T           = 129
+  ok  A.a/GSE178341                channels with >=1 cell, tumour                 = 128
+  ok  A.a/GSE178341                unique patients (PID), tumour                  = 62
+  ok  A.a/GSE178341   PatientTypeID = 64 (patient x specimen) confirmed distinct from PID = 62
+  ok  A.a/GSE178341   absent channel is C144_T_1_1_12_c1_v2 as registered
+  ok  A.a/GSE178341  dropped 4 empty duplicate feature row(s) (CRLF2, CSF2RA, IL3RA, IL9R; all zero-count PAR_Y copies)
+  ok  A.a/GSE178341                'matrix/data (row-subset)' integer-valued (raw counts) = 8,910,463
+  ok  A.a  GSE178341    tissue 'colorectal' verified against atlas content
+  ok  A.a/GSE178341                matrix columns == cells rows                   = 257251
+  ok  A.a/Peng        md5 41fb7b9f27b7bb613ff979baaac5272f verified
+  ok  A.a/Peng                     cells in the Besca release                     = 57423
+  ok  A.a/Peng                     patients (24 tumour + 11 normal)               = 35
+  ok  A.a/Peng                     tumour patients                                = 24
+  ok  A.a/Peng                     normal patients (excluded)                     = 11
+  ok  A.c  Amendment 11 bias claim verified: epithelial set identical under celltype0/celltype1 (24156 cells); celltype1 is a strict refinement
+  ok  A.a/Peng                     Amendment 13 recovery over 139,415,620 non-zero entries:
+      (i)   max rel. deviation of per-cell sum(expm1) from 10000 = 3.420e-07  (tol 1e-6)
+      (ii)  max rel. deviation of recovered per-cell sum from n_counts = 0.000e+00  (tol 1e-6)
+      (iii) max deviation from integer before rounding = 1.170e-02  (tol 0.1)
+  ok  A.a/Peng                     'raw/X (Amendment 13 recovered counts)' integer-valued (raw counts) = 139,415,620
+  ok  A.a  Peng         tissue 'pancreatic' verified against atlas content
+  ok  A.a/Peng                     matrix columns == cells rows                   = 41964
+
+== A.d/A.e  pseudobulk and purity sweep ==
+  ok  A.e  GSE125449 f(pi) monotone over all 41 grid points
+  ..  GSE125449    evaluable genes = 141 / 152 panel (+3 / 3 non-qualifying)
+  ok  A.e  GSE178341 f(pi) monotone over all 41 grid points
+  ..  GSE178341    evaluable genes = 152 / 152 panel (+3 / 3 non-qualifying)
+  ok  A.e  Peng f(pi) monotone over all 41 grid points
+  ..  Peng         evaluable genes = 148 / 152 panel (+3 / 3 non-qualifying)
+
+== A.g  k and variants ==
+  k = 46 | k_all3 = 24 | k_evalall = 43 | k_50 = 96
+  ok  A.g  dominance matrix identical to the previous run (per-gene signature match)
+  ok  A.g  point estimates reproduce the pre-repair run exactly (k=46, k_all3=24, k_evalall=43, k_50=96)
+  Amendment 3 branch (on primary k): epithelial subscore BUILT; subscore survival models run as SECONDARY
+
+== A.f  patient-level bootstrap (B = 2000, unit = patient) ==
+  ..  saved output/bootstrap_replicates.rds (B = 2000, seed_base = 20260731)
+  ok  S1                           non-qualifying rows present in the reported table = 9
+  ..  wrote compartment_fractions.csv (2790 rows) and detection_rate_by_compartment.csv (2790 rows)
+  ..  Amendment 6: k_ci_spans_branch = FALSE | k50_branch_differs = FALSE
+  ok  S1                           origin-six genes in the reported table         = 6
+  ..  A.4 sensitivity (GSE125449 only): 1102 HPC-like reassigned, 15/141 panel dominance calls changed
+  ..  wrote gse125449_stromal_fraction_dual.csv (pilot-comparable stromal share)
+
+Part A complete (A.a-A.g). HARD STOP: no gene list locked, no score constructed, no survival model fitted, no outcome data opened.

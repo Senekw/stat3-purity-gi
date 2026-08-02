@@ -1,0 +1,39 @@
+  ok  A.a                          atlases in the registered set                  = 3
+  ok  panel                        locked panel genes                             = 152
+  ok  panel                        unique locked gene symbols                     = 152
+  ok  panel                        reporting genes (152 panel + 3 non-qualifying) = 155
+  ok  A.g                          evidence patterns enumerated                   = 27
+  ok  A.g  ordering k_all3 <= k_evalall <= k verified over 27 patterns (4 distinct triples)
+  ok  A.c  map regression guard passed ('Malignant cell' -> epithelial)
+  ok  A.g  Amendment 3 bands verified as proportions (n=152: DESCRIPTIVE k<8, EXPLORATORY 8-30, BUILT k>=31; 5% bound and absolute floor coincide at 8)
+
+== A.a/A.b  loading the three registered atlases ==
+  ok  A.a/GSE125449                samples (all tumour, no filter)                = 19
+  ok  A.a/GSE125449                Set1 gene rows as deposited                    = 20124
+  ok  A.a/GSE125449                Set2 gene rows as deposited                    = 19572
+  ok  A.a/GSE125449                genes in the Set1/Set2 intersection (Amendment 12) = 18367
+  ok  A.a/GSE125449                panel genes retained in GSE125449 (Amendment 12) = 143
+  ok  A.a/GSE125449   Amendment 12 intersection: excluded CCL7, CRLF2, CSF2, IL9R, ITGB3, LEP (panel coverage 143/152)
+  ok  A.a  GSE125449    tissue 'liver_biliary' verified against atlas content
+  ok  A.a/GSE125449                bootstrap units (patients)                     = 19
+  ok  A.a/GSE178341                cells in metatable                             = 370115
+  ok  A.a/GSE178341                cells in cluster file                          = 370115
+  ok  A.a/GSE178341                GEO GSM channels, specimen_type == T           = 129
+  ok  A.a/GSE178341                channels with >=1 cell, tumour                 = 128
+  ok  A.a/GSE178341                unique patients (PID), tumour                  = 62
+  ok  A.a/GSE178341   PatientTypeID = 64 (patient x specimen) confirmed distinct from PID = 62
+  ok  A.a/GSE178341   absent channel is C144_T_1_1_12_c1_v2 as registered
+  ok  A.a/GSE178341  dropped 4 empty duplicate feature row(s) (CRLF2, CSF2RA, IL3RA, IL9R; all zero-count PAR_Y copies)
+  ok  A.a/GSE178341                'matrix/data (row-subset)' integer-valued (raw counts) = 8,910,463
+  ok  A.a  GSE178341    tissue 'colorectal' verified against atlas content
+  ok  A.a/Peng        md5 41fb7b9f27b7bb613ff979baaac5272f verified
+  ok  A.a/Peng                     cells in the Besca release                     = 57423
+  ok  A.a/Peng                     patients (24 tumour + 11 normal)               = 35
+  ok  A.a/Peng                     tumour patients                                = 24
+  ok  A.a/Peng                     normal patients (excluded)                     = 11
+  ok  A.c  Amendment 11 bias claim verified: epithelial set identical under celltype0/celltype1 (24156 cells); celltype1 is a strict refinement
+Error: HALT [A.a/Peng]: matrix 'raw/X' is not integer-valued and is therefore NOT raw counts (139415620 of 139415620 non-zero entries fractional; e.g. 0.613383114337921, 1.2641282081604, 1.2641282081604). A.d forbids CP10K, log or any library-size correction before the rowSums. Point the loader at the raw layer; do not normalise here and do not relax this check.
+Execution halted
+      658.50 real       420.92 user       183.81 sys
+time: sysctl kern.clockrate: Operation not permitted
+EXIT=1

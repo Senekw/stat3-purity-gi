@@ -2,6 +2,43 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 15. REPORTING LIMITATION — GSE178341 has no endothelial compartment
+
+**Not an amendment. The code matches the registration; this is a limitation in
+what the per-compartment breakdown can be used for.**
+
+Surfaced by the Implementation Auditor (F08). GSE178341's `clTopLevel` vocabulary
+is, in full:
+
+```
+B | Epi | Mast | Myeloid | Plasma | Strom | TNKILC
+```
+
+There is **no endothelial label**. That atlas's endothelial cells sit inside
+`Strom`, which the registered A.c map sends to `fibroblast_stromal`. So
+GSE178341 reports `n_cells['endothelial'] == 0` while GSE125449 (`TEC`) and Peng
+(`blood vessel endothelial cell`) both report a real endothelial compartment.
+
+**Why no amendment is required.** Amendment 4 specifies six compartments mapped
+from *each atlas's own level-1 labels*. GSE178341 has no level-1 endothelial
+label, so mapping `Strom` → `fibroblast_stromal` is what the registration
+prescribes, not a deviation from it. Adding an endothelial target would require
+descending to `cl295v11SubFull`, which is a different annotation level than the
+one Amendment 4 names.
+
+**Why the estimand is unaffected.** f(π) depends only on the epithelial /
+non-epithelial split. Moving cells between two *non-epithelial* compartments
+changes neither the numerator nor the denominator — the identical algebra to
+Amendment 11's proven-neutral celltype0/celltype1 refinement. `k` and every
+variant are unchanged.
+
+**What it does limit.** The per-compartment breakdown is **not comparable across
+atlases for the `endothelial` and `fibroblast_stromal` rows**. Any statement of
+the form "endothelial contribution is lower in colorectal" would be an artefact
+of annotation granularity, not biology. Recorded in
+`output/compartment_dominance_matrix.readme.txt` so the constraint travels with
+the data rather than living only here.
+
 ## 14. Automated Reviewer findings, and a tooling gap in how they reach the assistant
 
 **The tooling gap first, because it is the reportable part.** During this session

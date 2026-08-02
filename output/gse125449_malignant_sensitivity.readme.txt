@@ -1,0 +1,33 @@
+# Amendment 4 sensitivity: malignant-restricted epithelial, GSE125449 only
+#
+# Primary estimand (Amendment 4) is LINEAGE-level epithelial: Malignant cell +
+# HPC-like. This sensitivity restricts epithelial to CNV-called Malignant cell
+# and reassigns HPC-like to `other`.
+#
+# SINGLE-ATLAS LIMITATION: only GSE125449 deposits malignancy calls (Ma,
+# inferCNV: score > 80th pct AND corr > 0.4). GSE178341's clTopLevel `Epi` and
+# Peng's celltype1 carry no malignant/normal split, so this cannot be
+# replicated in the other two atlases and no k variant is recomputed from it.
+# It bears on ONE of the three atlases feeding the two-of-three rule.
+#
+# POINT ESTIMATES ONLY -- no bootstrap, no intervals.
+#
+# DISPOSITION OF NON-MALIGNANT EPITHELIUM (G05). Amendment 4 fixes the
+# numerator -- epithelial becomes CNV-called Malignant cell only -- but does
+# not say what becomes of the non-malignant epithelium. Two implementations
+# satisfy its wording and give different denominators: reassign HPC-like to a
+# non-epithelial compartment (done here: they move to `other`, so they stay in
+# the denominator), or drop those cells entirely (which would shrink it).
+# Retention is the conservative choice for this study's thesis: it keeps
+# non-malignant transcripts in the denominator and so cannot inflate the
+# epithelial fraction. Recorded because the amendment is silent, not because
+# the choice is forced.
+#
+HPC-like cells reassigned : 1102
+epithelial cells, lineage : 3094
+epithelial cells, malignant-restricted: 1992
+panel genes evaluable in both: 141
+panel genes dominant, lineage: 43
+panel genes dominant, malignant-restricted: 58
+panel genes whose dominance call CHANGED: 15
+median delta f(0.30), panel: 0.06373

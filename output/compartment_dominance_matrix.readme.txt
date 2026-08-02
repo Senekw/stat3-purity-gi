@@ -1,0 +1,38 @@
+# compartment_dominance_matrix.csv -- readme
+#
+# 155 reporting genes x 3 atlases = 465 rows.
+#
+# qualifying / in_panel = FALSE marks BCL2, MMP9 and HGF: the labelled
+# non-qualifying subset (prespecification section 4, Amendment 2). Their
+# compartment fractions and dominance calls ARE reported, deliberately -- they
+# let a reader judge whether excluding MMP9 and HGF was consequential. They
+# enter NO k variant: k, k_50, k_all3 and k_evalall are computed over exactly
+# the 152 locked panel genes, enforced by assert_inferential_set().
+#
+# dominant     : f(pi) > 0.50 at EVERY point of the 41-point grid pi in [0.30, 0.70]
+# dominant_50  : f(0.50) > 0.50 only (Amendment 6)
+# evaluable    : >= 20 summed counts in that atlas (below this, no fraction is given)
+#
+# dom_rate     : proportion of the 2000 patient-level resamples in which the gene
+#                was epithelial-dominant. A stability measure, not a probability.
+# dom_n_eval   : the DENOMINATOR behind dom_rate -- how many of the 2000 resamples
+#                the gene was evaluable in. evidence_ok is recomputed inside every
+#                resample, so a gene near the 20-count floor is evaluable in only
+#                some draws. Read dom_rate WITH this column: 1.00 from 50 draws is
+#                not the same evidence as 1.00 from 2000.
+# dom_rate_lo/hi: A.f's percentile bootstrap CI (2.5/97.5) on the dominance
+#                INDICATOR. This is the registered statistic and is reported as
+#                specified, but note it is degenerate by construction: the
+#                indicator is 0/1, so for any gene dominant in more than 97.5% or
+#                fewer than 2.5% of resamples the interval collapses to [1,1] or
+#                [0,0]. dom_rate and dom_n_eval carry the usable information.
+# dom50_rate   : as dom_rate, at pi = 0.50 only (Amendment 6)
+#
+# ENDOTHELIAL COMPARTMENT, GSE178341: that atlas's clTopLevel vocabulary is
+# B | Epi | Mast | Myeloid | Plasma | Strom | TNKILC -- it has NO endothelial
+# label, and its endothelial cells sit inside Strom. Amendment 4 maps each
+# atlas's OWN level-1 labels, so the code matches the registration and no
+# amendment is required. The estimand is unaffected: subdividing non-epithelial
+# mass changes neither the numerator nor the denominator of f(pi). It is a
+# REPORTING limitation only -- per-compartment breakdowns are not comparable
+# across atlases for the endothelial and fibroblast_stromal rows.

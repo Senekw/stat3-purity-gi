@@ -1,0 +1,28 @@
+# compartment_fractions.csv and detection_rate_by_compartment.csv -- readme
+#
+# Both cover the 155 reporting genes x 3 atlases x 6 compartments (2,790 rows).
+# qualifying = FALSE marks BCL2, MMP9, HGF: reported, but in no k variant.
+#
+# fraction           : S[g,c] / sum_c S[g,c] -- the RAW share of a gene's
+#                      pseudobulk signal contributed by compartment c. This is
+#                      NOT f(pi): no purity reweighting is applied. A.d defines
+#                      this quantity and prespecification exclusion rule 2 is
+#                      stated on it.
+# pct_cells_detected : fraction of cells in compartment c with >= 1 count for
+#                      gene g. Independent of expression magnitude.
+# n_cells            : cells in that compartment in that atlas.
+#
+# COMPARTMENTS ABSENT FROM AN ATLAS. A fraction of 0 with n_cells = 0 means the
+# compartment DOES NOT EXIST in that atlas's annotation -- not that it
+# contributes nothing. GSE178341 is the case that matters: its clTopLevel
+# vocabulary (B | Epi | Mast | Myeloid | Plasma | Strom | TNKILC) has no
+# endothelial label, so its endothelial cells sit inside Strom and are counted
+# as fibroblast_stromal. Amendment 4 maps each atlas's OWN level-1 labels, so
+# this matches the registration and no amendment is required; the estimand is
+# unaffected because subdividing non-epithelial mass changes neither the
+# numerator nor the denominator of f(pi).
+#
+# CONSEQUENCE: the endothelial and fibroblast_stromal rows are NOT comparable
+# across atlases. 'Endothelial contribution is lower in colorectal' would be an
+# artefact of annotation granularity. Epithelial, myeloid and lymphoid rows are
+# comparable; 'other' is atlas-specific by construction.

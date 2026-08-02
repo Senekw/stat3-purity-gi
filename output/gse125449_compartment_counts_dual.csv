@@ -1,0 +1,7 @@
+"compartment","n_cells_six_amdt4","n_cells_five_pilot","note"
+"epithelial",3094,3094,""
+"fibroblast_stromal",981,2078,""
+"myeloid",752,752,""
+"lymphoid",3828,3828,""
+"endothelial",1097,0,"TEC: endothelial under Amendment 4; folded into fibroblast_stromal in the pilot's 5-compartment scheme"
+"other",194,194,""

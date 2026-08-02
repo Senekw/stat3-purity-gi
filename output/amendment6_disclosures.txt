@@ -1,0 +1,13 @@
+# Amendment 6 disclosures, computed from the run (F09)
+
+k                    : 46  (95% CI 38 - 57)
+branch at k          : epithelial subscore BUILT; subscore survival models run as SECONDARY
+branch at CI lower   : epithelial subscore BUILT; subscore survival models run as SECONDARY
+branch at CI upper   : epithelial subscore BUILT; subscore survival models run as SECONDARY
+k_ci_spans_branch    : FALSE
+  -> no disclosure required on this ground: the whole interval selects one branch.
+
+k_50                 : 96  (95% CI 86 - 103)
+branch at k_50       : epithelial subscore BUILT; subscore survival models run as SECONDARY
+k50_branch_differs   : FALSE
+  -> no disclosure required on this ground: both rules select the same branch.

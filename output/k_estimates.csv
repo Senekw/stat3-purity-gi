@@ -1,0 +1,5 @@
+"quantity","estimate","ci_lo","ci_hi","branch"
+"k",46,38,57,"epithelial subscore BUILT; subscore survival models run as SECONDARY"
+"k_all3",24,15,31,NA
+"k_evalall",43,35,55,NA
+"k_50",96,86,103,"epithelial subscore BUILT; subscore survival models run as SECONDARY"
