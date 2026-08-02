@@ -1,0 +1,25 @@
+
+== figures: every value asserted against its committed source ==
+  ok  selftest 6 plotted row(s) x 1 value(s) match attenuation_per_cohort.csv
+  ok  selftest assert_plot halts on a corrupted value and passes on the true one
+  ok  fig0     10000 exported draws reproduce the committed summary exactly (percentile 60.48)
+  ok  fig1     1 plotted row(s) x 5 value(s) match null_distributions.csv
+  ..  saved    fig1_null_distribution.png         6.9 x 4.0 in
+  ok  fig2     13 plotted row(s) x 2 value(s) match survival_per_cohort.csv
+  ok  fig2     13 plotted row(s) x 3 value(s) match survival_per_cohort.csv
+  ok  fig2     2 plotted row(s) x 3 value(s) match meta_analysis.csv
+  ok  fig2     2 plotted row(s) x 2 value(s) match validation_gse39582_models.csv
+  ok  fig2     drawn intervals equal the committed HR CI on the log scale (max 5.0e-05)
+  ok  fig2     13 plotted row(s) x 1 value(s) match the source
+  ..  saved    fig2_forest_logHR.png              7.2 x 4.4 in
+  ok  fig3     18 plotted row(s) x 3 value(s) match origin_six_compartment.csv
+  ok  fig3     1 dominance mark(s) match the file's `dominant` column
+  ..  saved    fig3_compartment_attribution.png   6.9 x 5.0 in
+  ok  fig4     6 plotted row(s) x 4 value(s) match attenuation_per_cohort.csv
+  ok  fig4     1 plotted row(s) x 4 value(s) match meta_analysis.csv
+  ..  saved    fig4_attenuation_forest.png        6.6 x 3.4 in
+  ok  fig5     10 group counts match cms_distribution.csv
+  ..  saved    fig5_score_by_cms.png              6.6 x 3.6 in
+
+5 figures written to figures/
+No figure recomputes a reported number; no figure pools GSE39582 with discovery.

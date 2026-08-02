@@ -32,3 +32,4 @@ MANIFEST.txt
 !data/**/*.rds
 data/
 null_ckpt_*.rds
+figures/*.csv
