@@ -65,6 +65,37 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
+## 33. GAP — B.n's Benjamini-Hochberg adjustment is registered but NOT implemented
+
+Found while writing PROJECT_SUMMARY.md, by reading the plan section by section
+against the committed outputs rather than against the scripts.
+
+`analysis_plan.md` B.n states: "The per-cohort estimates are secondary and
+descriptive. Where they are tested, p-values are adjusted across the six
+meta-analysed cohorts by Benjamini-Hochberg FDR at q = 0.05, and **both raw and
+adjusted values are reported in the same table**."
+
+`output/survival_per_cohort.csv` carries a raw `p` per cohort per model and **no
+adjusted column**. No output file in the project contains a BH-adjusted per-cohort
+p-value. The condition "where they are tested" is met: the p-values are computed,
+committed and reported.
+
+This does NOT affect the primary inference. B.n itself says the pooled estimate is
+"one estimand, one test, no multiplicity correction required or applied", and the
+primary result is the pooled attenuation_total. The gap is in the SECONDARY
+per-cohort reporting.
+
+Scope, per B.n as written:
+- family = the six meta-analysed cohorts; CHOL is excluded from the family
+- no correction across M1-M4, which are "a prespecified nested sequence addressing
+  a single question, not four independent hypotheses"
+- so the family is 6 p-values per model, adjusted within model
+
+Not implemented here because it changes what a committed output reports and the
+Part A/B work is closed. It is a one-line addition to 08's per-cohort table
+(`p.adjust(p[meta_eligible], method = "BH")` within model) and should be made
+before the per-cohort table appears in the paper.
+
 ## 32. THE CODE-PATH IDENTITY GUARD IN 09 WAS TAUTOLOGICAL
 
 Reviewer finding c829bc1c, correct and mine. 09's guard was meant to prove the
