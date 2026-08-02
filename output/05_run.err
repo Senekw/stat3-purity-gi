@@ -23,4 +23,4 @@
   LIHC       none
   CHOL       none
 
-B.i complete. HARD STOP: no purity computed, no score constructed, no model fitted.
+B.i complete. HARD STOP asserted: survival not loaded, no score or purity column present.

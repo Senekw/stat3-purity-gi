@@ -65,6 +65,60 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
+## 22. PURITY SOURCE SPLITS 3/4 ACROSS COHORTS — the switch rule is doing real work
+
+`aran_purity.xlsx` was absent at the start of Part B. The plan (3.4) anticipated
+this and prespecified a switch rule, but letting a MISSING DOWNLOAD flow through
+that rule would have inverted B.j's registered CPE-primary ordering for all seven
+cohorts on an acquisition gap rather than on the data. The file was therefore
+obtained (Aran et al. 2015, Nat Commun 6:8971, Supplementary Data 1; md5
+c459e6a965789b96860fc77bd346c681, 9,364 rows, 21 cancer types) and the rule
+applied to genuine coverage. **06 now HALTS if the file is absent** rather than
+silently taking the ESTIMATE branch.
+
+Realised coverage over the analysis set:
+
+| Cohort | CPE coverage | Primary source |
+|---|---|---|
+| COAD | 99.8% | CPE |
+| READ | 100% | CPE |
+| LIHC | 100% | CPE |
+| STAD | 0% | ESTIMATE |
+| ESCA | 0% | ESTIMATE |
+| PAAD | 0% | ESTIMATE |
+| CHOL | 0% | ESTIMATE |
+
+The four zeroes are **not a join failure**: STAD, ESCA, PAAD and CHOL are absent
+from the Aran 2015 freeze entirely, verified by listing the table's own 21 cancer
+types. The switch rule applies exactly as registered.
+
+**Consequence for the meta-analysis, for the reviewer to weigh:** the purity
+covariate is not one quantity across the seven cohorts. Three use a consensus of
+four orthogonal methods; four use an ESTIMATE-derived value whose conversion,
+cos(0.6049872018 + 0.0001467884 * S), was calibrated on Affymetrix arrays and is
+applied here to Illumina RNA-seq TPM. `purity_calibration` in
+`purity_summary.csv` records which is which per cohort. Where both exist they
+agree at r = 0.70 (COAD), 0.66 (READ), 0.74 (LIHC) — the registered cross-method
+sensitivity, computable only in those three.
+
+## 21. ESTIMATE PURITY CONVERSION FOLDS BACK BELOW ESTIMATEScore = -4121.5
+
+Found by the Implementation Auditor on 06 before it ran; confirmed
+mathematically. cos(a + bS) is monotone-decreasing in S only while the angle
+a + bS is in [0, pi/2], i.e. S in [-4121.5, +6579.6]. Below -4121.5 the angle
+goes negative and the cosine **folds**: purity decreases as the tumour gets purer,
+and two distinct scores map to one purity — S = -6000 and S = -2243 both give
+0.962223, verified numerically.
+
+The original guard tested the COSINE for [0,1], which cannot catch this because
+folded values are in range. The guard now tests the ANGLE.
+
+**Latent, not active, on this data:** observed ESTIMATEScore spans about -2689 to
++4891 across the cohorts checked, so no sample sits in the fold region and no
+reported number changes. It is recorded because it would have become active
+silently in a validation cohort with more stroma-rich samples, and because the
+affected quantity is the primary model's adjustment covariate.
+
 ## 20. AMENDMENT 14's STATED REASON IS PARTLY FALSE — conclusion holds on other grounds
 
 **The decision Amendment 14 makes is sound. One clause of its justification is

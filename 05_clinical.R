@@ -5,8 +5,9 @@
 # cohorts' sample metadata, filtered to one primary-tumour aliquot per patient,
 # with the B.j covariates and Amendment 7's endpoint designation.
 #
-# SCOPE BOUNDARY, enforced by assertion at the end of this file: this script must
-# not compute purity, construct a score, or fit a model. Those are 06 and 07.
+# SCOPE BOUNDARY: this script must not compute purity, construct a score, or fit
+# a model. Those are 06 and 07. The driver asserts it below rather than merely
+# announcing it -- an earlier header claimed enforcement that did not exist.
 #
 # STRUCTURE. Everything below the divider is a PURE FUNCTION of its arguments --
 # no globals, no file reads inside the transforms, nothing that depends on which
@@ -110,8 +111,10 @@ PROVISIONAL_DISPOSITION <- c("TCGA-COAD" = "fitted", "TCGA-STAD" = "fitted",
 
 # CDR missing-value sentinels. TCGA encodes absent values as bracketed strings
 # rather than NA, so a naive read leaves "[Not Available]" as a stage LEVEL.
+# A9: "[Completed]" is NOT a missing-value sentinel in TCGA -- it is a real
+# status value (treatment/follow-up completion) and was wrongly listed here.
 CDR_NA_STRINGS <- c("[Not Available]", "[Not Applicable]", "[Unknown]",
-                    "[Not Evaluated]", "[Discrepancy]", "[Completed]", "")
+                    "[Not Evaluated]", "[Discrepancy]", "")
 
 # ============================================================ PURE FUNCTIONS
 # Each takes its inputs explicitly and returns a value. No globals are read
@@ -169,7 +172,10 @@ censor_admin <- function(time, event, cutoff_days) {
   keep <- !is.na(time)
   beyond <- keep & time > cutoff_days
   n_events_lost <- sum(beyond & !is.na(event) & event == 1L)
-  event[beyond] <- 0L
+  # A2: preserve NA. Conditioning `beyond` on time alone would coerce a MISSING
+  # event indicator to 0 -- silently reclassifying an unknown outcome as
+  # known-event-free at the cutoff instead of letting finalise_cohort drop it.
+  event[beyond & !is.na(event)] <- 0L
   time[beyond]  <- cutoff_days
   list(time = time, event = event,
        n_truncated = sum(beyond), n_events_censored = n_events_lost)
@@ -214,6 +220,9 @@ read_cdr <- function(path, section = "B.i") {
 #' mismatch means the workbook is a different CDR release and every downstream
 #' number would be incomparable to the registration.
 check_cdr_snapshot <- function(cdr, snapshot = CDR_SNAPSHOT, section = "B.i") {
+  # A3: without this, an NA in `type` makes every sum() NA, the comparison NA,
+  # which() empty, and the check passes vacuously.
+  if (anyNA(cdr$type)) halt(section, "CDR 'type' column contains NA")
   code <- sub("^TCGA-", "", snapshot$cohort)
   obs <- data.frame(
     cohort     = snapshot$cohort,
@@ -309,7 +318,10 @@ filter_samples <- function(meta, section = "B.i") {
   n_multi <- sum(tab > 1L)
   dist <- table(as.integer(tab[tab > 1L]))   # how many patients had 2, 3, ... aliquots
 
-  ord <- order(f$patient, f$vial, f$portion, f$plate)
+  # A5: method="radix" forces C-locale collation. order()'s default is
+  # locale-dependent for character vectors, so the vial and plate keys -- and
+  # therefore which aliquot is retained -- could differ between machines.
+  ord <- order(f$patient, f$vial, f$portion, f$plate, method = "radix")
   m1  <- m1[ord, , drop = FALSE]
   m2  <- m1[!duplicated(m1$patient), , drop = FALSE]
   n_dup_aliquot <- nrow(m1) - nrow(m2)
@@ -550,6 +562,13 @@ if (sys.nframe() == 0L) {
     message(sprintf("  %-10s %s", sub("^TCGA-", "", cc),
       if (!length(d)) "none" else paste(sprintf("%s aliquots: %d patients", names(d), as.integer(d)), collapse=" | ")))
   }
-  message("\nB.i complete. HARD STOP: no purity computed, no score constructed, ",
-          "no model fitted.")
+  # A7: assert the scope boundary rather than announcing it. If a model had been
+  # fitted, survival would be loaded; if a score or purity had been built, the
+  # analysis set would carry the column.
+  if ("survival" %in% loadedNamespaces())
+    halt("B.i", "the survival package is loaded; 05 must not fit a model")
+  if (any(c("score", "purity", "stromal_score") %in% names(clinical)))
+    halt("B.i", "the analysis set carries a score or purity column; 05 must not build one")
+  message("\nB.i complete. HARD STOP asserted: survival not loaded, no score or ",
+          "purity column present.")
 }

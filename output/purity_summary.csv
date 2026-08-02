@@ -1,0 +1,8 @@
+"cohort","n","genes_scored","cpe_coverage","purity_source","purity_calibration","n_purity_na","purity_mean","purity_sd","purity_min","purity_max","agree_n","agree_pearson","agree_spearman"
+"TCGA-COAD",455,9911,1,"CPE","aran_consensus_cpe",0,0.7704,0.1028,0.2093,1,455,0.6984,0.6544
+"TCGA-READ",165,9911,1,"CPE","aran_consensus_cpe",0,0.7802,0.0808,0.5862,0.9599,165,0.6587,0.59
+"TCGA-STAD",406,9911,0,"ESTIMATE","estimate_affymetrix_extrapolated",0,0.6697,0.1574,0.2365,0.9635,0,NA,NA
+"TCGA-ESCA",184,9911,0,"ESTIMATE","estimate_affymetrix_extrapolated",0,0.7894,0.1299,0.1764,0.991,0,NA,NA
+"TCGA-PAAD",178,9911,0,"ESTIMATE","estimate_affymetrix_extrapolated",0,0.6051,0.1622,0.2453,0.9745,0,NA,NA
+"TCGA-LIHC",370,9911,1,"CPE","aran_consensus_cpe",0,0.7773,0.1269,0.2601,0.9763,370,0.7364,0.6928
+"TCGA-CHOL",35,9911,0,"ESTIMATE","estimate_affymetrix_extrapolated",0,0.7905,0.1253,0.3934,0.9698,0,NA,NA

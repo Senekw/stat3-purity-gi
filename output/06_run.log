@@ -1,0 +1,24 @@
+    cohort   n genes_scored cpe_coverage purity_source
+ TCGA-COAD 455         9911            1           CPE
+ TCGA-READ 165         9911            1           CPE
+ TCGA-STAD 406         9911            0      ESTIMATE
+ TCGA-ESCA 184         9911            0      ESTIMATE
+ TCGA-PAAD 178         9911            0      ESTIMATE
+ TCGA-LIHC 370         9911            1           CPE
+ TCGA-CHOL  35         9911            0      ESTIMATE
+               purity_calibration n_purity_na purity_mean purity_sd purity_min
+               aran_consensus_cpe           0      0.7704    0.1028     0.2093
+               aran_consensus_cpe           0      0.7802    0.0808     0.5862
+ estimate_affymetrix_extrapolated           0      0.6697    0.1574     0.2365
+ estimate_affymetrix_extrapolated           0      0.7894    0.1299     0.1764
+ estimate_affymetrix_extrapolated           0      0.6051    0.1622     0.2453
+               aran_consensus_cpe           0      0.7773    0.1269     0.2601
+ estimate_affymetrix_extrapolated           0      0.7905    0.1253     0.3934
+ purity_max agree_n agree_pearson agree_spearman
+     1.0000     455        0.6984         0.6544
+     0.9599     165        0.6587         0.5900
+     0.9635       0            NA             NA
+     0.9910       0            NA             NA
+     0.9745       0            NA             NA
+     0.9763     370        0.7364         0.6928
+     0.9698       0            NA             NA

@@ -1,0 +1,12 @@
+
+== B  purity (ESTIMATE + CPE switch rule). No score, no model. ==
+  ok  B.purity       SI_geneset.gmt verified (md5 9628130acbd541d8a33f21b4ab1e864f, 141+141 genes)
+  ok  B.purity       Aran CPE table loaded: 9101 patients, 21 cancer types
+  ..  B.purity       NOT in the Aran 2015 freeze (coverage genuinely 0%): STAD, ESCA, PAAD, CHOL -- the registered switch rule makes ESTIMATE primary for these.
+  ok  B.purity       purity rows == clinical rows                         = 1793
+  ok  B.purity       purity bounded [0,1] for all 1793 non-NA values
+  ok  B.purity       ESTIMATE scored an identical gene set in all cohorts = 9911
+
+-- purity per cohort --
+
+B.purity complete. HARD STOP: no score constructed, no model fitted.
