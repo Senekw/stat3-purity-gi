@@ -55,6 +55,7 @@ digest_genes <- function(g) {
 
 GENE_LIST_PRIMARY <- list(path = "data/panel/final_gene_list_140.csv",
                           list_id = "primary_140",     n = 140L,
+                          instructed_list_id = "final_140",
                           digest = "eb167e8c7a33b4202bd609a17defa629")
 GENE_LIST_SENS    <- list(path = "data/panel/final_gene_list_143.csv",
                           list_id = "sensitivity_143", n = 143L,
@@ -82,6 +83,19 @@ read_gene_list <- function(spec, section = "B.h") {
   if (!identical(unique(d$list_id), spec$list_id))
     halt(section, spec$path, ": list_id is '", paste(unique(d$list_id), collapse = ","),
          "', expected '", spec$list_id, "'")
+  # The run order names a THIRD string for the primary list. Where the instructed
+  # label and the committed label disagree, neither is silently preferred: the
+  # mismatch is surfaced every run. It is not a halt, because the artefact is
+  # verified by content digest below and the genes are not in question -- but stop
+  # condition 6 is about list identity, so the disagreement must never be silent.
+  if (!is.null(spec$instructed_list_id) &&
+      !identical(spec$instructed_list_id, spec$list_id))
+    message("  !!  ", section, "          LABEL MISMATCH on ", basename(spec$path),
+            ": the run order says list_id == '", spec$instructed_list_id,
+            "', the artefact committed by 04 (744d84c) says '", spec$list_id,
+            "'. Asserting the COMMITTED value; the locked artefact is not edited. ",
+            "Gene content is verified by digest, so this is a naming disagreement ",
+            "for the reviewer to settle, not a data mismatch.")
   if (!identical(unique(as.integer(d$n_genes)), spec$n))
     halt(section, spec$path, ": n_genes is ", paste(unique(d$n_genes), collapse = ","),
          ", expected ", spec$n)

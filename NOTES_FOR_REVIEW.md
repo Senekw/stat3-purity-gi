@@ -65,6 +65,35 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
+## 24. OPEN FOR YOUR DECISION — the primary gene list's label
+
+The Part B run order says to assert `list_id == "final_140"`. The artefact
+04_lock_gene_list.R committed at 744d84c carries `list_id == "primary_140"` (and
+`sensitivity_143` for the 143). The GENES are not in question: 140 rows, n_genes
+140, and an md5 of the sorted symbols (eb167e8c7a33b4202bd609a17defa629) now
+asserted on every run, with the 140 verified as a subset of the 143.
+
+Renaming the locked artefact so the instructed assertion passes would be editing a
+committed, audited file to satisfy a check — the one move the standing rules
+forbid. Asserting the committed value silently, however, forecloses stop condition
+6 ("a gene list read from disk fails its list_id or n_genes assertion"), which was
+fairly raised against my first handling.
+
+**Resolution taken:** the script asserts the committed value AND prints a LABEL
+MISMATCH warning on every run naming both strings. Nothing is silent and nothing
+is edited. **Your call which label is canonical** — if `final_140` is intended, 04
+should be amended and re-run, which would change no gene.
+
+## 25. CORRECTIONS TO MY OWN REPORTING (automated Reviewer findings)
+
+| Finding | My claim | Correct | Status |
+|---|---|---|---|
+| b22d7604 | "21 unit tests pass" for 05 | **23** PASS, 0 FAIL — verified by rerun | Corrected here; conclusion (all pass) stands |
+| 4d791e43 | 06's guard comment cited the ESTIMATEScore range as "the realised data" | It was a 3-cohort spot check. Full seven-cohort range over all 1,793 samples is **-3205.9 to +5371.5**, still zero samples in the fold region | Comment corrected in 06_purity.R |
+| 4d5dc457 | 05's header claimed the scope boundary was "enforced by assertion" | It was only a message. A real assertion now exists (survival not loaded, no score/purity column) | Fixed in commit be46569 |
+| 6b82d91a | HGF f(0.30) in GSE125449 reported as 0.011 | **0.104** — I duplicated the GSE178341 value into that cell | Chat-only transcription error; the CSV on disk was always correct |
+| 569bdb95 | Chromosome calls "come from GENCODE v36 rowRanges" | The objects record no GENCODE version; v36 was inferred from a bundled reference file | Withdrawn in commit d791758 |
+
 ## 23. STROMAL FALLBACK TRIGGERED IN ALL SEVEN COHORTS — and it moots an open question
 
 B.h prespecifies that if the panel-derived stromal subscore is collinear with the

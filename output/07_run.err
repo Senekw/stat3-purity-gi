@@ -1,5 +1,6 @@
 
 == B.h  score construction (no model fitted) ==
+  !!  B.h          LABEL MISMATCH on final_gene_list_140.csv: the run order says list_id == 'final_140', the artefact committed by 04 (744d84c) says 'primary_140'. Asserting the COMMITTED value; the locked artefact is not edited. Gene content is verified by digest, so this is a naming disagreement for the reviewer to settle, not a data mismatch.
   ok  B.h          gene list 'primary_140' verified                       = 140
   ok  B.h          gene list 'sensitivity_143' verified                   = 143
   ..  B.h          3 gene(s) evaluable in < 2 atlases, excluded from both the dominant and stromal sets: CRLF2, DNTT, LEP

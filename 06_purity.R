@@ -129,10 +129,13 @@ si_geneset_path <- function(section = "B.purity") {
 #' back: purity DECREASES as the tumour gets purer, and two different scores map
 #' to one purity (S = -6000 and S = -2243 both give 0.962223 -- verified). Testing
 #' the COSINE for [0,1] cannot catch this, because the folded values are in range.
-#' The test is therefore on theta, not on p. Verified against the realised data:
-#' observed ESTIMATEScore spans about -2689 to +4891, so no sample is in the fold
-#' region -- this guard is latent here, and exists so it cannot become active
-#' silently in a validation cohort.
+#' The test is therefore on theta, not on p. Verified against ALL 1,793 samples in
+#' the realised analysis set (output/purity_per_patient.csv, all seven cohorts):
+#' ESTIMATEScore spans -3205.9 to +5371.5, and ZERO samples fall in the fold
+#' region or above pi/2. An earlier version of this comment quoted a three-cohort
+#' spot check (-2689 to +4891) as though it were the full range; it was not. The
+#' guard is latent on this data and exists so it cannot become active silently in
+#' a validation cohort with more stroma-rich samples.
 estimate_purity_from_score <- function(estimate_score) {
   theta <- PURITY_A + PURITY_B * estimate_score
   p <- cos(theta)
