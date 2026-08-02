@@ -2,6 +2,83 @@
 
 Observations surfaced but NOT acted on, per the scope discipline rule.
 
+## 20. AMENDMENT 14's STATED REASON IS PARTLY FALSE — conclusion holds on other grounds
+
+**The decision Amendment 14 makes is sound. One clause of its justification is
+factually wrong, and it is the clause carrying the argument.** Registered text is
+not edited; the correction is recorded here.
+
+Amendment 14's reason paragraph says the 143-gene final list *"is derived from
+the compartment output and did not exist when k was defined."* Both clauses fail
+on inspection:
+
+| Claim | Check | Verdict |
+|---|---|---|
+| "derived from the compartment output" | Rules **3.1 and 3.3** read TCGA gene annotation only — wholly independent of Part A. Only **rule 2** touches Part A output. | **Two-thirds false.** The list is mostly *not* derived from the compartment output; 3 of the 9 exclusions come from annotation alone. |
+| "did not exist when k was defined" | Section 3's exclusion rules are present in the **first commit**, `361d287` ("Starting state"), verbatim as applied. | **False.** The rules predate k's definition; only their *evaluation* is recent. |
+
+**Why the conclusion survives anyway.** The literal reading holds on its own:
+Amendment 3 defines k over *"panel genes"*, and the panel is the 152 locked at
+`ac9c5e0`. k is a property of the panel by definition; the 143-gene list is the
+**scoring set**, a different object serving a different purpose in Part B. That
+argument needs neither false clause.
+
+**Why it matters even though the answer is unchanged.** The false clauses make
+the decision look forced by chronology when it is actually a definitional choice
+— and a definitional choice deserves the scrutiny Amendment 14's own disclosure
+paragraph invites. The disclosure itself is unusually good and stands: it states
+the choice is not blind, that both values were computed first, that the option
+*not* taken (43) is the hypothesis-friendly one, and it names the three genes
+driving the difference.
+
+**If an Amendment 15 is written** (see §17 on the PAR question), it should restate
+the reason on the definitional ground alone and drop the "derived from the
+compartment output / did not exist" clauses.
+
+## 19. UNEQUAL EVIDENCE BASE — half the rule-2 exclusions rest on one atlas
+
+**Surfaced by the `n_atlases_evaluable` column added after the lock audit. It
+does not change the locked list, but it changes how confidently three of the six
+exclusions can be stated.**
+
+Rule 2 excludes a gene whose maximum detection across all atlases is under 1%.
+The number of atlases contributing to that maximum is **not equal across genes**:
+
+| Gene | Max detection | Atlases contributing | Where the max was |
+|---|---|---|---|
+| CRLF2 | 0.1385% | **1** | GSE178341 / myeloid |
+| DNTT | 0.0270% | **1** | GSE178341 / lymphoid |
+| LEP | 0.3032% | **1** | GSE178341 / myeloid |
+| OPRM1 | 0.8720% | 2 | GSE178341 / lymphoid |
+| PAX3 | 0.1356% | 2 | Peng / epithelial |
+| GFAP | 0.5017% | 3 | Peng / epithelial |
+
+For contrast, **138 of the 143 retained genes were evaluated against all three
+atlases** (the other 5 against two). A gene tested on one atlas has fewer chances
+to clear 1% than one tested on three, so **the exclusion threshold is not applied
+with equal power across the panel** — three genes were dropped on strictly less
+evidence than the rule's design assumes.
+
+**Cause.** Two mechanisms, both already registered: Amendment 12's intersection
+removes CRLF2 and LEP from GSE125449 entirely, and the `evidence_ok` floor (≥20
+summed counts) suppresses others per atlas. Neither is a defect; the interaction
+with rule 2 was simply never stated.
+
+**How much it could matter.** For CRLF2 and LEP the missing atlas is GSE125449 —
+*not* where their maximum came from — and the gene is absent from that deposit
+altogether, so no rescue value can be computed even in principle. OPRM1 at
+0.872% is the one to watch: it is the closest of any excluded gene to the 1%
+boundary and was judged on two atlases, so a third might plausibly have cleared
+it.
+
+**Not acted on.** Changing rule 2 to require equal atlas coverage, or to
+condition on the number available, would be a post-hoc redefinition of a
+registered rule after seeing which genes it catches — precisely what
+preregistration forbids. The rule is applied as written. This is recorded so the
+paper can state the exclusions with the right confidence, and so a reader can see
+which of the six rest on one atlas. `n_atlases_evaluable` and `max_at` are now
+columns in both `final_gene_list.csv` and `final_gene_list_exclusions.csv`.
+
 ## 18. CORRECTION — the rule-2 genes are not "MSigDB pathway membership" entrants
 
 The instruction accompanying Amendment 14 asked me to log that GFAP, PAX3 and
@@ -12,11 +89,18 @@ panel's own provenance**, so I logged the verified route instead.
 All three entered by **criterion B (direct transcriptional target)**, not
 criterion A (MSigDB `HALLMARK_IL6_JAK_STAT3_SIGNALING`):
 
-| Gene | `route` | In HALLMARK set | STAT3 ChIP-seq term(s) |
-|---|---|---|---|
-| GFAP | `B_only` | **no** | `STAT3_HELAS3_HG19` (ENCODE), ReMap STAT3, TRRUST v2 |
-| PAX3 | `B_only` | **no** | `STAT3_23295773_CHIPSEQ_U87_HUMAN`, `STAT3_24763339_CHIPSEQ_IMNESCS_MOUSE`, TRRUST v2 |
-| OPRM1 | `B_only` | **no** | `STAT3_23295773_CHIPSEQ_U87_HUMAN`, TRRUST v2 |
+| Gene | `route` | In HALLMARK set | STAT3 term — library it came from | TRRUST v2 (PMID) |
+|---|---|---|---|---|
+| GFAP | `B_only` | **no** | `STAT3_HELAS3_HG19` — **ENCODE_ChIP-seq.gmt**; `STAT3` — **ReMap_ChIP-seq.gmt** | Activation (21833841), Unknown (11740937) |
+| PAX3 | `B_only` | **no** | `STAT3_23295773_CHIPSEQ_U87_HUMAN`, `STAT3_24763339_CHIPSEQ_IMNESCS_MOUSE` — both **Literature_ChIP-seq.gmt** | Repression (19074888) |
+| OPRM1 | `B_only` | **no** | `STAT3_23295773_CHIPSEQ_U87_HUMAN` — **Literature_ChIP-seq.gmt** | Activation (15448191) |
+
+Every identifier above is reproducible from committed files: the GMT libraries in
+`data/panel/`, `data/panel/trrust_rawdata.human.tsv`, and the `ev_*` flag columns
+of `panel_locked.csv`. An earlier revision of this table listed GFAP's terms
+without naming their libraries and grouped all three genes' evidence together,
+which implied they shared a source; they do not — GFAP's evidence is ENCODE +
+ReMap, while PAX3's and OPRM1's is the Literature library.
 
 The two rule-2 genes that *did* enter via criterion A are **DNTT** and **CRLF2**
 (both `A_only`, both in the HALLMARK set) — neither is neural.
@@ -40,33 +124,63 @@ Rule 3.3 reads, in full: *"Sex-chromosome genes, since cohorts differ in sex
 composition."* Applying it needs a decision the registered text does not make.
 
 Four panel genes lie in the **pseudoautosomal region** and are annotated on
-**both** chrX and chrY — GENCODE v36 emits a second `_PAR_Y` row for each:
+**both** chrX and chrY — the annotation emits a second `_PAR_Y` row for each:
 **CRLF2, CSF2RA, IL3RA, IL9R**. (These are the same four `_PAR_Y` duplicates that
 appeared in Part A's GSE178341 reader, where all four Y-copies carried zero
 counts.) Two readings are available:
 
 | Reading | Basis | Excludes | Final list |
 |---|---|---|---|
-| **NARROW** (implemented) | the rule's stated **reason** | genes annotated *only* on X or Y | **143** |
+| **NARROW** (implemented, **provisional**) | — see below | genes annotated *only* on X or Y | **143** |
 | BROAD | the rule's stated **text** | anything with any row on X or Y | 140 |
 
-**Implemented: NARROW**, for two reasons. Amendment 14 registers the final list
-at 143, which is the narrow reading, and the rule's own stated reason does not
-apply to PAR genes: they escape X-inactivation and are present in two copies in
-both sexes, so cohort sex composition does not bias them.
+### My first justification for NARROW was wrong, and is withdrawn
 
-**What it costs**: CSF2RA, IL3RA and IL9R are retained under narrow and would be
-dropped under broad. None is epithelial-dominant in any atlas, and **k is 43
-under both readings**, so no Part A quantity depends on this.
+An earlier revision of this section, and of the lock script, justified narrow on
+the biology: that PAR genes *"escape X-inactivation and are present in two copies
+in both sexes, so cohort sex composition does not bias them."* **That argument is
+wrong at the operative step.** The Implementation Auditor caught it.
 
-**Why it is recorded anyway.** The choice was surfaced *after* Amendment 14 was
-written, so the amendment cannot be said to have settled it — 143 is consistent
-with narrow, but nothing in the registered text shows the question was considered.
-`04_lock_gene_list.R` states both readings and asserts the PAR set is exactly
-those four genes, so a future annotation change halts the lock rather than
-silently relocking a different scoring set. If you want the broad reading, it
-needs a dated amendment; do not switch it silently, since it changes the Part B
-denominator.
+Escaping X-inactivation is precisely the mechanism that **produces**
+sex-differential expression: an escapee is transcribed from *both* X copies in XX
+individuals, so it tends to be expressed **higher in females**. Rule 3.3's stated
+reason — *"since cohorts differ in sex composition"* — therefore argues **for**
+excluding PAR genes, not for retaining them. I asserted the claim from memory
+without checking it, and it went into a lock script that defines the Part B
+scoring set. That is the error worth recording here, more than the conclusion.
+
+### So the question is open, and the implemented reading is provisional
+
+Narrow is implemented **only because Amendment 14's registered text describes a
+143-gene final list**, and 143 is what narrow produces. But Amendment 14 was
+written *before* the PAR question was identified: it records the number without
+deciding the question. A number is not an argument, and I no longer have a
+biological one. `PAR_UNDECIDED <- TRUE` in `04_lock_gene_list.R` marks this.
+
+**DIRECTION OF BIAS** — absent from my first version, and it has one. Narrow
+retains CSF2RA, IL3RA and IL9R in the scoring set. None is epithelial-dominant,
+so each adds a **non-epithelial** gene to the score — the direction that favours
+this study's "substantially stromal" thesis. **The reading I implemented is the
+hypothesis-friendly one.** That is a reason for you to decide it explicitly.
+
+**What does not depend on it**: k is 43 under both readings, and the Amendment 3
+branch is BUILT under 152, 143 and 140 alike (30.3%, 30.1%, 30.7% of panel, all
+above the 20% floor). No Part A quantity moves.
+
+**What does**: the Part B scoring denominator, 143 vs 140.
+
+**Recommended resolution** — decide it in a dated Amendment 15 on the merits,
+with a direction-of-bias statement, and have the script cite that rather than
+Amendment 14. If it lands on broad/140, Amendment 14's "143-gene final list"
+sensitivity figure needs restating. A defensible route to narrow that does not
+rest on the withdrawn claim: measure sex-differential expression of these four
+genes in the seven cohorts directly. That requires opening expression data, which
+the Part A/B boundary currently forbids, so it belongs after the boundary or in
+an explicit annotation-only carve-out.
+
+`04_lock_gene_list.R` asserts the PAR set is exactly those four genes **and**
+that each is still annotated on both sex chromosomes, so an annotation change
+halts the lock rather than silently relocking a different scoring set.
 
 ## 16. DISCREPANCY IN REGISTERED TEXT — Amendment 13's stated deviation is 4x low
 

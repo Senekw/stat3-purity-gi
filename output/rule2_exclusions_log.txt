@@ -32,10 +32,19 @@ pathway membership (criterion A) -- all three are `B_only` and none is in
 HALLMARK_IL6_JAK_STAT3_SIGNALING. They entered on criterion B, direct
 transcriptional-target evidence:
 
-  GFAP    STAT3_HELAS3_HG19 (ENCODE, HeLa-S3) + ReMap STAT3 + TRRUST v2
-  PAX3    STAT3_23295773_CHIPSEQ_U87_HUMAN + STAT3_24763339_CHIPSEQ_IMNESCS_MOUSE
-          + TRRUST v2
-  OPRM1   STAT3_23295773_CHIPSEQ_U87_HUMAN + TRRUST v2
+  GFAP    STAT3_HELAS3_HG19          [ENCODE_ChIP-seq.gmt, HeLa-S3, hg19]
+          STAT3                      [ReMap_ChIP-seq.gmt]
+          TRRUST v2: Activation (PMID 21833841), Unknown (PMID 11740937)
+  PAX3    STAT3_23295773_CHIPSEQ_U87_HUMAN      [Literature_ChIP-seq.gmt]
+          STAT3_24763339_CHIPSEQ_IMNESCS_MOUSE  [Literature_ChIP-seq.gmt]
+          TRRUST v2: Repression (PMID 19074888)
+  OPRM1   STAT3_23295773_CHIPSEQ_U87_HUMAN      [Literature_ChIP-seq.gmt]
+          TRRUST v2: Activation (PMID 15448191)
+
+  Every identifier above is reproducible from committed files: the GMT libraries
+  in data/panel/, data/panel/trrust_rawdata.human.tsv, and the ev_* columns of
+  panel_locked.csv. GFAP's evidence is ENCODE + ReMap; PAX3's and OPRM1's is the
+  Literature library -- they do NOT share a source.
 
 PAX3 and OPRM1 both trace to the same U87 GLIOBLASTOMA experiment; GFAP to a HeLa
 ChIP. The neural signal therefore enters through the CELL LINES behind the
