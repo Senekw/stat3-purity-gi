@@ -1,0 +1,18 @@
+zero_variance_excluded_globally: 0
+  (none)
+# per-cohort attribution (B.h: excluded_reason = zero_variance_in_<cohort>)
+  zero_variance_in_COAD: (none)
+  zero_variance_in_READ: (none)
+  zero_variance_in_STAD: (none)
+  zero_variance_in_ESCA: (none)
+  zero_variance_in_PAAD: (none)
+  zero_variance_in_LIHC: (none)
+  zero_variance_in_CHOL: (none)
+list_id_discrepancy: run order says 'final_140'; the locked artefact from 04 (744d84c) says 'primary_140'. The committed value is asserted and the artefact is unmodified.
+n_genes_primary_140_after_exclusion: 140
+n_genes_sensitivity_143_after_exclusion: 143
+n_genes_stromal_subscore_panel152_REGISTERED: 103
+n_genes_stromal_subscore_final140_AUDIT_VARIANT: 97
+stromal_genes_readmitted_by_panel_domain: CSF2RA, IL2RG, IL3RA, IL9R, OPRM1, TIMP1
+stromal_fallback_triggered: TRUE
+stromal_source: ESTIMATE_StromalScore

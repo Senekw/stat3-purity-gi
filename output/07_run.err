@@ -1,0 +1,16 @@
+
+== B.h  score construction (no model fitted) ==
+  ok  B.h          gene list 'primary_140' verified                       = 140
+  ok  B.h          gene list 'sensitivity_143' verified                   = 143
+  ..  B.h          3 gene(s) evaluable in < 2 atlases, excluded from both the dominant and stromal sets: CRLF2, DNTT, LEP
+  ..  B.h          3 gene(s) evaluable in < 2 atlases, excluded from both the dominant and stromal sets: CRLF2, DNTT, LEP
+  ..  B.h          no zero-variance genes in any cohort
+  ..  B.h          scoring sets after global exclusion: primary 140, sensitivity 143, stromal 103 (panel-152 domain), stromal_140 97 (final-140 domain)
+
+-- stromal subscore vs main score --
+  !!  B.h          |r| > 0.9 in 7 cohort(s): COAD, READ, STAD, ESCA, PAAD, LIHC, CHOL -- applying the REGISTERED ESTIMATE stromal fallback in ALL cohorts, so the stromal covariate has one definition throughout.
+  ok  B.h          scored patients == clinical rows                       = 1793
+
+-- score distribution per cohort --
+
+B.h complete. HARD STOP: no model fitted.

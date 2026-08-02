@@ -1,0 +1,16 @@
+    cohort         r r_stromal140 r_between_variants exceeds
+ TCGA-COAD 0.9819587    0.9849957          0.9987263    TRUE
+ TCGA-READ 0.9809273    0.9859258          0.9981680    TRUE
+ TCGA-STAD 0.9646948    0.9715841          0.9984123    TRUE
+ TCGA-ESCA 0.9623065    0.9649610          0.9971041    TRUE
+ TCGA-PAAD 0.9782101    0.9806048          0.9993672    TRUE
+ TCGA-LIHC 0.9860025    0.9869682          0.9985816    TRUE
+ TCGA-CHOL 0.9567434    0.9652145          0.9989043    TRUE
+    cohort   n mean sd     min    max sd_143 r_140_143 sd_stromal
+ TCGA-COAD 455    0  1 -3.0793 2.4846      1    0.9995          1
+ TCGA-READ 165    0  1 -4.1272 2.4360      1    0.9995          1
+ TCGA-STAD 406    0  1 -3.9175 2.4427      1    0.9995          1
+ TCGA-ESCA 184    0  1 -2.7776 2.5220      1    0.9992          1
+ TCGA-PAAD 178    0  1 -4.7183 1.4621      1    0.9998          1
+ TCGA-LIHC 370    0  1 -2.6599 3.7113      1    0.9997          1
+ TCGA-CHOL  35    0  1 -2.6957 1.4511      1    0.9994          1

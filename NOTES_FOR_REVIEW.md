@@ -65,6 +65,42 @@ narrow reading the rules *were* disjoint — that property was specific to it.
 k is untouched (Amendment 14: computed over the locked 152), and the Amendment 3
 branch is BUILT under 152, 143 and 140 alike.
 
+## 23. STROMAL FALLBACK TRIGGERED IN ALL SEVEN COHORTS — and it moots an open question
+
+B.h prespecifies that if the panel-derived stromal subscore is collinear with the
+main score (|r| > 0.9), the ESTIMATE stromal score is substituted. Realised
+correlations: COAD 0.982, READ 0.981, STAD 0.965, ESCA 0.962, PAAD 0.978, LIHC
+0.986, CHOL 0.957. The threshold is exceeded in **every** cohort, so `stromal_score`
+in model M4 is the ESTIMATE StromalScore throughout. The plan anticipated this
+("model 4 is collinear with model 1 by construction... stated now so the choice is
+not made after seeing k"). The panel-derived subscore is retained as
+`stromal_score_subscore` for inspection.
+
+**This resolves an audit finding by making it moot.** The Implementation Auditor
+objected (F2, blocking) that the subscore was built over the locked 152-gene panel
+and so readmitted 9 genes that exclusion rules 2 and 3.3 had removed — including
+TIMP1, excluded only for sitting on chrX yet detected in 98.4% of stromal cells,
+and IL3RA/IL2RG/CSF2RA at 61%/57%/44%. The registered text
+(analysis_plan.md:718-719) says "panel genes", which is the 152; the auditor's
+reading would use the 140. Both were computed rather than one being chosen:
+
+| Domain | Stromal set size | r with main score |
+|---|---|---|
+| Panel 152 (registered wording) | 103 | 0.956-0.986 |
+| Final 140 (audit reading) | 97 | 0.965-0.987 |
+
+The two variants correlate at r >= 0.997 with each other and BOTH exceed 0.9 in
+every cohort, so both trigger the same fallback and neither reaches the model. The
+question does not need deciding for Part B. **It would need deciding if the
+fallback were ever not triggered** — e.g. in an external validation cohort — so the
+alternative remains computed as `stromal_score_140` and the readmitted genes are
+named in `score_gene_sets.txt`.
+
+Separately, 3 panel genes (CRLF2, DNTT, LEP) are evaluable in fewer than 2 atlases
+and so can neither satisfy nor refute the two-of-three dominance rule. They are now
+excluded from BOTH the dominant and the stromal sets rather than defaulting to
+non-dominant, which is why the panel-domain subscore is 103 and not 106.
+
 ## 22. PURITY SOURCE SPLITS 3/4 ACROSS COHORTS — the switch rule is doing real work
 
 `aran_purity.xlsx` was absent at the start of Part B. The plan (3.4) anticipated
