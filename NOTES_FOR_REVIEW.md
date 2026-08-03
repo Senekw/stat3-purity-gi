@@ -289,6 +289,86 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
+## 42. EXPLORATORY, POST-HOC — colorectal pooling and TCGA RPPA pY705
+
+**Neither analysis is registered.** Both were requested after the Part B primary
+result, the null benchmark and the FU-iCCA concordance were known. Every output
+file is prefixed `exploratory_` and every row carries `label = EXPLORATORY_POSTHOC`.
+
+### 1. Colorectal pooling (k = 3, n = 1,181, 326 events)
+
+Pooled M1 log-HR **−0.0237**, HR **0.977**; Wald/FE 0.876–1.089, HKSJ 0.916–1.041.
+τ² = 0, I² = 0%, Q = 0.144 (df 2, p = 0.931).
+
+**This is not the registered discovery meta-analysis** and does not re-estimate it
+(that is 0.121174, HR 1.1288, over six cohorts). Three substantive limitations, now
+recorded in the output's own `note` column:
+
+- GSE39582 is an **external validation** cohort; Amendment 16 states validation
+  cohorts are not meta-analysed with discovery.
+- The inputs are **not exchangeable**: COAD and READ are RNA-seq scored by
+  `expression_log2tpm`; GSE39582 is GPL570 microarray scored through a
+  probe-collapse path with a KRT17 rescue.
+- **Endpoints differ**: READ's registered endpoint is PFI (Amendment 7), COAD and
+  GSE39582 are OS. Pooling across differing endpoints is the real limitation, not
+  the arithmetic.
+
+At k = 3 with τ² = 0 the **Hartung-Knapp interval is narrower than the Wald**
+(width 0.129 vs 0.218) — the known small-k behaviour. The Wald/FE bound is quoted
+as the conservative one. Columns were renamed from `excludes_HR_above_*` to
+`compat_upper_HR_per_SD_*`: an upper bound does not *exclude* everything above it,
+it is the largest per-SD HR compatible with these data at α = 0.05 under this model.
+
+### 2. TCGA RPPA STAT3_pY705 concordance
+
+All six cohorts clear the n ≥ 50 gate. Overlap with the analysis set: COAD 356,
+STAD 327, LIHC 181, READ 127, ESCA 125, PAAD 113.
+
+| Cohort | n | Pearson (95% CI) | Spearman |
+|---|---|---|---|
+| COAD | 356 | 0.1998 (0.0979–0.2976) | 0.2079 |
+| READ | 127 | −0.0092 (−0.1831–0.1653) | 0.1409 |
+| STAD | 327 | 0.0532 (−0.0556–0.1607) | 0.0445 |
+| ESCA | 125 | 0.2073 (0.0329–0.3695) | 0.2582 |
+| PAAD | 113 | 0.1802 (−0.0047–0.3531) | 0.0961 |
+| LIHC | 181 | −0.0567 (−0.2009–0.0899) | −0.0707 |
+| **Pooled** | **1,229** | **0.0964 (0.0041–0.1872)** | — |
+
+Pooled by Fisher z, random effects: τ² = 0.0077, **I² = 59.8%**, Q p = 0.029,
+prediction interval −0.158 to 0.339. The HKSJ interval on the pooled correlation
+**includes zero** (−0.024 to 0.214) where the Wald interval does not.
+
+**Comparison worth stating plainly**: FU-iCCA gave 0.3491 (0.1765–0.5009) at
+n = 114; the six discovery cohorts pool to 0.0964, and the prediction interval
+spans zero. The transportability gap this analysis was meant to close is not
+closed in the direction of agreement — the concordance measured in the tissues
+where the prognostic null was observed is weaker than the one measured in iCCA.
+
+**PRIOR-KNOWLEDGE DISCLOSURE**, as required: the author's prior ESMO Asia work used
+TCGA RPPA STAT3_pY705 in TCGA-CHOL. This data source is not new to the author.
+CHOL appears in the coverage table for completeness with `analysed = FALSE`, on two
+grounds — not meta-eligible (Amendment 8) and the prior use.
+
+### Audit pass 12 — 10 findings, 1 blocking, all mine
+
+- **F1 (blocking)** — `read.csv` coerced the sample-type code `"01"` to integer
+  `1`, so `== "01"` matched **0 of 1,282 rows** and the script would have HALTED
+  claiming coverage below 50 in every cohort. It would have reported a data
+  limitation that does not exist. Found by my own pre-run check, confirmed by the
+  audit. Now read as character *and* re-derived from the barcode.
+- **F2** — my comment claimed passing `se` where `vi` is expected gives a
+  spuriously *tight* interval. Backwards: every |se| < 1, so se > se², variances
+  inflate and the interval **widens** (0.718 vs 0.218, verified by running both).
+  The code was always correct; the comment was not.
+- **F7** — `scores_per_patient.csv` was read and never used, the trace of a
+  cross-check never performed while the loop *recomputed* the score. Now asserts
+  the recomputation reproduces the committed values exactly; it does, in all six.
+- **F5/F6/F8/F9/F10** — the RPPA extraction was the only project input not bound
+  to a digest (now pinned); the aliquot dedup had no tie-break and would have
+  depended on tar traversal order (now asserted never to choose); the pooled
+  correlation carried no heterogeneity (now a separate table); CHOL was absent
+  from the coverage table; the prediction interval was omitted.
+
 ## 41. AMENDMENT 20 STOPPED AT ITS OWN GATE — 41 events, threshold 60
 
 **No survival model was fitted in FU-iCCA.** Amendment 20 instructs: "REPORT AND

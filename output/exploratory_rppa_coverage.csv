@@ -1,0 +1,8 @@
+"cohort","label","rppa_files","rppa_patients","dup_aliquots_dropped","analysis_set_patients","overlap","analysed","note"
+"TCGA-COAD","EXPLORATORY_POSTHOC",360,360,0,455,356,TRUE,""
+"TCGA-READ","EXPLORATORY_POSTHOC",131,131,0,165,127,TRUE,""
+"TCGA-STAD","EXPLORATORY_POSTHOC",357,357,0,406,327,TRUE,""
+"TCGA-ESCA","EXPLORATORY_POSTHOC",126,126,0,184,125,TRUE,""
+"TCGA-PAAD","EXPLORATORY_POSTHOC",120,120,0,178,113,TRUE,""
+"TCGA-LIHC","EXPLORATORY_POSTHOC",184,184,0,370,181,TRUE,""
+"TCGA-CHOL","EXPLORATORY_POSTHOC",0,0,0,35,0,FALSE,"descriptive only: not meta-eligible (Amendment 8) AND the author's prior ESMO Asia work used TCGA RPPA STAT3_pY705 in this cohort -- prior knowledge, disclosed"

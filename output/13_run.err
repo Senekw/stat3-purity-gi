@@ -1,0 +1,29 @@
+
+== EXPLORATORY, POST-HOC: colorectal pooling + TCGA RPPA pY705 concordance ==
+  ok  EXPLORATORY  6 functions match their committed definitions (negative control passed)
+  ok  EXPLORATORY  colorectal pooled: HR 0.9766 (Wald 0.8756-1.0892), I2 0.00%, k=3, n=1181, events=326
+  ..  EXPLORATORY  RPPA: 1278 of 1282 rows are primary tumour (code 01) with a finite pY705
+
+  RPPA STAT3_pY705 coverage:
+  ok  EXPLORATORY  6 cohort(s) at or above n = 50: COAD, READ, STAD, ESCA, PAAD, LIHC
+  ..  EXPLORATORY          note: an earlier run order said list_id == 'final_140'; the canonical artefact value is 'primary_140' (identity enforced by symbol digest)
+  ok  EXPLORATORY  gene list 'primary_140' verified                       = 140
+  ..  EXPLORATORY  TCGA-COAD  recomputed score reproduces the committed values (455 patients)
+  ..  EXPLORATORY  TCGA-COAD  n = 356 | Pearson +0.1998 | Spearman +0.2079
+  ..  EXPLORATORY  TCGA-READ  recomputed score reproduces the committed values (165 patients)
+  ..  EXPLORATORY  TCGA-READ  n = 127 | Pearson -0.0092 | Spearman +0.1409
+  ..  EXPLORATORY  TCGA-STAD  recomputed score reproduces the committed values (406 patients)
+  ..  EXPLORATORY  TCGA-STAD  n = 327 | Pearson +0.0532 | Spearman +0.0445
+  ..  EXPLORATORY  TCGA-ESCA  recomputed score reproduces the committed values (184 patients)
+  ..  EXPLORATORY  TCGA-ESCA  n = 125 | Pearson +0.2073 | Spearman +0.2582
+  ..  EXPLORATORY  TCGA-PAAD  recomputed score reproduces the committed values (178 patients)
+  ..  EXPLORATORY  TCGA-PAAD  n = 113 | Pearson +0.1802 | Spearman +0.0961
+  ..  EXPLORATORY  TCGA-LIHC  recomputed score reproduces the committed values (370 patients)
+  ..  EXPLORATORY  TCGA-LIHC  n = 181 | Pearson -0.0567 | Spearman -0.0707
+  ok  EXPLORATORY  pooled Pearson (Fisher z, 6 cohorts, n = 1229): 0.0964 (0.0041 to 0.1872), I2 59.8%
+
+-- colorectal pooling (EXPLORATORY, POST-HOC) --
+
+-- RPPA concordance (EXPLORATORY, POST-HOC) --
+
+EXPLORATORY complete. HARD STOP: no survival model, no amendment.

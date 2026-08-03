@@ -1,0 +1,4 @@
+"cohort","n","events","beta","se","source"
+"TCGA-COAD",455,102,0.005159,0.094338,"discovery"
+"TCGA-READ",165,36,-0.035099,0.166886,"discovery"
+"GSE39582",561,188,-0.0399,0.075759,"external validation"

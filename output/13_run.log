@@ -1,0 +1,26 @@
+    cohort rppa_patients analysis_set_patients overlap analysed
+ TCGA-COAD           360                   455     356     TRUE
+ TCGA-READ           131                   165     127     TRUE
+ TCGA-STAD           357                   406     327     TRUE
+ TCGA-ESCA           126                   184     125     TRUE
+ TCGA-PAAD           120                   178     113     TRUE
+ TCGA-LIHC           184                   370     181     TRUE
+ TCGA-CHOL             0                    35       0    FALSE
+ k n_total events_total         est        HR HR_lo_wald HR_hi_wald tau2 I2
+ 3    1181          326 -0.02366639 0.9766115  0.8756352   1.089232    0  0
+         Q       Q_p
+ 0.1439722 0.9305438
+    cohort         method    n       r   ci_lo  ci_hi            p
+ TCGA-COAD        pearson  356  0.1998  0.0979 0.2976 1.477705e-04
+ TCGA-COAD       spearman  356  0.2079  0.1052 0.3063 7.716179e-05
+ TCGA-READ        pearson  127 -0.0092 -0.1831 0.1653 9.183458e-01
+ TCGA-READ       spearman  127  0.1409 -0.0350 0.3084 1.140324e-01
+ TCGA-STAD        pearson  327  0.0532 -0.0556 0.1607 3.378655e-01
+ TCGA-STAD       spearman  327  0.0445 -0.0643 0.1523 4.226318e-01
+ TCGA-ESCA        pearson  125  0.2073  0.0329 0.3695 2.035418e-02
+ TCGA-ESCA       spearman  125  0.2582  0.0836 0.4174 3.645688e-03
+ TCGA-PAAD        pearson  113  0.1802 -0.0047 0.3531 5.619648e-02
+ TCGA-PAAD       spearman  113  0.0961 -0.0906 0.2764 3.110379e-01
+ TCGA-LIHC        pearson  181 -0.0567 -0.2009 0.0899 4.482980e-01
+ TCGA-LIHC       spearman  181 -0.0707 -0.2145 0.0761 3.442265e-01
+    POOLED pearson_pooled 1229  0.0964  0.0041 0.1872 4.074912e-02
