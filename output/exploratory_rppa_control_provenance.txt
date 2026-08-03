@@ -1,0 +1,19 @@
+# EXPLORATORY, POST-HOC positive control -- not registered, not an amendment
+run_date: 2026-08-03
+Purpose: separate panel validity from RPPA assay performance, using the same
+1,282 files already downloaded. No re-fetch.
+  STAT3_pY705  AGID00388  catalog 9131  -- phosphosite
+  Stat3        AGID00185  catalog 4904  -- TOTAL protein, a DIFFERENT antibody
+  extraction md5: 1bc5d6cedb9ad2e2fc15ef6af71c90e2
+Aliquot rule and sample-type derivation identical to 13_rppa_exploratory.R.
+The recomputed 140-gene score reproduces scores_per_patient.csv in every cohort,
+and comparison 4 reproduces 13's committed score-vs-pY705 correlations exactly.
+script_md5: 9002df6006ee163ac378b9a423b418c3
+COMPARISONS 1 and 3 rest on fewer patients than 2, 2b and 4: total STAT3 is
+absent from 19 of the 1,282 files, so their n is smaller. Each row reports its own n.
+COMPARISON 2 IS PARTLY A SELF-CORRELATION: STAT3 is 1 of the 140 scoring genes
+(0.71% of the mean). The FU-iCCA comparator 0.5409 has the same property.
+Comparison 2b repeats it with STAT3 dropped from the score.
+COMPARISON 3 IS WITHIN-PLATFORM: both antibodies come from the same lysate and
+array and are normalised together, so it is not independent evidence of validity.
+NO survival model. NO amendment. No registered quantity altered.

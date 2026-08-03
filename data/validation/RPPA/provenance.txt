@@ -6,3 +6,11 @@ TCGA RPPA STAT3_pY705 -- GDC API, downloaded 2026-08-02
   column   : protein_expression (RPPA normalised, level 4)
   NOTE     : "Stat3" (AGID00185, total) is a DIFFERENT antibody in the same file.
 Values copied verbatim; no transformation at extraction.
+
+tcga_rppa_stat3_both.csv -- added 2026-08-02, SAME download, no re-fetch
+  two antibodies from the identical 1,282 files:
+    STAT3_pY705  AGID00388  catalog 9131   phospho-Y705
+    Stat3        AGID00185  catalog 4904   TOTAL STAT3 (a DIFFERENT antibody)
+  pY705 column reproduces tcga_rppa_stat3_py705.csv exactly for all 1,282 aliquots
+  total STAT3 present in 1,263 of 1,282 files
+  md5 1bc5d6cedb9ad2e2fc15ef6af71c90e2

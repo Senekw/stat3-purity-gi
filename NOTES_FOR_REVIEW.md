@@ -289,6 +289,65 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
+## 43. EXPLORATORY, POST-HOC — RPPA positive control
+
+Not registered, not an amendment. Same 1,282 files as NOTES 42, no re-fetch; the
+two antibodies are distinct (`STAT3_pY705` AGID00388 catalog 9131; `Stat3`
+AGID00185 catalog 4904 = TOTAL protein). Comparison 4 reproduces all 12 of 13's
+committed correlations exactly.
+
+### Pooled (Fisher z, random effects, Wald quoted as in 13)
+
+| Comparison | k | n | r | Wald CI | HKSJ CI | I² |
+|---|---|---|---|---|---|---|
+| 1. total STAT3 RPPA vs STAT3 mRNA | 6 | 1,210 | **0.325** | 0.227–0.416 | 0.189–0.448 | 68.5% |
+| 2. score_140 vs STAT3 mRNA | 6 | 1,229 | **0.719** | 0.641–0.782 | 0.611–0.801 | 83.7% |
+| 2b. score_139 (STAT3 dropped) | 6 | 1,229 | 0.711 | 0.631–0.776 | 0.599–0.795 | 83.9% |
+| 3. total RPPA vs pY705 RPPA | 6 | 1,210 | **0.139** | −0.064–0.331 | −0.130–0.389 | 91.8% |
+| 4. score_140 vs pY705 (from 13) | 6 | 1,229 | **0.096** | 0.004–0.187 | −0.024–0.214 | 59.8% |
+
+Per cohort, comparison 1 (Pearson): STAD 0.415, ESCA 0.447, LIHC 0.368, COAD
+0.309, READ 0.261, **PAAD 0.074** (CI −0.114–0.257, p = 0.44).
+
+Comparison 3 per cohort: ESCA 0.543, LIHC 0.272, STAD 0.050, PAAD 0.037,
+COAD −0.036, READ −0.084.
+
+### What these can and cannot establish — now written into the output
+
+The audit's central objection was that the script computed four numbers with no
+rule for reading them, and that all three framing defects **pushed toward
+excusing the panel**. Each comparison now carries a `can_establish` column:
+
+- **1** is the only genuinely cross-assay comparison (RPPA lysate protein vs
+  RNA-seq TPM, same gene, different platforms). No threshold is prespecified
+  anywhere in the plan, so this is descriptive; a pooled 0.325 is within the
+  range typical of TCGA protein–mRNA concordance, and PAAD's 0.074 is not.
+- **2 is partly a self-correlation** — STAT3 is 1 of the 140 scoring genes
+  (0.71% of the mean). Disclosed, and quantified by 2b: the artefact is
+  Δr = 0.008 pooled. The FU-iCCA comparator 0.5409 has the identical property,
+  so the two are like-for-like.
+- **3 is within-platform**: both antibodies come from the same lysate on the same
+  array, normalised together. Shared loading inflates it, so a high value is
+  uninformative about validity — and it is nonetheless only 0.139, with I² 91.8%
+  and a Wald interval spanning zero.
+- **4** is the quantity under test, unchanged from 13.
+
+Comparisons 1 and 3 rest on 19 fewer patients than 2, 2b and 4: total STAT3 is
+absent from 19 of the 1,278 primary-tumour files.
+
+### Audit pass 13 — 7 findings, none blocking
+
+Three framing defects (F1 no interpretation rule, F2 comparison 3 presented as
+equally probative, F3 the undisclosed self-correlation) I fixed mid-flight after
+the same checks the audit ran; it confirmed each and quantified the
+self-correlation independently at the same Δr = 0.008. Also fixed: the FU-iCCA
+comparator was attached by prefix regex and would have mislabelled a future
+`2.x` row (now exact match plus a count assertion); the sample-type filter was
+not textually identical to 13's despite the provenance claiming so (harmless
+here, all 1,282 pY705 values finite, now matched verbatim); an all-NULL pooled
+frame would have produced an uninformative R error rather than a halt; and the
+reproduction guard's two load-bearing properties were undocumented.
+
 ## 42. EXPLORATORY, POST-HOC — colorectal pooling and TCGA RPPA pY705
 
 **Neither analysis is registered.** Both were requested after the Part B primary

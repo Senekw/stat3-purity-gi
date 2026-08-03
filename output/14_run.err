@@ -1,0 +1,20 @@
+
+== EXPLORATORY, POST-HOC: RPPA positive control ==
+  ok  EXPLORATORY  6 functions match their committed definitions (negative control passed)
+  ok  EXPLORATORY  1278 primary-tumour aliquots | pY705 reproduces 13's extraction exactly
+  ..  EXPLORATORY  total STAT3 present for 1259 of 1278
+  ..  EXPLORATORY          note: an earlier run order said list_id == 'final_140'; the canonical artefact value is 'primary_140' (identity enforced by symbol digest)
+  ok  EXPLORATORY  gene list 'primary_140' verified                       = 140
+  ..  EXPLORATORY  TCGA-COAD  n = 356 | scored, reproduces committed values
+  ..  EXPLORATORY  TCGA-READ  n = 127 | scored, reproduces committed values
+  ..  EXPLORATORY  TCGA-STAD  n = 327 | scored, reproduces committed values
+  ..  EXPLORATORY  TCGA-ESCA  n = 125 | scored, reproduces committed values
+  ..  EXPLORATORY  TCGA-PAAD  n = 113 | scored, reproduces committed values
+  ..  EXPLORATORY  TCGA-LIHC  n = 181 | scored, reproduces committed values
+  ok  EXPLORATORY  comparison 4 reproduces all 12 of 13's committed correlations
+
+-- per cohort (EXPLORATORY, POST-HOC) --
+
+-- pooled (EXPLORATORY, POST-HOC) --
+
+EXPLORATORY control complete. HARD STOP: no survival model, no amendment.
