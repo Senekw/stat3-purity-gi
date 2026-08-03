@@ -252,6 +252,36 @@ Related, finding f73b1d89: the run order said "reuse the functions from 06 and
 documented in the source rather than left as a silent divergence from the
 instruction.
 
+## 38. UNDISCLOSED DEVIATION — figure 3 has 54 bars where 18 were asked for
+
+The run order for `11_figures.R` item 3 asked for "stacked bars per gene per
+atlas for the origin six plus the three non-qualifying genes, with the 50%
+dominance line" — 6 genes x 3 atlases = **18 bars**. The delivered figure
+expands each cell to the three purity grid points (pi = 0.30/0.50/0.70) in a 3x3
+facet, giving **54 bars**.
+
+The audit flagged this (F14, robustness tier, "adjacent to the figure asked
+for"). I applied eight of that audit's findings and did not apply or surface this
+one. That is the defect worth recording: not the figure, which is defensible, but
+that a known deviation from an instruction went unreported while I listed the
+fixes I had made.
+
+Why the 54-bar form was chosen, stated now rather than assumed:
+
+- The registered dominance rule is `f > 0.5 at EVERY point of the 30-70% band`,
+  not at one point. An 18-bar figure must pick a single pi, and any choice is
+  unregistered.
+- Picking pi = 0.50 would have made the figure actively misleading: MYC in
+  GSE125449 has f = 0.532 there and would appear to clear the line, while the
+  committed `dominant` column says FALSE — because it is 0.327 at pi = 0.30.
+  Nine of the 54 bars clear 50% at some grid point; only one gene-atlas cell is
+  dominant across the whole band.
+
+**This is reversible on request.** An 18-bar version at a nominated pi, or with
+the band drawn as an interval per bar, is a small change to `fig3()`. It has not
+been made, because which pi to plot is a presentation choice about the registered
+estimand and is the author's to make.
+
 ## 36. BLOCKER — CXCL8 is absent from FU-iCCA's S1C; the symbol IL8 is present
 
 **Amendment 16's PRIMARY validation could not run. Nothing was correlated.**
