@@ -1,0 +1,9 @@
+FU-iCCA extraction — Dong et al. 2022 Cancer Cell supplement
+extracted: 2026-08-02, streamed from the .xlsx, no library, no recompute
+mmc2 (Table S1) md5 f41b36e31e61c5ecc049ad636af35b1d
+mmc6 (Table S5) md5 6b331e884f97fd5cdd2423bd981bf3c8
+S1C_mrna_log2tpm1.csv  <- sheet 'S1C. mRNA expression', hdr row 2, data row 3+, log2 TPM+1
+S1E_phosphosites.csv   <- sheet 'S1E. 18,347 phosphosites', hdr row 3, data row 4+, median-norm log2
+S1D_protein.csv        <- sheet 'S1D. proteins expression', hdr row 3, data row 4+, median-norm log2
+S1A_clinical.csv       <- sheet 'S1A. Clinical info', hdr row 2, data row 3+
+Values copied verbatim; no transformation applied at extraction.

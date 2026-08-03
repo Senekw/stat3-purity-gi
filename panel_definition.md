@@ -672,3 +672,44 @@ Made after the Part B primary result was known. That is unavoidable — the plan
 contained no validation section — and is disclosed rather than absorbed. Every
 parameter above is fixed before any validation data is opened, and no validation
 result has been computed.
+
+### Amendment 18 — 2026-08-02
+
+Amendment 16's PRIMARY validation analysis is executed from the Dong et al. 2022
+supplementary tables rather than from the NODE deposit, and its realised sample
+size is specified here.
+
+Source: Table S1 (Cancer Cell supplement, mmc2), sheet S1E "18,347 phosphosites"
+row 18298, identifier STAT3:Y705 — distinct from STAT3:S727 at row 3724 — and
+sheet S1C "mRNA expression", 20,173 genes x 255 samples, stated in the workbook's
+own Description sheet as log2 TPM+1. Patient identifiers are bare integers in a
+single namespace and join directly. The NODE deposit (OEP001105) is not used; it
+exposes no public file listing and its access tier could not be established.
+
+Realised n = 114: 120 of 214 phosphoproteome samples carry a numeric Y705 value,
+and 114 of those also appear in the mRNA matrix. The join is not the limit — 208
+patients have both assays — the limit is Y705 missingness within the
+phosphoproteome.
+
+MISSINGNESS, stated in advance: the 94 NA values are not missing at random. TMT
+phosphoproteomics preferentially fails to quantify low-abundance sites, so
+patients with a measured Y705 are expected to be enriched for higher STAT3
+phosphorylation. This truncates the range of the variable being correlated and
+biases the observed correlation TOWARD ZERO. The direction is therefore
+conservative with respect to the claim this analysis tests — that the score
+tracks STAT3 phosphorylation — and no imputation is performed. Patients without a
+Y705 value are excluded and counted; no substitute site, protein-level roll-up, or
+phosphoprotein aggregate is used in their place.
+
+Additional limitation: Tables S1 and S5 contain no adjacent-normal samples. Every
+column is one tumour per patient. The compartment ambiguity stated in Amendment 16
+therefore stands with no paired-normal contrast available to bound it.
+
+Prespecified reporting: Pearson and Spearman with 95% CIs and n; the scatter; and,
+because it costs nothing and bears directly on interpretation, the same
+correlations for STAT3:S727 (n to be reported) and for the protein-level STAT3 row
+in S1D. Those two are secondary and labelled as such — Y705 is the registered
+site.
+
+Made after the Part B primary result was known, as Amendment 16 was. No
+correlation has been computed.

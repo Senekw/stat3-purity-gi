@@ -1,0 +1,11 @@
+
+== Amendment 16 PRIMARY / Amendment 18: FU-iCCA phosphoproteomic concordance ==
+  ..  B.val.FU  07_score.R md5 0afa1757b745e6b8d37565c2e03312bb
+  ..  B.val.FU  06_purity.R md5 2cf79705a42a134573afb64740e78438
+  ok  B.val.FU  7 functions match their committed definitions in 06/07 (body comparison, negative control passed)
+  ok  B.val.FU  S1C 20173 x 255 | S1E 18347 x 214 | S1D 8320 x 214
+  ..  B.val.FU          note: an earlier run order said list_id == 'final_140'; the canonical artefact value is 'primary_140' (identity enforced by symbol digest)
+  ok  B.val.FU     gene list 'primary_140' verified                       = 140
+  ok  B.val.FU     gene list 'sensitivity_143' verified                   = 143
+Error: HALT [B.val.FU]: scoring gene(s) absent from S1C: CXCL8 (absent; the symbol(s) IL8 ARE present in S1C and may denote the same gene -- whether to use one is an amendment decision, not taken here). Reported in output/fuicca_gene_coverage.csv and output/fuicca_missing_genes.csv. Scoring a reduced set, or renaming a symbol, is a decision for the study author; neither is taken here.
+Execution halted

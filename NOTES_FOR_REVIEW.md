@@ -252,6 +252,101 @@ Related, finding f73b1d89: the run order said "reuse the functions from 06 and
 documented in the source rather than left as a silent divergence from the
 instruction.
 
+## 36. BLOCKER — CXCL8 is absent from FU-iCCA's S1C; the symbol IL8 is present
+
+**Amendment 16's PRIMARY validation could not run. Nothing was correlated.**
+
+`12_fuicca.R` halts at the coverage gate. Of the 140 scoring genes, 139 are
+present in S1C; **CXCL8 is not**. The 143-gene sensitivity list is likewise
+139+3 = 142 of 143.
+
+What is established, by inspection of the deposit only:
+
+| | |
+|---|---|
+| `CXCL8` rows in S1C | **0** |
+| `IL8` rows in S1C | **1** |
+| other aliases checked (IL-8, SCYB8, MDNCF, NAP1, GCP1, LECT, LUCT, TSG1) | 0 |
+| other `CXCL*` symbols present | CXCL1, 2, 3, 5, 6, 9, 10, 11, 12, 13, 14, 16, 17 |
+
+CXCL8 is the HGNC-approved symbol for the gene long called IL8 (NCBI Gene 3576).
+The two symbols denote the same gene. **No substitution has been made**, and
+nothing downstream reads the alias list: the script reports the candidate in its
+halt message and stops.
+
+Why this is the author's call and not a mechanical fix, despite being defensible
+on the merits:
+
+- **The project has no committed alias table.** Script 10's KRT17 probe rescue
+  was mechanical because the probe-to-symbol relation is stated in GPL570's own
+  committed annotation — the authority lived inside a registered input. Here the
+  authority would be my knowledge of HGNC nomenclature, which is not a
+  registered input and cannot be audited from the repository.
+- **The run order is explicit**: "If genes are missing, report which and halt
+  rather than scoring a reduced set — that is a decision for me."
+- The two available resolutions differ in what they change. Renaming keeps the
+  list at its registered 140 and changes no gene's identity. Dropping reduces
+  the scoring set to 139 and changes the estimand's definition in this cohort
+  only, which would make the validation score a different object from the
+  discovery score.
+
+CXCL8's provenance, for the decision: route `B_only` (ChIP-seq evidence, not an
+origin-score gene), ENCODE + TRRUST v2, one human ChIP-seq dataset. It is
+epithelial-dominant in GSE125449 (f = 0.587/0.769/0.886) but not in GSE178341
+(0.094/0.194/0.360) or Peng — dominant in 1 of 3 atlases, so it is one of the 46
+genes counted in k but not one of the 24 dominant in all three.
+
+Everything else needed by Amendment 18 is verified present: `STAT3:Y705` at S1E
+row 18298 (120 numeric, 94 NA), `STAT3:S727` at row 3724 (135 numeric), the S1D
+protein row, and identifiers that join to exactly the 208 / 114 the amendment
+states. The analysis is one decision away from running.
+
+## 37. FU-iCCA source: supplement rather than NODE, and what the audit caught
+
+Amendment 18 executes Amendment 16's PRIMARY from the Cancer Cell supplementary
+tables. The NODE deposit (OEP001105) was not used — no public file listing, access
+tier unestablished (NOTES 22, DATA_NEEDED.md).
+
+`expression_log2tpm()` from 07 is deliberately NOT reused: S1C is already
+log2 TPM+1, while that function sums duplicate symbols on the LINEAR TPM scale
+before log2. Everything downstream of the matrix — `read_gene_list`,
+`zero_variance_genes`, `score_cohort`, `digest_genes` — is the committed path,
+bound and body-compared against a fresh sourcing, with a negative control.
+
+Audit pass 10 returned `fix_before_running` with 12 findings. One blocking, and
+it was mine:
+
+- **F2 (blocking)** — the 13th correlation row passed the score as `x` and the
+  stromal score as `y` while labelling itself "ESTIMATE stromal vs STAT3:Y705".
+  Y705 was not in the call. It silently duplicated the score-vs-stromal row under
+  a label asserting a different comparison, in the primary output of the study's
+  primary validation. Fixed to `cor_report(stromal[both], y705[both], ...)`.
+- **F8** — `read.csv`'s default `na.strings = "NA"` applies to the identifier
+  column. S1D has **24 rows whose gene symbol is the literal string "NA"**;
+  each became `NA_character_` and R accepts NA rownames silently. Identifiers are
+  now read as text and asserted non-NA.
+- **F4** — the ESTIMATE sample-order guard compared `est$sample` to
+  `colnames(em)`, but 06 *builds* the former from the latter. Tautological — the
+  same defect 10_validation.R removed once already. Replaced with the join
+  assertion that can actually fire.
+- **F6** — Amendment 18 prespecifies "the scatter"; the script produced none.
+  Added, annotated from the computed values rather than recomputed.
+- **F3, F5, F9, F10, F11, F12** — a comment claiming a filter that drops nothing
+  on this data, source-file md5s unpinned, no `dir.create` for a clean checkout,
+  uniqueness asserted for the primary site only, a dropped `sqrt` in a docstring,
+  and a BH family taken from the list literal rather than the tests actually run.
+
+**F7 is a limitation, not a defect, and is now recorded in the artefact itself.**
+The missingness test compares the *score* between patients whose Y705 was and was
+not quantified — predictor-side selection. Amendment 18's range-truncation claim
+concerns the *unobserved* Y705 values in the 94 excluded patients, which no test
+on observed data can reach. The `fuicca_missingness.csv` output carries that
+scope statement in a column.
+
+The audit also independently reached the same conclusion I did on CXCL8 — halt,
+but report that IL8 is present — having been given the fact and asked to argue
+both sides.
+
 ## 29. THE 09 RUN ORDER MISSTATED THREE B.m PARAMETERS; THE REGISTERED TEXT WAS FOLLOWED
 
 The Part B run order of 2026-08-02 specified three B.m parameters from memory that
