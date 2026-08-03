@@ -289,6 +289,49 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
+## 41. AMENDMENT 20 STOPPED AT ITS OWN GATE — 41 events, threshold 60
+
+**No survival model was fitted in FU-iCCA.** Amendment 20 instructs: "REPORT AND
+STOP if fewer than 60 events are available." The analysis set has **41**.
+
+| Set | n | events | median follow-up |
+|---|---|---|---|
+| Y705 + survival | 114 | **45** | 628 d |
+| **Y705 + survival + mRNA** (the analysis set) | **108** | **41** | 644 d |
+| S727 + survival | 132 | 48 | 618 d |
+| any phosphoproteome + survival | 207 | 84 | 623 d |
+
+The gate fires under either reading: 41 events for the set Amendment 20 actually
+specifies (it fits the score in the *same* patients, which requires mRNA), and 45
+even if the mRNA requirement is dropped. Both are below 60.
+
+Arithmetic of the attrition, for the record: 262 patients in S1A, 251 with
+follow-up, 103 total deaths. The phosphoproteome covers 214 of the 262, and Y705
+is quantified in 120 of those 214 — so the deaths reachable by a Y705 model are
+41 of the cohort's 103. **The binding constraint is Y705 missingness**, exactly as
+Amendment 18 anticipated, not the survival follow-up.
+
+**Table S6 was not supplied and is not required for this determination.** The two
+files in hand are Table S1 (mmc2) and Table S5 (mmc6). Amendment 20 names Table S6
+as the covariate source, but S1A already carries per-patient `OS, overall survival
+(day)` and `OS_event`, complete for 251 of 262, plus 26 covariates complete for
+**108/108** of the analysis set — sex, age, TNM stage, vascular/perineural
+invasion, nodal and distal metastasis, tumour size, cirrhosis, HBsAg, CA19-9, CEA,
+AFP, bilirubin, albumin, ALT, γ-GT, adjuvant therapy. Covariate availability is
+therefore not the limitation; the event count is. Obtaining S6 would not raise it,
+because the ceiling is set by how many Y705-quantified patients died.
+
+What this means for the question Amendment 20 was written to settle: the two
+readings it distinguishes — that the score fails to capture prognostic information
+carried by STAT3 phosphorylation, versus that STAT3 phosphorylation carries none —
+**cannot be separated in this cohort at this event count**. That is a limitation
+of the available data, not a result, and it should be stated as such rather than
+reported as a null.
+
+If the author wishes to proceed below the registered threshold, that requires a
+dated amendment lowering or removing the 60-event gate, with the power
+implications stated. Not taken here.
+
 ## 40. FU-iCCA PRIMARY VALIDATION — the result
 
 Amendment 16's PRIMARY analysis, run under Amendments 18 and 19. **n = 114.**

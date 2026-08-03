@@ -737,3 +737,33 @@ three. Its inclusion restores the registered 140-gene set rather than altering i
 
 Sensitivity: the correlation is additionally computed on the 139-gene set with
 CXCL8 dropped, and both are reported.
+
+### Amendment 20 — 2026-08-02
+
+Whether measured STAT3 pY705 is itself prognostic in FU-iCCA is tested as an
+additional analysis, prespecified here before any survival model is fitted in
+that cohort.
+
+Reason: the study reports that a transcriptomic STAT3 activity score is not
+prognostic in gastrointestinal cancer. CanStem303C reported pSTAT3 as adverse
+prognostic in refractory metastatic colorectal cancer from its control arm, by
+immunohistochemistry. Testing the measured phosphosite directly distinguishes two
+readings of this study's result: that the score fails to capture prognostic
+information carried by STAT3 phosphorylation, or that STAT3 phosphorylation
+carries no prognostic information for the score to capture. The two have different
+implications and the available data can separate them.
+
+Analysis: Cox model of overall survival on measured STAT3:Y705, per 1 SD, in the
+patients with both a Y705 value and survival follow-up. Reported unadjusted and
+adjusted for the covariates available in Table S6. The transcriptomic score is
+fitted in the same patients on the same endpoint for direct comparison, and both
+are reported with n and events.
+
+Limitations: n is bounded by Y705 missingness as in Amendment 18; the cohort is
+intrahepatic cholangiocarcinoma, which is not among the six discovery cohorts;
+and this is a single-cohort analysis with no replication available.
+
+Direction of bias: none identifiable. Either outcome is reportable and neither is
+predicted.
+
+Made after the Part B primary result and the FU-iCCA concordance were known.
