@@ -289,6 +289,84 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
+## 44. REFINED FIGURE SET — presentation only, additive
+
+`11b_figures_refined.R` writes 11 figures to `figures/refined/`. **`11_figures.R`
+is not modified and `figures/` is not touched** (verified by `git status` at every
+run), so the committed figures stand and the refined set is additive. No reported
+number differs between them. 29 `assert_plot()` checks pass per run, each against
+a *fresh read* of the named file, behind a self-test that corrupts a real value
+and requires rejection before anything is drawn.
+
+### Two claim-titles were overstated and were corrected
+
+Both were mine, and both were caught by testing the title against the data rather
+than by reading it:
+
+- The RPPA figure said the phosphosite **"disagrees with"** total STAT3. The
+  pooled r is 0.139 with a Wald interval of **−0.064 to 0.331 — spanning zero**.
+  An interval spanning zero cannot establish disagreement; it fails to establish
+  agreement. Asserting the former turns a null into a positive finding, which is
+  exactly the inversion this project has been guarding against. Now *"shows no
+  established agreement with"*.
+- The colorectal figure said pooling **"excludes"** a per-SD hazard increase above
+  9% while its own caption said a bound is "not a proof of absence". The figure
+  contradicted itself. Now *"the data are compatible with at most a 9% per-SD
+  hazard increase"*.
+
+The compartment title is true of the **dominance calls** — `dominant = TRUE` for
+MYC in GSE178341 and nothing else — while nine of the 54 fractions clear 50% at
+some grid point (MYC in all three atlases, BCL2 in all three at π = 0.70). Both
+variants therefore mark the file's own call rather than relying on the 50% line.
+
+### The assertion refused a key, and was right to
+
+Extending coverage to caption numbers, `assert_plot` halted on
+`cms_tertile_crosstab.csv`: the chi-square is repeated on all 12 tertile × CMS
+rows per cohort, so `cohort` is **not a unique key**. The figure now asserts on
+the full `cohort × tertile × cms` key and confirms the statistic is constant
+within cohort before collapsing. A guard that refuses an ambiguous key is doing
+its job.
+
+### One reported number had no committed column
+
+Panel A's subtitle quotes 595 events. `meta_analysis.csv` carries `n_total` but no
+event total, so the per-cohort `events` are asserted individually, the sum is
+taken from those, and `sum(n)` is cross-checked against the committed `n_total`
+(1,755). Numbers interpolated into titles and captions are reported numbers; all
+of them — CMS chi-square, df, p, R², the colorectal pooled HR, the RPPA pooled
+correlations, the FU-iCCA r and n — now pass through an assertion.
+
+### Two run-order discrepancies, resolved in favour of the files
+
+- The run order said the null is "centred at 0.118". The committed median is
+  **0.117486** and the mean 0.117481; both round to **0.117**, which is what the
+  figure reads and prints.
+- The run order named `exploratory_crc_pooled.csv`; the committed file is
+  `exploratory_colorectal_pooled.csv`. Its HR 0.9766 (0.8756–1.0892) matches the
+  quoted figures exactly — that is the **Wald** interval.
+
+### Rendering defects found only by viewing the rasters
+
+Nine, none visible from the code: a caption running off the panel edge; a title
+block overlapping the panels; a panel tag colliding with an axis title; **a
+spurious fifth facet labelled "NA"** in the RPPA figure, because the strip labels
+were built before the pooled frame was filtered, so the leave-STAT3-out row
+became its own panel with a pooled line drawn in it; **a spurious fourth facet**
+in the compartment bars, because an atlas-level rename was applied to the bar
+frame but not the dominance frame; overlapping x-tick labels at four facets
+across; a dominance diamond printing on top of the value it marked; a caption
+describing a CHOL open marker in the M4-only supplement, where CHOL has no fit to
+draw; and several clipped subtitles. Each is now guarded or asserted.
+
+### Which figure-3 variant
+
+Both are produced, as asked. The **heatmap** reads better: it prints all 54 values
+in-cell so nothing is estimated against an axis, centres colour on the 50%
+dominance threshold so the rule is visible directly, and marks dominance by
+outlining the cell, which occludes nothing. The stacked bars spend most of their
+ink on the 1 − f remainder, which carries no independent information.
+
 ## 43. EXPLORATORY, POST-HOC — RPPA positive control
 
 Not registered, not an amendment. Same 1,282 files as NOTES 42, no re-fetch; the

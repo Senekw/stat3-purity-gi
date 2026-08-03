@@ -1,0 +1,45 @@
+
+== refined figures -> figures/refined/ (presentation only) ==
+  ok  selftest         6 row(s) x 1 value(s) match attenuation_per_cohort.csv
+  ok  selftest      halts on a corrupted value, passes on the true one
+  ok  fig0           10000 draws reproduce the committed summary (percentile 60.48)
+  ok  figA-null        1 row(s) x 5 value(s) match null_distributions.csv
+  ok  figA-events      6 row(s) x 2 value(s) match survival_per_cohort.csv
+  ok  figB-cohorts     7 row(s) x 2 value(s) match survival_per_cohort.csv
+  ok  figB-pooled      1 row(s) x 3 value(s) match meta_analysis.csv
+  ok  figB-external    1 row(s) x 2 value(s) match validation_gse39582_models.csv
+  ok  figC-fuicca      1 row(s) x 4 value(s) match fuicca_correlations.csv
+  ..  saved         figure_main.png                            180 x 225 mm
+  ok  figCRC-pool      1 row(s) x 6 value(s) match exploratory_colorectal_pooled.csv
+  ok  figCRC-inputs    3 row(s) x 4 value(s) match exploratory_colorectal_inputs.csv
+  ok  figRPPA         30 row(s) x 4 value(s) match exploratory_rppa_control_correlations.csv
+  ok  figRPPA-pool     5 row(s) x 4 value(s) match exploratory_rppa_control_pooled.csv
+  ..  saved         figure_crc_pool.png                        180 x 110 mm
+  ..  saved         figure_rppa_concordance.png                180 x 150 mm
+  ok  figA-null        1 row(s) x 5 value(s) match null_distributions.csv
+  ok  figA-events      6 row(s) x 2 value(s) match survival_per_cohort.csv
+  ..  saved         fig1_null_distribution.png                 180 x 105 mm
+  ok  figB-cohorts    13 row(s) x 2 value(s) match survival_per_cohort.csv
+  ok  figB-pooled      2 row(s) x 3 value(s) match meta_analysis.csv
+  ok  figB-external    2 row(s) x 2 value(s) match validation_gse39582_models.csv
+  ..  saved         fig2_forest_logHR.png                      180 x 125 mm
+  ok  fig3-data       18 row(s) x 3 value(s) match origin_six_compartment.csv
+  ok  fig3-data       18 row(s) x 3 value(s) match origin_six_compartment.csv
+  ..  saved         fig3_compartment_bars.png                  180 x 160 mm
+  ..  saved         fig3_compartment_heatmap.png               180 x 150 mm
+  ok  fig4             6 row(s) x 3 value(s) match attenuation_per_cohort.csv
+  ok  fig4-pool        1 row(s) x 5 value(s) match meta_analysis.csv
+  ..  saved         fig4_attenuation_forest.png                180 x 110 mm
+  ok  fig5           10 group counts match cms_distribution.csv
+  ok  fig5-chisq      24 row(s) x 4 value(s) match cms_tertile_crosstab.csv
+  ok  fig5-r2          2 row(s) x 1 value(s) match cms4_association.csv
+  ..  saved         fig5_score_by_cms.png                      180 x 115 mm
+  ok  figC-fuicca      1 row(s) x 4 value(s) match fuicca_correlations.csv
+  ..  saved         fig6_fuicca_y705_scatter.png               180 x 120 mm
+  ok  figB-cohorts     6 row(s) x 2 value(s) match survival_per_cohort.csv
+  ok  figB-pooled      1 row(s) x 3 value(s) match meta_analysis.csv
+  ok  figB-external    1 row(s) x 2 value(s) match validation_gse39582_models.csv
+  ..  saved         figS_forest_M4.png                         180 x 118 mm
+
+11 figures in figures/refined
+11_figures.R untouched; figures/ untouched. No reported number changed.

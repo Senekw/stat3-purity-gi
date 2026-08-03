@@ -150,3 +150,112 @@ they cannot go stale if the analysis is re-run. An earlier draft named
 - **`cit.molecularsubtype`** — an additional, explicitly non-registered
   orthogonality check; kept out of the CMS figure so the two cannot be read as
   one analysis.
+
+---
+
+# Refined set — `figures/refined/`, produced by `11b_figures_refined.R`
+
+`11_figures.R` and `figures/` are **untouched**; the refined set is additive. No
+reported number differs between the two sets — the refinement is presentation
+only, and the same `assert_plot()` contract binds every figure. **29 assertions
+pass per run**, each comparing the ggplot frame against a *fresh read* of the
+named file.
+
+## The assertion, and why it can fail
+
+`assert_plot(fig, plotted, file, keys, cols)` re-reads `file` **inside itself**.
+The caller supplies only the plotted frame — it cannot pass an in-memory object
+as the "source", which is what made the first version of this guard in
+`11_figures.R` tautological. `verify_assert_can_fail()` runs before any figure is
+drawn: it corrupts one real value, requires rejection, then requires the true
+frame to pass. If either half misbehaves the script halts having drawn nothing.
+
+Keys must be **unique in the source**. This caught a real error while the refined
+set was being built: the chi-square statistic in `cms_tertile_crosstab.csv` is
+repeated on all 12 tertile × CMS rows of each cohort, so `cohort` alone is not a
+key. The assertion refused it; the figure now asserts on the full
+`cohort × tertile × cms` key and confirms the statistic is constant within cohort
+before collapsing.
+
+## Per figure
+
+| Figure | Source file(s) | Columns asserted |
+|---|---|---|
+| `figure_main.png` A | `null_distributions.csv`, `null_pvalues.csv`, `meta_analysis.csv`, `survival_per_cohort.csv` | `observed_reported_08`, `observed_percentile`, `median`, `min`, `max`; `events`, `n` per cohort |
+| `figure_main.png` B | `survival_per_cohort.csv`, `meta_analysis.csv`, `validation_gse39582_models.csv` | `beta`, `se`; `est`, `ci_lo`, `ci_hi` |
+| `figure_main.png` C | `fuicca_correlations.csv`, `fuicca_per_patient.csv` | `n`, `r`, `ci_lo`, `ci_hi` |
+| `figure_crc_pool.png` | `exploratory_colorectal_pooled.csv`, `exploratory_colorectal_inputs.csv` | `est`, `HR`, `HR_lo_wald`, `HR_hi_wald`, `I2`, `tau2`; `beta`, `se`, `n`, `events` |
+| `figure_rppa_concordance.png` | `exploratory_rppa_control_correlations.csv`, `exploratory_rppa_control_pooled.csv` | `n`, `r`, `ci_lo`, `ci_hi`; `r_pooled`, `ci_lo_wald`, `ci_hi_wald`, `I2` |
+| `fig1_null_distribution.png` | as `figure_main` A | as above |
+| `fig2_forest_logHR.png` | as `figure_main` B, both models | as above |
+| `fig3_compartment_bars.png` | `origin_six_compartment.csv` | `f_at_0.30`, `f_at_0.50`, `f_at_0.70` |
+| `fig3_compartment_heatmap.png` | `origin_six_compartment.csv` | same — both variants share one data-prep function |
+| `fig4_attenuation_forest.png` | `attenuation_per_cohort.csv`, `meta_analysis.csv` | `attenuation_total`, `att_total_lo`, `att_total_hi`; `est`, `ci_lo`, `ci_hi`, `tau2`, `I2` |
+| `fig5_score_by_cms.png` | `cms_calls.csv`, `scores_per_patient.csv`, `cms_distribution.csv`, `cms_tertile_crosstab.csv`, `cms4_association.csv` | group counts vs `n`; `chisq`, `df`, `p_asymptotic`, `n`; `r2_score_on_cms` |
+| `fig6_fuicca_y705_scatter.png` | as `figure_main` C | as above |
+| `figS_forest_M4.png` | as `fig2`, M4 only | as above |
+
+## Numbers in titles, subtitles and captions are asserted too
+
+A number interpolated into a caption is still a reported number. Everything
+`sprintf`'d into text is read from a committed file and covered by an
+`assert_plot` call on the same frame — including the CMS chi-square, degrees of
+freedom, p-values and R², the colorectal pooled HR and its interval, the RPPA
+pooled correlations, and the FU-iCCA correlation and n.
+
+**One number had no committed column**: the event total in panel A's subtitle
+(595). `meta_analysis.csv` carries `n_total` but no event total, so the
+per-cohort `events` are asserted individually and the sum is taken from those,
+with `sum(n)` cross-checked against the committed `n_total`.
+
+## The one declared exception, unchanged from the original set
+
+The 10,000 per-draw pooled M1 values exist only in `null_replicates.rds`;
+`null_distributions.csv` holds their summary. `export_null_draws()` writes them to
+`figures/refined/null_pooled_draws.csv` and asserts the export reproduces the
+committed `min`, `q25`, `median`, `mean`, `q75`, `max`, `n_null` **and** the
+observed percentile, and that the percentile grid is monotone. The histogram then
+reads the CSV. This is the only figure input not itself a committed output.
+
+## Two run-order discrepancies, resolved in favour of the files
+
+- The run order says the null is "centred at 0.118". `null_distributions.csv`
+  gives median **0.117486** and mean 0.117481, both rounding to **0.117**. Panel A
+  reads the file and prints 0.117.
+- The run order names `exploratory_crc_pooled.csv`; the committed file is
+  `exploratory_colorectal_pooled.csv`. Its HR 0.9766 (0.8756–1.0892) matches the
+  quoted "0.977 (0.876–1.089)" exactly — that is the **Wald** interval, which the
+  figure quotes as the conservative one.
+
+## Claim-titles: two were overstated and were corrected
+
+Every title must be true of every plotted element. Testing them against the data
+found two that were not:
+
+- The RPPA figure said the phosphosite **"disagrees with"** total STAT3. The
+  pooled r is 0.139 with a Wald interval of **−0.064 to 0.331**, which spans
+  zero. An interval spanning zero cannot establish disagreement — it fails to
+  establish agreement. Now: *"shows no established agreement with"*.
+- The colorectal figure said pooling **"excludes"** a per-SD hazard increase above
+  9% while its own caption said a bound is "not a proof of absence" — the figure
+  contradicted itself. Now: *"the data are compatible with at most a 9% per-SD
+  hazard increase"*.
+
+The compartment title ("MYC is the only gene epithelial-dominant across the whole
+30–70% band") is true of the **dominance calls**, which is what the mark shows:
+`origin_six_compartment.csv` has `dominant = TRUE` for MYC in GSE178341 and
+nothing else. Nine of the 54 fractions clear 50% at *some* grid point — MYC in all
+three atlases, BCL2 in all three at π = 0.70 — and the bars show that, which is
+why both variants mark the file's own call rather than relying on the 50% line,
+and why the caption states the whole-band rule explicitly.
+
+## Which figure-3 variant reads better
+
+**The heatmap.** With 54 values it prints every number in-cell, so nothing has to
+be estimated against an axis; the colour is centred on the 50% dominance
+threshold, so "above or below the rule" is visible at a glance; and the dominance
+call is an outlined cell rather than a diamond, which occludes nothing. The
+stacked-bar version spends most of its ink on the "other compartments" remainder,
+which is 1 − f and carries no independent information, and its dominance diamond
+has to float above the bar to avoid overprinting. Both are produced; the heatmap
+is the one I would ship.
