@@ -1,3 +1,59 @@
          list_id n_genes n_present n_missing
      primary_140     140       139         1
  sensitivity_143     143       142         1
+         list_id n_genes n_present n_present_after n_missing_after
+     primary_140     140       139             140               0
+ sensitivity_143     143       142             143               0
+                                               comparison   method   n      r
+                                  score_140 vs STAT3:Y705  pearson 114 0.3491
+                                  score_140 vs STAT3:Y705 spearman 114 0.3718
+ score_139 vs STAT3:Y705 (CXCL8 dropped, A19 sensitivity)  pearson 114 0.3501
+ score_139 vs STAT3:Y705 (CXCL8 dropped, A19 sensitivity) spearman 114 0.3707
+  ci_lo  ci_hi            p
+ 0.1765 0.5009 1.407322e-04
+ 0.1957 0.5248 4.630115e-05
+ 0.1776 0.5017 1.345646e-04
+ 0.1944 0.5238 4.901845e-05
+                                               comparison        tier   method
+                                  score_140 vs STAT3:Y705     PRIMARY  pearson
+                                  score_140 vs STAT3:Y705     PRIMARY spearman
+                                  score_140 vs STAT3:S727   secondary  pearson
+                                  score_140 vs STAT3:S727   secondary spearman
+                         score_140 vs STAT3 protein (S1D)   secondary  pearson
+                         score_140 vs STAT3 protein (S1D)   secondary spearman
+ score_139 vs STAT3:Y705 (CXCL8 dropped, A19 sensitivity) sensitivity  pearson
+ score_139 vs STAT3:Y705 (CXCL8 dropped, A19 sensitivity) sensitivity spearman
+                                  score_143 vs STAT3:Y705 sensitivity  pearson
+                                  score_143 vs STAT3:Y705 sensitivity spearman
+                            score_140 vs STAT3 mRNA (S1C)   secondary  pearson
+                            score_140 vs STAT3 mRNA (S1C)   secondary spearman
+                            score_140 vs ESTIMATE stromal   secondary  pearson
+                            score_140 vs ESTIMATE stromal   secondary spearman
+                           ESTIMATE stromal vs STAT3:Y705   secondary  pearson
+                           ESTIMATE stromal vs STAT3:Y705   secondary spearman
+   n      r   ci_lo  ci_hi            p
+ 114 0.3491  0.1765 0.5009 1.407322e-04
+ 114 0.3718  0.1957 0.5248 4.630115e-05
+ 132 0.1468 -0.0247 0.3099 9.310009e-02
+ 132 0.0958 -0.0768 0.2627 2.747691e-01
+ 208 0.2796  0.1492 0.4004 4.311745e-05
+ 208 0.3364  0.2063 0.4548 6.759863e-07
+ 114 0.3501  0.1776 0.5017 1.345646e-04
+ 114 0.3707  0.1944 0.5238 4.901845e-05
+ 114 0.3445  0.1714 0.4969 1.749377e-04
+ 114 0.3628  0.1858 0.5169 7.290401e-05
+ 255 0.5409  0.4478 0.6224 8.805811e-21
+ 255 0.5365  0.4359 0.6239 2.075111e-20
+ 255 0.5270  0.4321 0.6103 1.261163e-19
+ 255 0.5274  0.4258 0.6159 1.162070e-19
+ 114 0.0853 -0.1001 0.2651 3.665921e-01
+ 114 0.1372 -0.0488 0.3140 1.453754e-01
+         group   n  mean_score  sd_score median_score  mean_diff       t_p
+ Y705 measured 114 -0.05110664 0.8561323 0.0002067982 0.03903874 0.7718687
+  Y705 missing  94 -0.09014538 1.0462837 0.0059220089         NA        NA
+  wilcox_p welch_ci_lo welch_ci_hi
+ 0.9787633  -0.2262604   0.3043379
+        NA          NA          NA
+                                                                                                                                                                                                                                       tests
+ association of Y705 missingness with the SCORE (predictor-side selection). Does NOT test Amendment 18's range-truncation claim, which concerns the unobserved Y705 values in the 94 excluded patients and is unfalsifiable from these data.
+                                                                                                                                                                                                                                        <NA>

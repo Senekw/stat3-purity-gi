@@ -1,11 +1,28 @@
 
 == Amendment 16 PRIMARY / Amendment 18: FU-iCCA phosphoproteomic concordance ==
-  ..  B.val.FU  07_score.R md5 0afa1757b745e6b8d37565c2e03312bb
-  ..  B.val.FU  06_purity.R md5 2cf79705a42a134573afb64740e78438
+  ..  B.val.FU  07_score.R md5 0afa1757b745e6b8d37565c2e03312bb (pinned)
+  ..  B.val.FU  06_purity.R md5 2cf79705a42a134573afb64740e78438 (pinned)
   ok  B.val.FU  7 functions match their committed definitions in 06/07 (body comparison, negative control passed)
   ok  B.val.FU  S1C 20173 x 255 | S1E 18347 x 214 | S1D 8320 x 214
   ..  B.val.FU          note: an earlier run order said list_id == 'final_140'; the canonical artefact value is 'primary_140' (identity enforced by symbol digest)
   ok  B.val.FU     gene list 'primary_140' verified                       = 140
   ok  B.val.FU     gene list 'sensitivity_143' verified                   = 143
-Error: HALT [B.val.FU]: scoring gene(s) absent from S1C: CXCL8 (absent; the symbol(s) IL8 ARE present in S1C and may denote the same gene -- whether to use one is an amendment decision, not taken here). Reported in output/fuicca_gene_coverage.csv and output/fuicca_missing_genes.csv. Scoring a reduced set, or renaming a symbol, is a decision for the study author; neither is taken here.
-Execution halted
+  ok  B.val.FU  Amendment 19: renamed 1 symbol (IL8 -> CXCL8); 20173 rows, all unique
+  ok  B.val.FU  both gene lists fully present in S1C
+  ok  B.val.FU  no duplicate or zero-variance scoring genes in S1C
+  ok  B.val.FU  scored 255 patients | mean 5.73e-16 sd 1.0000 | range -3.887 to 2.302
+  ok  B.val.FU  n reproduces Amendment 18 exactly: 208 both assays, 120 numeric Y705, 114 joined
+  ..  B.val.FU  ESTIMATE input: 20173 of 20173 S1C rows (0 non-finite, 0 duplicated symbols dropped)
+  ..  B.val.FU  ESTIMATE scored 10205 genes against its 10,412-gene common set (pre-rename symbols)
+  ok  B.val.FU  scatter written with 114 points
+
+-- 140-gene (Amendment 19 rename) vs 139-gene (CXCL8 dropped) --
+   r(score_140, score_139) = 0.999715
+
+-- correlations --
+
+-- missingness --
+
+-- per-gene vs Y705: 140 genes | r from -0.238 to 0.383 | 22 with BH q < 0.05 --
+
+B.val.FU complete. HARD STOP: no survival model, no pooling.

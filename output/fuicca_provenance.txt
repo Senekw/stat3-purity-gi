@@ -1,0 +1,20 @@
+# FU-iCCA phosphoproteomic concordance -- Amendment 16 PRIMARY, per Amendment 18
+run_date: 2026-08-03
+source: Dong et al. 2022 Cancer Cell supplement, Tables S1 (mmc2) and S5 (mmc6)
+  NOT the NODE deposit OEP001105; see Amendment 18
+FU-iCCA extraction — Dong et al. 2022 Cancer Cell supplement
+extracted: 2026-08-02, streamed from the .xlsx, no library, no recompute
+mmc2 (Table S1) md5 f41b36e31e61c5ecc049ad636af35b1d
+mmc6 (Table S5) md5 6b331e884f97fd5cdd2423bd981bf3c8
+S1C_mrna_log2tpm1.csv  <- sheet 'S1C. mRNA expression', hdr row 2, data row 3+, log2 TPM+1
+S1E_phosphosites.csv   <- sheet 'S1E. 18,347 phosphosites', hdr row 3, data row 4+, median-norm log2
+S1D_protein.csv        <- sheet 'S1D. proteins expression', hdr row 3, data row 4+, median-norm log2
+S1A_clinical.csv       <- sheet 'S1A. Clinical info', hdr row 2, data row 3+
+Values copied verbatim; no transformation applied at extraction.
+script_md5: 3b62390cd33b343864c36f56ffd8423b
+gene list: primary_140 (eb167e8c7a33b4202bd609a17defa629), sensitivity sensitivity_143 (8a54835eedcfe3b23dcb56ce74805a87)
+n: 208 both assays, 120 numeric Y705, 114 joined (Amendment 18 states 208 / 120 / 114)
+Amendment 19: renamed IL8 -> CXCL8 in S1C (FU-iCCA only, 1 symbol); 139-gene sensitivity with CXCL8 dropped reported alongside
+ESTIMATE was run on the PRE-RENAME symbols: its 10,412-gene common set contains IL8, not CXCL8, so renaming first would drop the gene from its intersection. Genes scored: 10205
+S727 secondary n = 132, not the 135 finite values in S1E: 3 of those patients have no mRNA column
+NO survival model fitted; NO pooling; NO imputation; NO substitute for Y705.

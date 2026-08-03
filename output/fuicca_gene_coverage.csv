@@ -1,3 +1,3 @@
-"list_id","n_genes","n_present","n_missing","missing"
-"primary_140",140,139,1,"CXCL8"
-"sensitivity_143",143,142,1,"CXCL8"
+"list_id","n_genes","n_present","n_missing","missing","n_present_after","n_missing_after"
+"primary_140",140,139,1,"CXCL8",140,0
+"sensitivity_143",143,142,1,"CXCL8",143,0

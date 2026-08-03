@@ -252,6 +252,70 @@ Related, finding f73b1d89: the run order said "reuse the functions from 06 and
 documented in the source rather than left as a silent divergence from the
 instruction.
 
+## 39. AMENDMENT 19'S RENAME HAS A SIDE EFFECT OUTSIDE ITS SCOPE — ESTIMATE
+
+Amendment 19's scope is "CXCL8/IL8 in FU-iCCA S1C and nothing else". Applying the
+rename before ESTIMATE would have breached that, silently.
+
+**ESTIMATE's own reference vocabulary uses the OLD symbol.** Its 10,412-gene
+`common_genes` table keys on `GeneSymbol == "IL8"`; CXCL8 appears only in an
+unused Synonyms field, and `filterCommonGenes()` merges on GeneSymbol alone.
+Measured, not argued: renaming first drops the gene from ESTIMATE's intersection
+(10,205 -> 10,204 genes scored) and shifts the stromal score by up to **0.51** on
+a 40-sample test.
+
+Two reasons that is wrong here. It is an unregistered side effect of a
+nomenclature fix, and it would make this cohort's ESTIMATE input differ **in kind**
+from the six TCGA cohorts', where ESTIMATE saw whatever symbol those deposits
+carried.
+
+Resolved by keeping a pre-rename copy of the matrix and running ESTIMATE on it.
+The renamed matrix is used for every panel computation; `mrna_estimate` is used
+for ESTIMATE and nothing else, asserted to differ from it only in one row *name*.
+The audit reached the same conclusion independently and verified the fix.
+
+Two further audit findings on the rename block, both mine:
+
+- **F15** — `match()` returns the first index only, so my "source symbol is
+  unique" check tested distinctness across the mapping's rows, not multiplicity
+  of IL8 in S1C. A matrix with two IL8 rows cleared every gate and renamed only
+  the first, making the result annotation-order dependent. Now counts occurrences.
+- **F16** — the md5 pins I added for the reused source files were `NA`
+  placeholders, and the `!is.na()` short-circuit meant the comparison never
+  evaluated. The guard was inert while its comment asserted the mechanism as
+  fact. Pinned, and a missing pin is now itself a halt.
+- **F17** — my F4 fix restated the tautology one indirection deeper:
+  `names(score)` IS `colnames(mrna)` and `est$sample` IS `colnames(em)`, so the
+  `match()` could not fail either. Replaced with a check on something ESTIMATE
+  can actually do wrong — returning a non-finite score.
+
+## 40. FU-iCCA PRIMARY VALIDATION — the result
+
+Amendment 16's PRIMARY analysis, run under Amendments 18 and 19. **n = 114.**
+
+| | Pearson | Spearman |
+|---|---|---|
+| **score_140 vs STAT3:Y705** | **0.3491** (0.1765–0.5009), p = 1.4e-04 | **0.3718** (0.1957–0.5248), p = 4.6e-05 |
+| score_139 (CXCL8 dropped) | 0.3501 (0.1776–0.5017) | 0.3707 (0.1944–0.5238) |
+| score_143 sensitivity | 0.3445 (0.1714–0.4969) | 0.3628 (0.1858–0.5169) |
+
+Secondaries, labelled as such in the output CSV: S727 0.1468 (−0.0247–0.3099),
+n = 132; protein-level STAT3 0.2796 (0.1492–0.4004), n = 208; STAT3 mRNA 0.5409,
+n = 255; ESTIMATE stromal 0.5270, n = 255; stromal vs Y705 0.0853
+(−0.1001–0.2651), n = 114.
+
+**The missingness assumption is not supported by the score-side test.** Patients
+with and without a measured Y705 do not differ in score: means −0.051 vs −0.090,
+Welch p = 0.77 (CI −0.226 to 0.304), Wilcoxon p = 0.98. Per NOTES 37 / audit F7,
+this tests predictor-side selection only; Amendment 18's range-truncation claim
+concerns the *unobserved* Y705 values in the 94 excluded and is not reachable
+from these data.
+
+Per-gene: 22 of 140 genes reach BH q < 0.05, 104 of 140 have positive r, range
+−0.238 (FGL1) to +0.383 (OSMR). STAT3 itself r = 0.296. **CXCL8 — the gene the
+rename restored — is r = 0.035, q = 0.80**, i.e. the amendment's "direction of
+bias: none identifiable" holds empirically.
+
 ## 38. UNDISCLOSED DEVIATION — figure 3 has 54 bars where 18 were asked for
 
 The run order for `11_figures.R` item 3 asked for "stacked bars per gene per
@@ -282,7 +346,15 @@ the band drawn as an interval per bar, is a small change to `fig3()`. It has not
 been made, because which pi to plot is a presentation choice about the registered
 estimand and is the author's to make.
 
-## 36. BLOCKER — CXCL8 is absent from FU-iCCA's S1C; the symbol IL8 is present
+## 36. RESOLVED by Amendment 19 — CXCL8 absent from S1C; IL8 present
+
+**Resolved 2026-08-02.** Amendment 19 registers the IL8 -> CXCL8 rename for
+FU-iCCA S1C only. The scoring set is the registered 140 in this cohort, and the
+139-gene sensitivity (CXCL8 dropped) moves the primary Pearson from 0.3491 to
+0.3501 — r(score_140, score_139) = 0.999715. The blocker as originally recorded
+follows, unedited.
+
+## 36a. (was BLOCKER) CXCL8 is absent from FU-iCCA's S1C; the symbol IL8 is present
 
 **Amendment 16's PRIMARY validation could not run. Nothing was correlated.**
 

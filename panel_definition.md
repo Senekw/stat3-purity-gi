@@ -713,3 +713,27 @@ site.
 
 Made after the Part B primary result was known, as Amendment 16 was. No
 correlation has been computed.
+
+### Amendment 19 — 2026-08-02
+
+For the FU-iCCA cohort only, the gene symbol IL8 in Table S1C is treated as
+CXCL8.
+
+Reason: CXCL8 is the HGNC-approved symbol for the gene formerly designated IL8
+(HGNC:6025, approved symbol CXCL8, previous symbol IL8). Table S1C uses the
+superseded symbol. This is a nomenclature reconciliation between two names for one
+gene, not a substitution of one gene for another, and it is registered here so the
+authority is stated rather than assumed. Without it the scoring set in this cohort
+would be 139 of 140, silently differing from every other cohort in the study.
+
+Scope: this mapping applies to CXCL8/IL8 in FU-iCCA S1C and to nothing else. No
+other alias is resolved. The script asserts that exactly one symbol is renamed and
+that no other panel gene is missing after the rename; it halts otherwise.
+
+Direction of bias: none identifiable. CXCL8 enters the panel via route B_only
+(ENCODE + TRRUST), is not an origin-score gene, and is epithelial-dominant in one
+of three atlases — one of the 46 counted in k, not one of the 24 dominant in all
+three. Its inclusion restores the registered 140-gene set rather than altering it.
+
+Sensitivity: the correlation is additionally computed on the 139-gene set with
+CXCL8 dropped, and both are reported.
