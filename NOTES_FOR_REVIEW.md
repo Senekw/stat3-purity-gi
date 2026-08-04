@@ -289,10 +289,88 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
-## 45. THE AUDIT OF THE REFINED FIGURE SET DID NOT COMPLETE
+## 45. AUDIT OF THE REFINED FIGURE SET — second attempt, static, one finding
+
+**First attempt (2026-08-03): no verdict.** Dispatched before the run as required,
+it worked ~2 h, then hung provisioning an R environment to test `assert_plot()`'s
+R semantics and never returned. Stopped after >2 h; nothing persisted.
+
+**Second attempt (2026-08-04) at HEAD `66eb789`: static, no R.** The child was
+told up front that no R is available and that it must not provision one. It
+complied — 20 tool calls, all bash/python, no environment calls — and completed
+real pandas verification against the 15 committed CSVs the script reads. It ran
+past the 30-minute deadline the run order set and was stopped without emitting a
+structured verdict, but its completed measurements were recovered from its trace
+and are recorded below alongside the checks I finished myself.
+
+### One finding, and it is mine: FIGURE_DATA.md miscounted its own assertions
+
+`FIGURE_DATA.md` said **"29 assertions pass per run, each comparing the ggplot
+frame against a fresh read of the named file."** A run emits 29 `ok` lines, but
+they are not all `assert_plot()` comparisons:
+
+- **26** are `assert_plot()` calls against a fresh read; one of those is the
+  self-test's positive control on a frame no figure plots, so **25 cover figure
+  content**;
+- **3** print `ok` but are different checks — the self-test summary, the null-draw
+  export check, and the `fig5` group-count reconciliation.
+
+The guard is doing what was claimed; the *count* was inflated by conflating
+`ok`-lines with assertions. Corrected in `FIGURE_DATA.md`. No figure changed.
+
+### What both passes verified clean
+
+- **`assert_plot()` cannot be fed its own source.** `src <- rd(file)` reads from
+  disk *inside* the function; callers pass a filename string, never a frame. Every
+  one of the 20 textual call sites was read — none is vacuous.
+- **Scope holds.** No `coxph`, `rma`, `p.adjust`, `chisq.test` or `cor` anywhere in
+  the script. Exactly two writes, both into `figures/refined/`: `ggsave()` and the
+  null-draw `write.csv()`. `11_figures.R` and `figures/` untouched.
+- **Every literal number in a title, subtitle or caption is correct.** Checked
+  against the CSVs: the 8.9% ceiling quoted as "9%"; "nine of the 54 values" (54
+  grid values, exactly 9 above 0.50); the RPPA pooled 0.139 (−0.064 to 0.331),
+  I² 91.8%; the self-correlation delta 0.0082 quoted as 0.008; 1/140 = 0.71%; the
+  FU-iCCA n = 114 of 208 with 94 excluded; the colorectal 1,181 / 326 matching the
+  input sums; the panel-A 1,755 / 595.
+- **The compartment title is defensible on the mark.** `dominant = TRUE` for
+  exactly one atlas-gene pair (MYC / GSE178341), and MYC in GSE178341 is the only
+  pair clearing 0.50 at all three grid points. Nine values clear 0.50 somewhere —
+  MYC twice more, BCL2 in all three atlases at π = 0.70 — which is why the figure
+  marks the file's own call and states the whole-band rule in the caption.
+
+### Two titles I am flagging rather than changing
+
+The run order said not to modify any figure, so these stand as reported:
+
+1. **`fig4`: "Adjustment for purity and stroma shows no reduction in the score's
+   association."** The pooled attenuation is −0.0248 with a 95% interval of
+   **−0.1253 to 0.0757**, which contains positive values — i.e. reductions — up to
+   0.0757. "Shows no reduction" states the point estimate's sign as a finding when
+   the interval is compatible with reduction. This is the same class of
+   overstatement as the two corrected before commit. A defensible wording: *"no
+   evidence of reduction; the interval is compatible with reductions up to 0.076."*
+   The subtitle and caption already say the interval contains larger reductions,
+   so the figure is internally honest — the title alone overreaches.
+2. **`figure_main`: "…performs at the median of matched random signatures."** The
+   observed value sits at the **60.5th** percentile, not the 50th. "At the median"
+   is loose; "near the middle of" or "at the 60th percentile of" would be exact.
+
+Neither changes a number, and both are visible in the figure's own annotations.
+
+### What could not be verified without R
+
+`assert_plot()`'s behaviour under R's `match()`/`anyDuplicated()` semantics was
+reasoned about from the source, not executed. The uniqueness guard checks the
+**source** keys; a plotted frame with duplicate keys would map several rows onto
+one source row, and each would still have to match it — sound, but untested. The
+null-draw export reads `null_replicates.rds`, which a static audit cannot open;
+its seven moments plus the draw count, the observed percentile and a 101-point
+monotone percentile grid constrain the exported vector tightly, but not uniquely.
+
+### Superseded text from the first attempt
 
 **Stated plainly because CLAUDE.md §9 constraint 5 makes the Implementation
-Auditor a gate on every run, and this run is not gated by one.**
+Auditor a gate on every run.**
 
 The audit was dispatched before `11b_figures_refined.R` was run, as required. It
 worked for roughly two hours: it read the script, listed `output/`, pulled

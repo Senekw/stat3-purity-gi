@@ -157,9 +157,19 @@ they cannot go stale if the analysis is re-run. An earlier draft named
 
 `11_figures.R` and `figures/` are **untouched**; the refined set is additive. No
 reported number differs between the two sets — the refinement is presentation
-only, and the same `assert_plot()` contract binds every figure. **29 assertions
-pass per run**, each comparing the ggplot frame against a *fresh read* of the
-named file.
+only, and the same `assert_plot()` contract binds every figure.
+
+A run emits **29 `ok` lines**, which are not all the same kind of check. The audit
+of 2026-08-04 found this sentence previously read "29 assertions pass per run,
+each comparing the ggplot frame against a fresh read" — that was wrong. The
+breakdown:
+
+- **26** are `assert_plot()` comparisons of a plotted frame against a fresh read
+  of a committed CSV. One of those 26 is the self-test's own positive control on
+  a frame that is not plotted in any figure, so **25 cover figure content**.
+- **3** are different checks that also print `ok`: the self-test summary, the
+  null-draw export check (`fig0`), and the `fig5` group-count reconciliation
+  against `cms_distribution.csv`.
 
 ## The assertion, and why it can fail
 
@@ -249,13 +259,19 @@ three atlases, BCL2 in all three at π = 0.70 — and the bars show that, which 
 why both variants mark the file's own call rather than relying on the 50% line,
 and why the caption states the whole-band rule explicitly.
 
-## Which figure-3 variant reads better
+## Figure 3 — the heatmap is the SELECTED figure; the stacked bars are the ALTERNATIVE
 
-**The heatmap.** With 54 values it prints every number in-cell, so nothing has to
+`fig3_compartment_heatmap.png` is the **selected** figure 3.
+`fig3_compartment_bars.png` is retained as the **alternative** rendering of the
+same data. Both are produced from one shared data-prep function
+(`compartment_data()`), so they cannot diverge in what they plot, and both carry
+the same `fig3-data` assertion against `origin_six_compartment.csv`.
+
+**Why the heatmap.** With 54 values it prints every number in-cell, so nothing has to
 be estimated against an axis; the colour is centred on the 50% dominance
 threshold, so "above or below the rule" is visible at a glance; and the dominance
 call is an outlined cell rather than a diamond, which occludes nothing. The
 stacked-bar version spends most of its ink on the "other compartments" remainder,
 which is 1 − f and carries no independent information, and its dominance diamond
-has to float above the bar to avoid overprinting. Both are produced; the heatmap
-is the one I would ship.
+has to float above the bar to avoid overprinting. Both are produced; the heatmap is
+the selected figure and the bars are the alternative.
