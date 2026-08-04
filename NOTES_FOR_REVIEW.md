@@ -289,6 +289,45 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
+## 45. THE AUDIT OF THE REFINED FIGURE SET DID NOT COMPLETE
+
+**Stated plainly because CLAUDE.md §9 constraint 5 makes the Implementation
+Auditor a gate on every run, and this run is not gated by one.**
+
+The audit was dispatched before `11b_figures_refined.R` was run, as required. It
+worked for roughly two hours: it read the script, listed `output/`, pulled
+`null_distributions.csv` and `survival_per_cohort.csv`, began a cross-check of
+`exp(beta ± 1.96·se)` against the committed `HR_lo`/`HR_hi`, and had started
+drafting its per-figure assessment. It then tried to provision an R environment
+in order to test `assert_plot()`'s R semantics directly, and never returned from
+that provision. I stopped it after >2 h stalled at the same point. **No verdict
+and no structured findings were persisted**, so there is nothing to record as
+"audited clean" and nothing to fix from it.
+
+Two fragments of its work were recoverable from its trace and are worth keeping:
+
+- It independently reached the same conclusion I did about the null-draw export —
+  that the seven moments alone "would not constrain the shape of a histogram,
+  which is the one property the figure displays", and that the 101-point
+  percentile grid is what closes that gap. That check was already in the script.
+- It was reading the corrected RPPA title, so the "disagrees with" → "shows no
+  established agreement with" fix predates it and was not prompted by it.
+
+**What stands in place of the audit.** Everything below was done by me, and none
+of it is a substitute for an independent review:
+
+- 29 `assert_plot()` checks pass per run, each against a fresh read, behind a
+  self-test that corrupts a real value and requires rejection.
+- Every claim-title was tested against the committed data rather than read; two
+  were overstated and were corrected (NOTES 44).
+- Every figure was viewed as a rendered raster; nine defects invisible in the
+  code were found and fixed, including two spurious facets.
+- `git status` confirms `11_figures.R` and `figures/` are untouched.
+
+**Recommendation: re-run the audit before these figures are used in the paper.**
+The script is committed at `34fffff` and can be audited as it stands. I would not
+call this set reviewed.
+
 ## 44. REFINED FIGURE SET — presentation only, additive
 
 `11b_figures_refined.R` writes 11 figures to `figures/refined/`. **`11_figures.R`
