@@ -14,8 +14,8 @@
   ok  figCRC-inputs    3 row(s) x 4 value(s) match exploratory_colorectal_inputs.csv
   ok  figRPPA         30 row(s) x 4 value(s) match exploratory_rppa_control_correlations.csv
   ok  figRPPA-pool     5 row(s) x 4 value(s) match exploratory_rppa_control_pooled.csv
-  ..  saved         figure_crc_pool.png                        180 x 110 mm
-  ..  saved         figure_rppa_concordance.png                180 x 150 mm
+  ..  saved         figure_crc_pool.png                        180 x 118 mm
+  ..  saved         figure_rppa_concordance.png                180 x 158 mm
   ok  figA-null        1 row(s) x 5 value(s) match null_distributions.csv
   ok  figA-events      6 row(s) x 2 value(s) match survival_per_cohort.csv
   ..  saved         fig1_null_distribution.png                 180 x 105 mm

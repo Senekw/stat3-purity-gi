@@ -361,7 +361,8 @@ fig_crc <- function() {
     # The first title said "excludes ... above 9%" while the caption said a bound
     # is "not a proof of absence" -- the figure contradicted itself. "compatible
     # with at most" is what a 95% upper bound licenses.
-    labs(title="Pooled across three colorectal cohorts, the data are compatible with at most a 9% per-SD hazard increase",
+    labs(title=paste0("Pooled across three colorectal cohorts, the data are compatible\n",
+                      "with at most a 9% per-SD hazard increase"),
          subtitle=sprintf(paste0("EXPLORATORY, POST-HOC. Score log-HR per 1 SD, model 1, ",
                                  "%s patients and %d events.\nPooled HR %.3f (95%% CI %.3f to %.3f), ",
                                  "I2 = %.1f%%, tau2 = %.3g, Q p = %.3f."),
@@ -376,7 +377,7 @@ fig_crc <- function() {
                         "largest per-SD HR compatible with these data at alpha = 0.05, not a proof of absence.")) +
     theme_pub(grid_y=FALSE, grid_x=TRUE) +
     theme(legend.position="bottom")
-  list(plot=p, file="figure_crc_pool.png", w=180, h=110)
+  list(plot=p, file="figure_crc_pool.png", w=180, h=118)
 }
 
 # ================================================== new: RPPA concordance grid
@@ -438,7 +439,8 @@ fig_rppa <- function() {
     # to 0.331, which SPANS ZERO. An interval spanning zero cannot establish
     # disagreement; it fails to establish agreement. The title now says what the
     # interval supports.
-    labs(title="The RPPA phosphosite shows no established agreement with total STAT3 on the same lysate",
+    labs(title=paste0("The RPPA phosphosite shows no established agreement\n",
+                      "with total STAT3 on the same lysate"),
          subtitle=paste0("EXPLORATORY, POST-HOC. Pearson r with 95% intervals per discovery cohort; band, line and\n",
                          "diamond are the pooled random-effects estimate. Every cohort is shown because I2 is 60-92%."),
          x="Pearson correlation", y=NULL,
@@ -452,7 +454,7 @@ fig_rppa <- function() {
     theme(panel.spacing.x=unit(3,"mm"),
           panel.spacing.y=unit(5,"mm"),
           strip.text=element_text(size=PT_TICK, lineheight=1.15, hjust=0))
-  list(plot=p, file="figure_rppa_concordance.png", w=180, h=150)
+  list(plot=p, file="figure_rppa_concordance.png", w=180, h=158)
 }
 
 # ============================== compartment attribution: two forms to compare
