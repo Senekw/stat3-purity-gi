@@ -357,7 +357,44 @@ The run order said not to modify any figure, so these stand as reported:
 
 Neither changes a number, and both are visible in the figure's own annotations.
 
-### What could not be verified without R
+### The two R-dependent gaps are now CLOSED (2026-08-05)
+
+The re-audit was static and left two items unverified because the child had no R.
+I have R, so I executed them directly against the committed script. Both close
+clean, and the second is stronger than the static reasoning credited.
+
+**`assert_plot()` under R's `match()`/`anyDuplicated()` semantics — 6 cases, all
+correct.** The uniqueness guard checks the *source* keys, so I tested what happens
+when the *plotted* frame misbehaves:
+
+| Case | Result |
+|---|---|
+| duplicate plotted keys, values correct | passes — each duplicate maps to the one source row and must match it |
+| duplicate plotted keys, **one copy corrupted** | **halts** |
+| plotted key absent from the source | **halts** |
+| asserted column absent from the source (misnamed) | **halts** |
+| named-vector rename, values equal | passes — the rename resolves to the right source column |
+| named-vector rename, **one value corrupted** | **halts** |
+
+So a misnamed column cannot pass silently, and a corrupted duplicate cannot hide
+behind a correct one.
+
+**`tol = 1e-9` is not defeated by 4-dp storage.** Every asserted correlation column
+is stored at ≤ 4 dp exactly. Perturbing a value by 1e-4 — one unit in the last
+stored digit, the smallest error the file can even express — halts. The tolerance
+is tighter than the precision, so no comparison passes on rounding.
+
+**The null-draw export is pinned to the empirical distribution exactly.** Its nine
+checks (six moments, draw count, observed percentile, 101-point monotone grid) are
+invariant to a *permutation* of the draws — I confirmed a swap of two interior
+values leaves all nine identical. That is the correct scope: the histogram displays
+the distribution, and nothing in any figure depends on draw order. A genuine
+distributional change *is* caught: moving two interior values by 1e-3 while
+preserving the mean leaves mean, median and q25 unchanged to 0.00e+00, yet shifts
+the percentile grid by 9.38e-06 — above the 1e-8 tolerance, so it halts. The
+moments alone would have missed it; the grid is what closes the gap.
+
+### What could not be verified without R (superseded above)
 
 `assert_plot()`'s behaviour under R's `match()`/`anyDuplicated()` semantics was
 reasoned about from the source, not executed. The uniqueness guard checks the
