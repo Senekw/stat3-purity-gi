@@ -73,8 +73,10 @@ comparing against Crossref may query it.
 
 ## Full verification table
 
-`ov` = title token overlap with the published record (blank = 1.00, exact).
-**Bold** marks a field the manuscript does not currently state.
+`ov` = fraction of the manuscript title's **content words** (stop-words removed)
+that appear in the published title; blank = 1.00, exact. Stop-words are removed so a
+dropped "of"/"the" does not read as a title discrepancy — the same metric is used for
+every row. **Bold** marks a field the manuscript does not currently state.
 
 | # | First author (n) | Published title | Journal | Year | Vol | Pages | DOI | PMID | ov |
 |---|---|---|---|---|---|---|---|---|---|
@@ -86,12 +88,12 @@ comparing against Crossref may query it.
 | 6 | Liu (740) | An Integrated TCGA Pan-Cancer Clinical Data Resource to Drive High-Quality S | Cell | 2018 | **173** | **400-416.e11** | `**10.1016/j.cell.2018.02.052**` | — |  |
 | 7 | Jonker (23) | Napabucasin versus placebo in refractory advanced colorectal cancer: a rando | The Lancet Gastroenter | 2018 | 3 | 263-270 | `**10.1016/s2468-1253(18)30009-8**` | 29397354 |  |
 | 8 | Shah (20) | Napabucasin Plus FOLFIRI in Patients With Previously Treated Metastatic Colo | Clinical Colorectal Ca | 2023 | 22 | 100-110 | `10.1016/j.clcc.2022.11.002` | 36503738 |  |
-| 9 | Shah (22) | Randomized, Double-Blind, Placebo-Controlled Phase III Study of Paclitaxel ± | Clinical Cancer Resear | 2022 | 28 | 3686-3694 | `**10.1158/1078-0432.ccr-21-4021**` | — | 0.83 |
+| 9 | Shah (22) | Randomized, Double-Blind, Placebo-Controlled Phase III Study of Paclitaxel ± | Clinical Cancer Resear | 2022 | 28 | 3686-3694 | `**10.1158/1078-0432.ccr-21-4021**` | — | 0.89 |
 | 10 | Bekaii-Saab (19) | Napabucasin plus nab-paclitaxel with gemcitabine versus nab-paclitaxel with  | eClinicalMedicine | 2023 | 58 | 101897 | `**10.1016/j.eclinm.2023.101897**` | 36969338 |  |
 | 11 | Froeling (16) | Bioactivation of Napabucasin Triggers Reactive Oxygen Species–Mediated Cance | Clinical Cancer Resear | 2019 | 25 | 7162-7174 | `**10.1158/1078-0432.ccr-19-0302**` | 31527169 |  |
 | 12 | Johnson (3) | Targeting the IL-6/JAK/STAT3 signalling axis in cancer | Nat Rev Clin Oncol | 2018 | 15 | 234-248 | `**10.1038/nrclinonc.2018.8**` | — |  |
 | 13 | Dong (32) | Proteogenomic characterization identifies clinically relevant subgroups of i | Cancer Cell | 2022 | 40 | 70-87.e15 | `**10.1016/j.ccell.2021.12.006**` | 34971568 |  |
-| 14 | Ma (16) | Tumor Cell Biodiversity Drives Microenvironmental Reprogramming in Liver Can | Cancer Cell | 2019 | **36** | **418-430.e6** | `**10.1016/j.ccell.2019.08.007**` | 31588021 | 0.89 |
+| 14 | Ma (16) | Tumor Cell Biodiversity Drives Microenvironmental Reprogramming in Liver Can | Cancer Cell | 2019 | **36** | **418-430.e6** | `**10.1016/j.ccell.2019.08.007**` | 31588021 | 0.88 |
 | 15 | Pelka (72) | Spatially organized multicellular immune hubs in human colorectal cancer | Cell | 2021 | 184 | 4734-4752.e20 | `**10.1016/j.cell.2021.08.003**` | — |  |
 | 16 | Peng (23) | Single-cell RNA-seq highlights intra-tumoral heterogeneity and malignant pro | Cell Res | 2019 | 29 | 725-738 | `**10.1038/s41422-019-0195-y**` | 31409908 |  |
 | 17 | Marisa (24) | Gene Expression Classification of Colon Cancer into Molecular Subtypes: Char | PLoS Med | 2013 | **10** | **e1001453** | `**10.1371/journal.pmed.1001453**` | — |  |
