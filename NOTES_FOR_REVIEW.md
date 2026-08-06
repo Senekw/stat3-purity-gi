@@ -289,6 +289,39 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
+## 46. fig5's JITTER IS UNSEEDED — the figure is not byte-reproducible
+
+Found while confirming that only the two intended titles changed: `git status`
+showed `fig5_score_by_cms.png` modified, though I had not touched its title.
+
+**Diagnosis.** Line 628 uses `geom_jitter(width = 0.13, ...)` and **no seed is set
+anywhere in the script**. The jitter draws from R's RNG, so the point cloud lands
+differently on every render. Confirmed decisively: two consecutive runs with *no
+source change at all* differ in **1.935%** of the decompressed pixel stream
+(167,565 bytes). My first reading — "identical pixels, metadata-only difference" —
+was wrong, and the rerun test is what caught it.
+
+**What this does and does not affect.**
+
+- It does **not** affect any reported number. Jitter is a display offset on the
+  raw points; the violins, boxplots, group counts and the caption statistics are
+  computed from the data and are unchanged. All 29 checks pass identically on
+  every run, `fig5` group counts included.
+- It **does** mean `fig5` is not byte-reproducible: re-running the script produces
+  a visually equivalent but not identical figure. For a project whose whole
+  discipline is that a rerun reproduces the artefact exactly, that is a real
+  defect, and it is the only figure with this property (`fig4` also changed this
+  round, but for the intended reason — its title was corrected).
+
+**Not fixed here.** The run order for this round was explicit that no figure was
+to be modified, and the fix — `set.seed()` before the jitter, or
+`position_jitter(seed = ...)` — necessarily re-renders `fig5`. One line, no
+number affected, but it is a figure change and therefore the author's call.
+
+**Recommended fix when figure work resumes:**
+`geom_jitter(position = position_jitter(width = 0.13, height = 0, seed = 42), ...)`
+which pins the offsets without touching anything else.
+
 ## 45. AUDIT OF THE REFINED FIGURE SET — second attempt, static, one finding
 
 **First attempt (2026-08-03): no verdict.** Dispatched before the run as required,

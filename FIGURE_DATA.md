@@ -275,3 +275,72 @@ stacked-bar version spends most of its ink on the "other compartments" remainder
 which is 1 − f and carries no independent information, and its dominance diamond
 has to float above the bar to avoid overprinting. Both are produced; the heatmap is
 the selected figure and the bars are the alternative.
+
+---
+
+# FINAL FIGURE SET — status of every file (2026-08-05)
+
+The set is **final**. Below, every figure on disk is assigned exactly one status.
+`figures/refined/` is the live directory; `figures/` is retained only as the
+committed record of the earlier rendering. **17 files, 3 statuses, no file
+unassigned.**
+
+## Main text — 4 figures
+
+| File | Content |
+|---|---|
+| `figures/refined/figure_main.png` | 3 panels: **A** null distribution with the panel marked, **B** forest of M1 across six discovery cohorts + pooled, with GSE39582 in its own band, **C** the FU-iCCA pY705 scatter |
+| `figures/refined/fig3_compartment_heatmap.png` | compartment attribution, gene × atlas × π, with dominance marked — **the selected figure 3** |
+| `figures/refined/figure_crc_pool.png` | colorectal pooling, EXPLORATORY POST-HOC |
+| `figures/refined/figure_rppa_concordance.png` | the four RPPA comparisons, EXPLORATORY POST-HOC |
+
+## Supplement — 7 figures
+
+| File | Why it is supplement, not main |
+|---|---|
+| `figures/refined/figS_forest_M4.png` | the M4 panel dropped from the main figure |
+| `figures/refined/fig1_null_distribution.png` | standalone version of main panel A |
+| `figures/refined/fig2_forest_logHR.png` | standalone forest, both M1 and M4 |
+| `figures/refined/fig6_fuicca_y705_scatter.png` | standalone version of main panel C |
+| `figures/refined/fig4_attenuation_forest.png` | attenuation per cohort with the pooled estimate |
+| `figures/refined/fig5_score_by_cms.png` | score by CMS, COAD and READ (deferred B.o.1 item) |
+| `figures/refined/fig3_compartment_bars.png` | **the alternative** figure 3 — stacked bars, same data, retained for comparison |
+
+Three of these (`fig1`, `fig2` in its M1 half, `fig6`) are standalone renderings
+of content that also appears in `figure_main`. That is deliberate: a supplement
+reader should not have to crop a composite. They are the same data behind the same
+assertions, not independent analyses.
+
+## Superseded — 6 figures, retained but not for use
+
+Everything in `figures/` (not `figures/refined/`) is the earlier rendering from
+`11_figures.R`. It is kept because it is committed history and because
+`11_figures.R` remains a working script, but **no file in `figures/` should be
+used in the manuscript**:
+
+`fig1_null_distribution.png`, `fig2_forest_logHR.png`,
+`fig3_compartment_attribution.png`, `fig4_attenuation_forest.png`,
+`fig5_score_by_cms.png`, `fig6_fuicca_y705_scatter.png`
+
+Five are superseded by a same-named file in `figures/refined/`.
+`fig3_compartment_attribution.png` has no same-named successor: it was replaced by
+the two variants `fig3_compartment_heatmap.png` (selected) and
+`fig3_compartment_bars.png` (alternative).
+
+## Four claim-titles were corrected before the set was finalised
+
+Every title must be true of every plotted element. Four asserted more than the
+data support, and all four were corrected — the last two on 2026-08-05:
+
+| Figure | Was | Is |
+|---|---|---|
+| RPPA concordance | "**disagrees with** total STAT3" | "shows **no established agreement** with total STAT3" — the pooled interval (−0.064 to 0.331) spans zero, which cannot establish disagreement |
+| colorectal pooling | "**excludes** a per-SD increase above 9%" | "the data are **compatible with at most** a 9% per-SD increase" — the old title contradicted its own caption |
+| `fig4` attenuation | "**shows no reduction** in the score's association" | "is **compatible with** no reduction in the score's association" — the interval (−0.1253 to 0.0757) contains reductions up to 0.0757 |
+| `figure_main` | "performs **at the median**" | "performs **near the median**" — the observed value is at the 60.5th percentile, not the 50th |
+
+The pattern in all four: stating a point estimate's sign, or an interval's
+exclusion, as an established finding when the interval is compatible with the
+alternative. The corrections change wording only — **no number, no data, and no
+plotted element changed**, and all 29 checks (26 `assert_plot` comparisons + 3
+other checks) pass unchanged after each.

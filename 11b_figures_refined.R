@@ -578,7 +578,13 @@ fig4_atten <- function() {
     scale_y_discrete(expand=expansion(add=c(0.95, 0.6))) +
     scale_colour_manual(values=c("Cohort (paired bootstrap)"=DISC, "Pooled estimate"=ACCENT)) +
     scale_shape_manual(values=c("Cohort (paired bootstrap)"=16, "Pooled estimate"=18)) +
-    labs(title="Adjustment for purity and stroma shows no reduction in the score's association",
+    # NOT "shows no reduction": that states the point estimate's sign as an
+    # established absence. The pooled interval is -0.1253 to 0.0757 and CONTAINS
+    # reductions up to 0.0757, so the data are COMPATIBLE with no reduction --
+    # they do not demonstrate one. Same class as the RPPA "disagrees with" and
+    # the colorectal "excludes", both corrected before commit.
+    labs(title=paste0("Adjustment for purity and stroma is compatible with\n",
+                      "no reduction in the score's association"),
          subtitle=paste0("attenuation_total = beta(M2) - beta(M4). The registered direction is POSITIVE -- adjustment\n",
                          "reduces the association. The pooled estimate is negative."),
          x="attenuation_total  (log-HR units; positive = adjustment reduces the association)", y=NULL,
@@ -668,8 +674,10 @@ if (sys.nframe() == 0L) {
   # and colliding with the panels below. Drawn as a titled wrapper plot instead,
   # so ggplot's own layout reserves the space and wraps nothing off-canvas.
   ttl <- ggdraw() + theme(plot.margin = margin(0,0,0,0)) +
-    draw_label(paste0("A preregistered STAT3 score tracks its target yet performs at the\n",
-                      "median of matched random signatures"),
+    # "at the median" for the 60.5th percentile overstates; "near the median"
+    # matches the abstract's wording.
+    draw_label(paste0("A preregistered STAT3 score tracks its target yet performs near\n",
+                      "the median of matched random signatures"),
                fontface = "bold", size = PT_TITLE, colour = INK, hjust = 0, vjust = 1,
                x = 0.008, y = 0.95, lineheight = 1.2) +
     draw_label(paste0("A: pooled score log-HR (model 1) against 10,000 matched null signatures.\n",
