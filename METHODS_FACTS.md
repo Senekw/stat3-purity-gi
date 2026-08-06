@@ -527,7 +527,7 @@ deposit is already log2 RMA, so that reader is **inapplicable, not merely unused
 | msigdbr | 26.1.0 | **yes** — `panel_provenance.txt` |
 | TCGAbiolinks | 2.38.0 | **yes** — `data/cache/provenance.txt` |
 | GEOquery | 2.78.0 | **yes** — `data/cache/provenance.txt` |
-| estimate | 1.0.13 | **yes** — `06_purity.R` / run log |
+| estimate | 1.0.13 | **partly** — hand-written in `06_purity.R` (lines 35, 100) as a comment and a halt message, **not** captured at runtime and **not** in any run log |
 | CMScaller | 2.0.1 | **yes** — `output/cms_provenance.txt` |
 | survival | 3.8.9 | **no — read from the live library** |
 | metafor | 5.0.1 | **no — read from the live library** |
@@ -542,6 +542,12 @@ deposit is already log2 RMA, so that reader is **inapplicable, not merely unused
 | matrixStats | 1.5.0 | **no — read from the live library** |
 
 ⚠ **The eleven "no" rows are the current library state, not a provenance record.**
+`estimate` is a middle case and is marked "partly": v1.0.13 **is** written into
+committed source (`06_purity.R` lines 35 and 100), but as a hand-authored comment
+and halt-message string, not a version captured from the loaded package. It is
+better evidence than the eleven live-library reads and weaker than `CMScaller`
+2.0.1, which `output/cms_provenance.txt` records as a run-time output. Treat it as
+an author's assertion, not a machine record.
 No `sessionInfo()` is captured in any committed output. They are correct as of
 2026-08-05 but are **not** evidence of what was loaded when each script ran, and a
 methods section that cites them is citing today's library, not the run's. **The
@@ -585,6 +591,7 @@ and the methods section should not assert either.
 | 4 | **GDC workflow name** | Not recorded as a string. The assay used (`tpm_unstrand`) and the 60,660-row assay set are recorded, which implies STAR-Counts, but the name is not written down. |
 | 5 | **11 package versions** | Not in any committed file; the table above reads the **live library**, which is today's state, not the run's. No `sessionInfo()` anywhere. |
 | 6 | **OSF ID, registration DOI, registration date, registered commit** | None present anywhere in the repository. |
+| 6b | **R version is inconsistent across committed files** | `PROJECT_SUMMARY.md` line 839 says *"R 4.4 via conda env `stat3-gi`"*, while `data/cache/provenance.txt` and `data/panel/panel_provenance.txt` both say **R 4.5.3 (2026-03-11)**, which is also the version actually running. The methods section should cite **4.5.3**; the summary line is wrong. |
 | 7 | **Amendment 17** | Does not exist; numbering runs 1–16, 18–20. If the manuscript says "20 amendments" that is **wrong — it is 19**. |
 
 Items 3, 4 and 6 are the ones a reviewer is most likely to ask for, and only
