@@ -16,8 +16,8 @@ Source: `data/panel/panel_provenance.txt`, `data/panel/criterionB_provenance.txt
 | Item | Value |
 |---|---|
 | Panel locked | 2026-07-31 |
-| MSigDB access | via **msigdbr 26.1.0**; gene set `HALLMARK_IL6_JAK_STAT3_SIGNALING`. **MSigDB release version itself `[NOT FOUND]`** — only the R package version is recorded |
-| ChEA3 version | **`[NOT FOUND]` — ChEA3 does not version its GMTs.** Recorded fingerprint instead: file byte sizes, queried **2026-07-31** from `https://maayanlab.cloud/chea3/assets/tflibs/` (the public API is enrich-only, so GMTs were pulled directly) |
+| MSigDB access | via **msigdbr 26.1.0**; gene set `HALLMARK_IL6_JAK_STAT3_SIGNALING`. Underlying release **`msigdb.2026.1`**, read from the package's own hardcoded data URL (`msigdbr:::check_cache`) — see §15 for the caveat that this is the release the package targets, not an independent check on the 87 genes |
+| ChEA3 version | **Not versioned by ChEA3 — this is the correct citation, not a gap.** Recorded fingerprint instead: file byte sizes, queried **2026-07-31** from `https://maayanlab.cloud/chea3/assets/tflibs/` (the public API is enrich-only, so GMTs were pulled directly) |
 | TRRUST version | **v2 human**, queried **2026-07-31**, `https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv`, 297,659 bytes, 9,396 edges, 185 STAT3 edges → **142 unique STAT3 targets** (Activation 83, Repression 27, Unknown 75) |
 
 **ChEA3 library fingerprints** (bytes / STAT3 terms / genes):
@@ -225,8 +225,8 @@ Source: `data/cache/provenance.txt`, `output/clinical_cohort_summary.csv`,
 | Retrieved | 2026-07-31 |
 | TCGAbiolinks | 2.38.0 |
 | GEOquery | 2.78.0 |
-| **GDC data release** | **`[NOT FOUND]`** — `data/cache/provenance.txt` line 6 reads verbatim: *"GDC data release: check GDCquery output above and record it here"*. The placeholder was never filled. |
-| **Workflow** | **`[NOT FOUND]` as a named string.** What is recorded: the assay column used is **`tpm_unstrand`**, from a 60,660-row × N SummarizedExperiment whose assays are `unstranded, stranded_first, stranded_second, tpm_unstrand` (`output/partA_run.log`). That is the STAR-Counts shape, but the workflow name is not written down. |
+| **GDC data release** | **Data Release 45.0 — December 04, 2025** (`major 45, minor 0, release_date 2025-12-04`). Recorded at `04_lock_gene_list.R:135` and `PROJECT_SUMMARY.md:184` from the SummarizedExperiment objects; **re-queried live at `api.gdc.cancer.gov/status` 2026-08-06 and byte-identical**. Now written into `data/cache/provenance.txt`, whose placeholder at `01_download.R:183` had never been filled. |
+| **Workflow** | **`STAR - Counts`** — the literal `workflow.type` argument at `01_download.R:68`. Assay column used downstream: **`tpm_unstrand`**, from the 4-assay, 60,660-row object (`unstranded, stranded_first, stranded_second, tpm_unstrand`). Now written into `data/cache/provenance.txt`. |
 
 **Per cohort** (`clinical_cohort_summary.csv`):
 
@@ -561,43 +561,81 @@ should be stated).
 
 ## 14. Registration
 
-| Item | Value |
-|---|---|
-| **OSF ID** | **`[NOT FOUND]`** — no OSF identifier appears in any committed file |
-| **DOI** | **`[NOT FOUND]`** for the registration. (Two unrelated DOIs are present: Zenodo `10.5281/zenodo.3969339` for the Peng/Besca atlas, and `10.1016/j.cell.2018.02.052` for the TCGA-CDR paper.) |
-| **Registration date** | **`[NOT FOUND]`** |
-| **Registered commit** | **`[NOT FOUND]`** |
+**Correction (2026-08-06).** An earlier version of this document reported these as
+`[NOT FOUND]`. That was wrong: they are committed in `README.md` lines 7–11 and
+`HANDOFF.md` §5. My search missed them because it grepped `analysis_plan.md` and
+`panel_definition.md` only. All four verified below.
+
+| Item | Value | Verified in |
+|---|---|---|
+| **OSF registration** | **`tcvgb`** — https://osf.io/tcvgb/ — `registration: true`, public, not withdrawn | `README.md:7`, `HANDOFF.md:178,180` |
+| **Registration date** | **2026-08-01**, timestamped **2026-08-01T04:26:17** | `README.md:7-8`, `HANDOFF.md:181` |
+| **DOI** | **10.17605/OSF.IO/RKA4F** — this is the DOI of the mutable **parent project** `rka4f`, *not* of the registration | `README.md:9`, `HANDOFF.md:182-183` |
+| **Registered commit** | **`468c7b4`** — confirmed present in git history (2026-07-31, *"Untrack installed R library and download byproducts"*) | `README.md:10`, `HANDOFF.md:140,186` |
+
+⚠ **Two distinctions the methods section must not blur**, both stated in
+`HANDOFF.md` §5:
+
+1. **`tcvgb` is the registration; `rka4f` is not.** `rka4f` is the mutable parent
+   project (`registration: false`) and it is the object carrying the DOI. Citing
+   the DOI alone therefore points at a *mutable* object, not the frozen
+   registration. Cite **both**: registration `tcvgb`, parent DOI
+   10.17605/OSF.IO/RKA4F.
+2. **The frozen snapshot does not match HEAD.** It archives the **pre-debug**
+   `01_download.R` (6,147 B) and `02_panel.R` (4,386 B) rather than the working
+   versions (8,224 B and 10,045 B) — the freeze took the 04:23–04:25 file state and
+   corrected scripts went to the parent at 05:11, after it. It also contains no
+   `commit.txt` (added to the parent at 05:12). The eight non-script files in the
+   snapshot match HEAD exactly by SHA-256. `468c7b4` as the registered commit was
+   verified by SHA-256 match against `commit.txt` on the parent.
 | Analysis plan version | **1.5** (`analysis_plan.md` header) |
 | Panel locked | 2026-07-31 |
 | Registration status recorded | `analysis_plan.md` line 1117: *"Registration-blocking items: **none remaining**"* (as of 2026-08-01); `panel_definition.md` §8 states the intent to *"preregister after the panel is locked and after the compartment sweep is [run]"* |
 | **Amendments** | **19 amendments**, numbered 1–20 with **no Amendment 17** — the numbering skips from 16 to 18. Verified by enumerating the headings. |
 
-**The registration section cannot be written from this repository.** The plan
-records that registration was *unblocked*, and the amendments are written as
-though against a registration, but no OSF ID, DOI, date or registered commit is
-recorded anywhere. Either the registration exists and its identifiers were never
-written down, or it was not completed — the repository cannot distinguish these,
-and the methods section should not assert either.
+~~**The registration section cannot be written from this repository.**~~
+**This paragraph is withdrawn.** It asserted that no OSF identifiers were recorded
+anywhere; they are recorded in `README.md` and `HANDOFF.md`, and my search did not
+cover those files. The registration exists, is frozen and is public.
 
 ---
 
-## 15. Consolidated gaps — everything I could not find
+## 15. Gap register — revised 2026-08-06
+
+Of the seven gaps first reported, **four are now closed**, two stand, and one was
+never a gap. Where a gap closed because the value was already committed somewhere I
+had not searched, that is stated as **my search error**, not a new discovery.
 
 | # | Fact | Status |
 |---|---|---|
-| 1 | **MSigDB release version** | Not recorded. Only `msigdbr 26.1.0` (the R package). The underlying MSigDB release is inferable from the package but is **not written down**. |
-| 2 | **ChEA3 version** | Does not exist — ChEA3 does not version its GMTs. Byte-size fingerprints and the query date (2026-07-31) are recorded instead; **cite it that way**. |
-| 3 | **GDC data release** | Placeholder never filled: *"check GDCquery output above and record it here"*. |
-| 4 | **GDC workflow name** | Not recorded as a string. The assay used (`tpm_unstrand`) and the 60,660-row assay set are recorded, which implies STAR-Counts, but the name is not written down. |
-| 5 | **11 package versions** | Not in any committed file; the table above reads the **live library**, which is today's state, not the run's. No `sessionInfo()` anywhere. |
-| 6 | **OSF ID, registration DOI, registration date, registered commit** | None present anywhere in the repository. |
-| 6b | **R version is inconsistent across committed files** | `PROJECT_SUMMARY.md` line 839 says *"R 4.4 via conda env `stat3-gi`"*, while `data/cache/provenance.txt` and `data/panel/panel_provenance.txt` both say **R 4.5.3 (2026-03-11)**, which is also the version actually running. The methods section should cite **4.5.3**; the summary line is wrong. |
-| 7 | **Amendment 17** | Does not exist; numbering runs 1–16, 18–20. If the manuscript says "20 amendments" that is **wrong — it is 19**. |
+| 1 | **MSigDB release** | **CLOSED.** **`msigdb.2026.1`** — read from msigdbr 26.1.0's own hardcoded data URL, `https://zenodo.org/records/18968178/files/msigdb.2026.1.zip` (in `msigdbr:::check_cache`). See the note below on how this was obtained. |
+| 2 | **ChEA3 version** | **NOT A GAP.** ChEA3 does not version its GMTs. The correct citation is the byte-size fingerprint plus the query date (2026-07-31), which §1 already gives. |
+| 3 | **GDC data release** | **CLOSED.** **"Data Release 45.0 - December 04, 2025"**. Recorded at `04_lock_gene_list.R:135` and `PROJECT_SUMMARY.md:184`, read from the SummarizedExperiment objects. **Re-queried live at `api.gdc.cancer.gov/status` on 2026-08-06 and byte-identical** (`major 45, minor 0, release_date 2025-12-04`). Now written into `data/cache/provenance.txt`. My search missed it because I read only the unfilled placeholder at `01_download.R:183`. |
+| 4 | **GDC workflow** | **CLOSED.** **`STAR - Counts`** — literal argument at `01_download.R:68` (`workflow.type = "STAR - Counts"`). Now in `data/cache/provenance.txt`. Same search error as gap 3. |
+| 5 | **11 package versions** | **STANDS.** **There is no `renv.lock`** — not in the working tree, not tracked, and never in git history (0 commits touching it). A `renv/` directory exists but contains only `library-local/` (CMScaller, TCGAbiolinksGUI.data), no lockfile. Versions therefore **cannot be pinned to run time**; §13's eleven "no" rows are the library as of the reporting date. The manuscript should say so in those words. |
+| 6 | **OSF ID, DOI, date, commit** | **CLOSED — my error, not a gap.** All four are committed in `README.md:7-11` and `HANDOFF.md` §5: registration **`tcvgb`**, registered **2026-08-01** (04:26:17), parent project **`rka4f`** DOI **10.17605/OSF.IO/RKA4F**, registered commit **`468c7b4`** (present in git history). I had grepped only `analysis_plan.md` and `panel_definition.md`. See §14 for the two distinctions that matter. |
+| 7 | **Amendment 17** | **STANDS.** 19 amendments, numbered 1–16 and 18–20; **Amendment 17 was withdrawn**. A manuscript saying "20 amendments" is wrong. |
 
-Items 3, 4 and 6 are the ones a reviewer is most likely to ask for, and only
-item 6 cannot be recovered by re-reading a file or re-running a query.
+### How the MSigDB release was obtained, and its one caveat
 
----
+msigdbr 26.1.0 does not ship the gene sets: it downloads them from Zenodo on first
+use and caches them. `msigdbr_collections()` and `msigdbr()` therefore both fail
+here (Zenodo is outside the sandbox allowlist; HTTP 403), and no local cache
+exists. The release string was read instead from the **download URL hardcoded in
+the package's own `check_cache()` function**, which names
+`msigdb.2026.1.zip` — so this is the package's declared release, obtained without
+any network call and without inference from the version number.
+
+**Caveat for the methods section:** this establishes the release that msigdbr
+26.1.0 *targets*. It is not an independent verification that the 87 criterion-A
+genes were drawn from that release, because the objects that produced them are not
+re-readable here. The 87-gene count itself is committed
+(`data/panel/criterionB_provenance.txt`) and is the reportable figure.
+
+### Two gaps that remain, stated for the manuscript
+
+- **Package versions are as of the reporting date, not pinned at run time** (gap 5). No lockfile exists.
+- **Amendment 17 does not exist**; the count is 19 (gap 7).
 
 *Every value above was transcribed from the file named beside it. Nothing was
 computed for this document, and nothing was filled in from memory.*

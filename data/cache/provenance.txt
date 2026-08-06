@@ -3,7 +3,21 @@ R: R version 4.5.3 (2026-03-11)
 TCGAbiolinks: 2.38.0
 GEOquery: 2.78.0
 
-GDC data release: check GDCquery output above and record it here
+GDC data release: Data Release 45.0 - December 04, 2025
+  (data_release_version major 45, minor 0, release_date 2025-12-04)
+  source: https://api.gdc.cancer.gov/status, re-queried 2026-08-06; the string is
+  byte-identical to the one the SummarizedExperiment objects carry, recorded
+  independently at 04_lock_gene_list.R:135 and PROJECT_SUMMARY.md:184.
+  NOTE: the GDC API reports only the CURRENT release. This matches what the
+  downloaded objects record, so the download (2026-07-31) and today's API agree —
+  but a future re-query will report whatever is current then, not release 45.0.
+  The authoritative record for this analysis is the string in the objects.
+  Deposit objects carry NO GENCODE version field (PROJECT_SUMMARY.md §25); the
+  assembly was established as GRCh38 by coordinate match, not read from a field.
+GDC workflow: STAR - Counts
+  literal argument at 01_download.R:68 (workflow.type = "STAR - Counts").
+  Assay column used downstream: tpm_unstrand, from the 4-assay object
+  (unstranded, stranded_first, stranded_second, tpm_unstrand), 60,660 rows.
 
 aran_purity.xlsx
   source:   https://static-content.springer.com/esm/art%3A10.1038%2Fncomms9971/MediaObjects/41467_2015_BFncomms9971_MOESM1236_ESM.xlsx
