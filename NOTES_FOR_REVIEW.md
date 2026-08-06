@@ -289,6 +289,36 @@ Two further audit findings on the rename block, both mine:
   `match()` could not fail either. Replaced with a check on something ESTIMATE
   can actually do wrong — returning a non-finite score.
 
+## 47. UNATTRIBUTED FILES APPEARED IN THE REPOSITORY — second occurrence
+
+Three untracked files appeared: `CONTINUITY.md` (6,544 B), `STATE.md` (5,108 B)
+and `state_snapshot.sh` (5,076 B), all written 2026-08-04 between 15:47:04 and
+15:47:58 local — after commit `66eb789` and before `f62fcb3`.
+
+**Authorship could not be established.** The evidence:
+
+- **Zero** hits searching my archived transcript for `state_snapshot`,
+  `CONTINUITY.md`, `STATE.md`, or distinctive phrases from their text;
+- **Zero** frames in this project mention them (`host.frames` returned
+  `searched_frames: 0`);
+- they were never in git history (0 commits touching any of them);
+- `uid 501` is the repository owner — my own shell runs as the same uid, so it
+  does not discriminate;
+- they cite commits up to `66eb789` and quote repo facts accurately (56 commits,
+  20 amendments, the NOTES size), so whoever wrote them had read the repository.
+
+**Contents**, read and reported before removal: `CONTINUITY.md` was a session-
+process guide (when to start a session, a numbers-discipline rule, a per-file edit
+policy table); `STATE.md` was a generated snapshot of HEAD, amendments, open
+blockers grepped from tracked docs, and script mtimes; `state_snapshot.sh`
+regenerated `STATE.md` from git. Nothing in them altered analysis or data.
+
+**Disposition.** Moved to Trash on the author's instruction, not tracked. This is
+the **second** occurrence of unattributed files in this repository; recorded here
+so the pattern is visible rather than absorbed silently. Anything that appears in
+the working tree without a commit or a session behind it should be treated as
+unverified provenance until someone claims it.
+
 ## 46. fig5's JITTER IS UNSEEDED — the figure is not byte-reproducible
 
 Found while confirming that only the two intended titles changed: `git status`
